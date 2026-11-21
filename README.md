@@ -4,9 +4,11 @@ A live multiplayer quiz game. One big screen hosts; players join on their phones
 
 ## Run it
 
+This project uses [pnpm](https://pnpm.io) (pinned in `package.json`). If you don't have it: `corepack enable`.
+
 ```bash
-npm install
-npm run dev        # or: npm run build && npm start
+pnpm install
+pnpm dev           # or: pnpm build && pnpm start
 ```
 
 - Host screen: http://localhost:3000/host. Pick or write a quiz, then click **Host this quiz**.

@@ -231,3 +231,11 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 :where(.shapebox) { position: relative; }
 .bars > div:nth-child(1) .shape { fill: var(--lilac-ink); } .bars > div:nth-child(2) .shape { fill: var(--pink-ink); }
 .bars > div:nth-child(3) .shape { fill: var(--sage-ink); }  .bars > div:nth-child(4) .shape { fill: var(--butter-ink); }
+
+/* lobby QR: white card inside the PIN box */
+.qr { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--paper); padding: 14px 14px 10px; border-radius: 26px; rotate: -3deg; }
+.qr-code { width: 168px; height: 168px; }
+.qr-code svg { display: block; width: 100%; height: 100%; }
+.qr span { font-weight: 700; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; }
+.qr span::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--pink-ink); }
+@media (max-width: 760px) { .qr-code { width: 140px; height: 140px; } }

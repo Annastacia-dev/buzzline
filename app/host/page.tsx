@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, Shape, Sound, useGameStream, useNow, type Stamped } from '@/lib/client';
 import type { HostView, EndView, Quiz } from '@/lib/types';
+import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
 import Studio from './Studio';
 
@@ -72,22 +73,34 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
 type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void };
 
 function Lobby({ h, act }: ScreenProps) {
-  const [urls, setUrls] = useState<string[]>([]);
-  useEffect(() => { fetch('/api/info').then(r => r.json()).then(d => setUrls(d.urls)).catch(() => {}); }, []);
+  const [urls, setUrls] = useState<string[] | null>(null);
+  const [qr, setQr] = useState('');
+  useEffect(() => { fetch('/api/info').then(r => r.json()).then(d => setUrls(d.urls)).catch(() => setUrls([])); }, []);
   const bare = (u: string) => u.replace(/^https?:\/\//, '') + '/join';
-  const joinUrl = urls[0] ?? (typeof location !== 'undefined' ? location.origin : '');
+  const joinUrl = urls?.[0] ?? (typeof location !== 'undefined' ? location.origin : '');
+
+  // QR opens the join page with the PIN filled in. Wait for the LAN address: a localhost QR is useless to phones.
+  useEffect(() => {
+    if (!urls) return;
+    QRCode.toString(`${joinUrl}/join?pin=${h.pin}`, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#161616', light: '#ffffff' } })
+      .then(setQr).catch(() => setQr(''));
+  }, [urls, joinUrl, h.pin]);
 
   return (
     <>
       <Blob color="var(--olive)" size={260} style={{ position: 'absolute', top: 90, left: -90 }} />
       <Scallop color="var(--pink)" size={240} rotate={18} style={{ position: 'absolute', bottom: -70, right: -60 }} />
       <div className="pinbox" style={{ alignSelf: 'center' }}>
-        <Sticker text="fastest finger first · buzz in · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={120} rotate={14}
-          style={{ position: 'absolute', top: -38, right: -50 }} />
+        <Sticker text="fastest finger first · buzz in · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={120} rotate={-14}
+          style={{ position: 'absolute', top: -44, left: -56 }} />
+        <div className="qr">
+          {qr ? <div className="qr-code" role="img" aria-label="QR code to join this game" dangerouslySetInnerHTML={{ __html: qr }} /> : <div className="qr-code" />}
+          <span>Scan to join</span>
+        </div>
         <div>
           <div className="label">Join at</div>
           <div className="url">{bare(joinUrl)}</div>
-          {urls.length > 1 && <div className="label" style={{ marginTop: 4 }}>or {urls.slice(1).map(bare).join(', ')}</div>}
+          {urls && urls.length > 1 && <div className="label" style={{ marginTop: 4 }}>or {urls.slice(1).map(bare).join(', ')}</div>}
         </div>
         <div>
           <div className="label">Game PIN</div>
