@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, Shape, Sound, useGameStream, useNow, type Stamped } from '@/lib/client';
 import type { HostView, EndView, Quiz } from '@/lib/types';
+import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
 import Studio from './Studio';
 
 type HostSession = { pin: string; token: string };
@@ -51,7 +52,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   return (
     <div className="stage">
       <div className="stage-top">
-        <div className="logo"><span className="dot" />Buzzline</div>
+        <div className="logo">Buzzline<span className="dot" /></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {h.qIndex >= 0 && <span className="pill">Question {Math.min(h.qIndex + 1, h.total)} / {h.total}</span>}
           <span className="pill">PIN {h.pin}</span>
@@ -73,27 +74,32 @@ type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => v
 function Lobby({ h, act }: ScreenProps) {
   const [urls, setUrls] = useState<string[]>([]);
   useEffect(() => { fetch('/api/info').then(r => r.json()).then(d => setUrls(d.urls)).catch(() => {}); }, []);
+  const bare = (u: string) => u.replace(/^https?:\/\//, '') + '/join';
   const joinUrl = urls[0] ?? (typeof location !== 'undefined' ? location.origin : '');
 
   return (
     <>
+      <Blob color="var(--olive)" size={260} style={{ position: 'absolute', top: 90, left: -90 }} />
+      <Scallop color="var(--pink)" size={240} rotate={18} style={{ position: 'absolute', bottom: -70, right: -60 }} />
       <div className="pinbox" style={{ alignSelf: 'center' }}>
+        <Sticker text="fastest finger first · buzz in · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={120} rotate={14}
+          style={{ position: 'absolute', top: -38, right: -50 }} />
         <div>
           <div className="label">Join at</div>
-          <div className="url">{joinUrl.replace(/^https?:\/\//, '')}</div>
-          {urls.length > 1 && <div className="label" style={{ marginTop: 4 }}>or {urls.slice(1).map(u => u.replace(/^https?:\/\//, '')).join(', ')}</div>}
+          <div className="url">{bare(joinUrl)}</div>
+          {urls.length > 1 && <div className="label" style={{ marginTop: 4 }}>or {urls.slice(1).map(bare).join(', ')}</div>}
         </div>
         <div>
           <div className="label">Game PIN</div>
           <div className="pin">{h.pin.slice(0, 3)} {h.pin.slice(3)}</div>
         </div>
       </div>
-      <div style={{ textAlign: 'center' }}><h2>{h.title}</h2></div>
-      <div className="stage-top" style={{ maxWidth: 1100, width: '100%', margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', position: 'relative' }}><h2 style={{ fontSize: 40 }}>{h.title}</h2></div>
+      <div className="stage-top" style={{ maxWidth: 1100, width: '100%', margin: '0 auto', position: 'relative' }}>
         <div className="stat"><b>{h.players.length}</b><span>player{h.players.length === 1 ? '' : 's'}</span></div>
-        <button className="btn" onClick={() => act('start')} disabled={!h.players.length} style={{ fontSize: 22, padding: '16px 40px' }}>Start</button>
+        <button className="btn" onClick={() => act('start')} disabled={!h.players.length} style={{ fontSize: 22, padding: '18px 44px' }}>Start game <span aria-hidden>→</span></button>
       </div>
-      <div className="chips" style={{ flex: 1 }}>
+      <div className="chips" style={{ flex: 1, position: 'relative' }}>
         {h.players.length === 0 && <p className="muted">Waiting for players…</p>}
         {h.players.map(p => (
           <button key={p.id} className="chip pop" title="Click to remove" onClick={() => act('kick', { playerId: p.id })}>{p.name}</button>
@@ -104,12 +110,12 @@ function Lobby({ h, act }: ScreenProps) {
 }
 
 function Ring({ left, total }: { left: number; total: number }) {
-  const r = 56, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, left / total));
+  const r = 58, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, left / total));
   return (
     <div className="ring">
-      <svg width="130" height="130">
-        <circle cx="65" cy="65" r={r} stroke="rgba(255,255,255,.15)" strokeWidth="12" fill="none" />
-        <circle cx="65" cy="65" r={r} stroke={f < 0.25 ? 'var(--bad)' : 'var(--accent)'} strokeWidth="12" fill="none"
+      <svg width="140" height="140">
+        <circle cx="70" cy="70" r={r} stroke="var(--line)" strokeWidth="12" fill="none" />
+        <circle cx="70" cy="70" r={r} stroke={f < 0.25 ? 'var(--bad)' : 'var(--ink)'} strokeWidth="12" fill="none"
           strokeDasharray={c} strokeDashoffset={c * (1 - f)} strokeLinecap="round" />
       </svg>
       <span>{Math.ceil(left / 1000)}</span>
@@ -132,11 +138,15 @@ function QuestionScreen({ h, act }: ScreenProps) {
   if (startsIn > 0) {
     return (
       <div className="countdown-overlay">
-        <div style={{ display: 'grid', gap: 18, justifyItems: 'center', padding: 24 }}>
+        <Blob color="var(--butter)" size={300} style={{ position: 'absolute', top: -80, right: -60 }} />
+        <Scallop color="var(--lilac)" size={260} rotate={-12} style={{ position: 'absolute', bottom: -60, left: -40 }} />
+        <div style={{ display: 'grid', gap: 22, justifyItems: 'center', padding: 24, position: 'relative' }}>
           <span className="pill">Question {h.qIndex + 1} of {h.total}</span>
-          {q.double && <span className="pill gold">Double points!</span>}
-          <h1 style={{ fontSize: 'clamp(28px, 4vw, 56px)', maxWidth: 1000 }}>{q.q}</h1>
-          <div className="bignum pop" key={Math.ceil(startsIn / 1000)}>{Math.ceil(startsIn / 1000)}</div>
+          {q.double && <span className="pill dark">2× double points</span>}
+          <h1 style={{ fontSize: 'clamp(32px, 5vw, 72px)', maxWidth: 1100 }}>{q.q}</h1>
+          <Scallop color="var(--paper)" size={170} key={Math.ceil(startsIn / 1000)} className="pop">
+            <span className="bignum" style={{ fontSize: 84 }}>{Math.ceil(startsIn / 1000)}</span>
+          </Scallop>
         </div>
       </div>
     );
@@ -147,7 +157,7 @@ function QuestionScreen({ h, act }: ScreenProps) {
       <div className="stage-q">{q.q}</div>
       <div className="stage-mid">
         <Ring left={left} total={q.time * 1000} />
-        {q.double && <span className="pill gold">2× points</span>}
+        {q.double && <span className="pill dark">2× points</span>}
         <div className="stat"><b>{h.answered}</b><span>of {h.players.length} answered</span></div>
       </div>
       <div className="answers">
@@ -183,7 +193,7 @@ function Reveal({ h, act }: ScreenProps) {
       </div>
       <div className="answers">
         {q.answers.map((a, i) => (
-          <div key={i} className={`tile c${i} ${i === h.correct ? '' : 'dim'}`}>
+          <div key={i} className={`tile c${i} ${i === h.correct ? 'right' : 'dim'}`}>
             <Shape i={i} /><span>{a}</span>{i === h.correct && <span className="tick">✓</span>}
           </div>
         ))}
@@ -198,15 +208,15 @@ function Reveal({ h, act }: ScreenProps) {
 function Leaderboard({ h, act }: ScreenProps) {
   return (
     <>
-      <h1 style={{ textAlign: 'center', fontSize: 44 }}>Scoreboard</h1>
+      <h1 style={{ textAlign: 'center', fontSize: 64 }}>Score<em>board</em></h1>
       <div className="board" style={{ flex: 1, alignContent: 'start' }}>
         {h.leaderboard!.map((p, i) => (
           <div key={p.name} className="row rise" style={{ animationDelay: `${i * 80}ms` }}>
             <span className="r">{i + 1}</span>
-            <span className="n">{p.name} {p.streak >= 2 && <span title="streak">🔥{p.streak}</span>}</span>
+            <span className="n">{p.name} {p.streak >= 2 && <span className="pill" title="streak" style={{ color: 'var(--pink-ink)', verticalAlign: 'middle' }}><Icon name="flame" size={14} stroke={8} />{p.streak}</span>}</span>
             {p.up > 0 && <span className="up">▲{p.up}</span>}
             {p.gained > 0 && <span className="g">+{p.gained.toLocaleString()}</span>}
-            <span>{p.score.toLocaleString()}</span>
+            <b>{p.score.toLocaleString()}</b>
           </div>
         ))}
       </div>
@@ -220,13 +230,17 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
   useEffect(() => { Sound.fanfare(); }, []);
   // Display order: 2nd, 1st, 3rd.
   const spots = [
-    { p: lb[1], medal: '🥈', height: 170, color: '#d9dde8', delay: 600 },
-    { p: lb[0], medal: '🥇', height: 240, color: 'var(--accent)', delay: 1200 },
-    { p: lb[2], medal: '🥉', height: 120, color: '#e8a86b', delay: 0 },
+    { p: lb[1], medal: '2nd', height: 190, color: 'var(--lilac)', delay: 600 },
+    { p: lb[0], medal: '1st', height: 270, color: 'var(--butter)', delay: 1200 },
+    { p: lb[2], medal: '3rd', height: 140, color: 'var(--pink)', delay: 0 },
   ];
   return (
     <>
-      <h1 style={{ textAlign: 'center', fontSize: 44 }}>{h.title}</h1>
+      <Sticker text="good game · well played · " icon="trophy" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-12}
+        style={{ position: 'absolute', top: 90, left: '8%' }} />
+      <Sticker text="quiz is my superpower · " icon="flame" bg="var(--pink)" ink="var(--pink-ink)" size={130} rotate={10}
+        style={{ position: 'absolute', top: 120, right: '8%' }} />
+      <h1 style={{ textAlign: 'center', fontSize: 56, position: 'relative' }}>{h.title}</h1>
       <div className="podium">
         {spots.map((s, i) => s.p ? (
           <div key={i} className="rise" style={{ animationDelay: `${s.delay}ms` }}>
@@ -242,7 +256,7 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
         <div className="board">
           {lb.slice(3).map((p, i) => (
             <div key={p.name} className="row" style={{ fontSize: 18, padding: '10px 18px' }}>
-              <span className="r">{i + 4}</span><span className="n">{p.name}</span><span>{p.score.toLocaleString()}</span>
+              <span className="r">{i + 4}</span><span className="n">{p.name}</span><b>{p.score.toLocaleString()}</b>
             </div>
           ))}
         </div>

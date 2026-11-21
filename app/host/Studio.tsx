@@ -59,7 +59,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   return (
     <div className="studio">
       <aside className="side">
-        <Link href="/" className="logo"><span className="dot" />Buzzline</Link>
+        <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <button className="btn small" onClick={() => addQuiz()}>+ New quiz</button>
         <h3>Your quizzes</h3>
         <div className="qlist">
@@ -80,7 +80,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         <section className="editor">
           <div className="editor-top">
             <input className="field" value={quiz.title} onChange={e => update(z => ({ ...z, title: e.target.value }))} placeholder="Quiz title" />
-            <button className="btn" onClick={() => onHost(quiz)}>▶ Host this quiz</button>
+            <button className="btn" onClick={() => onHost(quiz)}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn ghost small" onClick={exportQuiz}>Export JSON</button>

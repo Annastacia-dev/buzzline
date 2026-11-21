@@ -1,47 +1,158 @@
-'use client';
-import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/client';
+import { Shape } from '@/lib/client';
+import { Blob, Icon, Scallop, Squircle, Sticker, Tag, type IconName } from '@/lib/deco';
+import QuickJoin from './QuickJoin';
+import styles from './landing.module.css';
 
-export default function JoinPage() {
-  const router = useRouter();
-  const [pin, setPin] = useState('');
-  const [name, setName] = useState('');
-  const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(false);
+const steps = [
+  { n: '01', title: 'Build your quiz', bg: 'var(--butter)', rows: ['Write questions', 'Set the timers', 'Pick double-points rounds'] },
+  { n: '02', title: 'Share the PIN', bg: 'var(--olive)', rows: ['Host screen on the TV', 'Players open the link', 'Type the 6-digit PIN'] },
+  { n: '03', title: 'Play it live', bg: 'var(--pink)', rows: ['Everyone answers at once', 'Fastest right answers win', 'Podium at the end'] },
+];
 
-  useEffect(() => {
-    const qp = new URLSearchParams(location.search).get('pin');
-    if (qp) setPin(qp);
-    setName(localStorage.getItem('bz.lastName') ?? '');
-  }, []);
+const features: { title: string; body: string; bg: string; ink: string; icon: IconName }[] = [
+  { title: 'Speed scoring', body: '500 to 1,000 points per right answer. The quicker the tap, the bigger the score.', bg: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'bolt' },
+  { title: 'Streak bonuses', body: '+100 for every answer in a row, up to +500. Hot streaks flip the scoreboard.', bg: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'flame' },
+  { title: 'Double points', body: 'Flag the big questions for 2× so nobody gives up early.', bg: 'var(--mint)', ink: 'var(--mint-ink)', icon: 'sparkle' },
+  { title: 'No app, no accounts', body: 'Players join from any phone browser with just a nickname.', bg: 'var(--coral)', ink: 'var(--coral-ink)', icon: 'smile' },
+  { title: 'Live answer chart', body: 'See how the room split after every question, then reveal.', bg: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
+  { title: 'Reusable quizzes', body: 'Saved in your browser. Export as JSON to share or move them.', bg: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'star' },
+];
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    setErr(''); setBusy(true);
-    try {
-      const r = await api<{ id: string; token: string; pin: string }>('/api/join', { pin: pin.trim(), name: name.trim() });
-      localStorage.setItem('bz.lastName', name.trim());
-      sessionStorage.setItem('bz.player', JSON.stringify(r));
-      router.push('/play');
-    } catch (e) {
-      setErr((e as Error).message); setBusy(false);
-    }
-  }
+const scoring = [
+  { k: 'Max points', v: '1,000' },
+  { k: 'Streak bonus', v: '+500' },
+  { k: 'Double round', v: '2×' },
+  { k: 'Players', v: '200' },
+];
 
+export default function Landing() {
   return (
-    <div className="center">
-      <div className="logo"><span className="dot" />Buzzline</div>
-      <form className="card" onSubmit={submit} autoComplete="off" style={{ width: 'min(380px, 100%)', display: 'grid', gap: 12 }}>
-        <input className="field" value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, ''))} inputMode="numeric" maxLength={6}
-          placeholder="Game PIN" required autoFocus style={{ textAlign: 'center', letterSpacing: '.2em', fontWeight: 800, fontSize: 26 }} />
-        <input className="field" value={name} onChange={e => setName(e.target.value)} maxLength={16}
-          placeholder="Nickname" required style={{ textAlign: 'center', fontWeight: 700, fontSize: 18 }} />
-        <button className="btn dark" type="submit" disabled={busy}>{busy ? 'Joining…' : 'Join'}</button>
-        <div className="error">{err}</div>
-      </form>
-      <div className="muted">Running the game? <Link href="/host" style={{ color: 'var(--accent)', fontWeight: 700 }}>Host a quiz →</Link></div>
+    <div className={styles.page}>
+      <nav className={styles.nav}>
+        <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
+        <div className={styles.navLinks}>
+          <a href="#how">How it works</a>
+          <a href="#features">Features</a>
+        </div>
+        <div className={styles.navCta}>
+          <Link href="/join" className="btn ghost small">Join a game</Link>
+          <Link href="/host" className="btn small">Host a quiz</Link>
+        </div>
+      </nav>
+
+      {/* ---------- hero ---------- */}
+      <header className={styles.hero}>
+        <div className={styles.heroText}>
+          <Tag icon="sparkle" bg="var(--lilac)" ink="var(--lilac-ink)" rotate={-3}>Live multiplayer quizzes</Tag>
+          <h1>Quiz night,<br /><em>just for your</em><br />crowd.</h1>
+          <p>Questions on the big screen, answers on every phone, and the quickest right answers climb the board.</p>
+          <div className={styles.ctaRow}>
+            <Link href="/host" className="btn">Host a quiz <span aria-hidden>→</span></Link>
+            <QuickJoin />
+          </div>
+        </div>
+
+        <div className={styles.collage} aria-hidden>
+          <Blob color="var(--olive)" size={150} className={styles.cBlob} />
+          <Squircle color="var(--butter)" size={230} rotate={-14} className={styles.cSquare}>
+            <div className={styles.shapeLabel}><b>Pop quiz</b><span>21/11</span></div>
+          </Squircle>
+          <Scallop color="var(--pink)" size={190} rotate={-28} className={styles.cScallop}>
+            <div className={styles.shapeLabel}><b>Trivia night</b><span>05/12</span></div>
+          </Scallop>
+          <div className={styles.cCircle}>
+            <div className={styles.shapeLabel} style={{ rotate: '24deg' }}><b>Team social</b><span>every Friday</span></div>
+          </div>
+
+          <div className={styles.liveCard}>
+            <div className={styles.liveTop}><span className="pill dark">Q 3 / 10</span><span className={styles.liveTimer}>12</span></div>
+            <div className={styles.liveQ}>Which planet is known as the Red Planet?</div>
+            <div className={styles.liveTiles}>
+              {['Venus', 'Mars', 'Jupiter', 'Mercury'].map((a, i) => (
+                <div key={a} className={`tile c${i} ${i === 1 ? 'right' : ''}`}><Shape i={i} />{a}</div>
+              ))}
+            </div>
+          </div>
+
+          <Sticker text="fastest finger first · buzz in · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={136} rotate={12} className={styles.cSticker} />
+          <div className={styles.cBubble}>+940 <Icon name="flame" size={18} /></div>
+        </div>
+      </header>
+
+      {/* ---------- tag strip ---------- */}
+      <div className={styles.tagStrip} aria-hidden>
+        <Tag icon="smile" bg="var(--peri)" ink="var(--peri-ink)" rotate={-4}>Fearless</Tag>
+        <Tag icon="bolt" bg="var(--lilac)" ink="var(--lilac-ink)" rotate={3}>Quick-fire</Tag>
+        <Sticker text="doing my best · doing my best · " icon="star" bg="var(--butter)" ink="var(--butter-ink)" size={110} rotate={-8} />
+        <Tag icon="sparkle" bg="var(--pink)" ink="var(--pink-ink)" rotate={-2}>Brainy</Tag>
+        <Tag icon="flame" bg="var(--sage)" ink="var(--sage-ink)" rotate={4}>On a streak</Tag>
+        <Tag icon="cursor" bg="var(--butter)" ink="var(--butter-ink)" rotate={-3}>Tap fast</Tag>
+      </div>
+
+      {/* ---------- how it works ---------- */}
+      <section id="how" className={styles.section}>
+        <div className={styles.sectionHead}>
+          <h2>Three steps to <em>a loud room</em></h2>
+        </div>
+        <div className={styles.steps}>
+          {steps.map(s => (
+            <div key={s.n} className={styles.step} style={{ background: s.bg }}>
+              <div className={styles.stepTop}><h3>{s.title}</h3><span className={styles.stepN}>{s.n}</span></div>
+              <div className={styles.stepRows}>
+                {s.rows.map((r, i) => (
+                  <div key={r} className={`${styles.stepRow} ${i === 0 ? styles.stepRowOn : ''}`}>{r}<span aria-hidden>›</span></div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- scoring card ---------- */}
+      <section className={styles.scoreCard}>
+        <div className={styles.scoreHead}>
+          <span className={styles.scoreIcon}><Icon name="trophy" size={22} stroke={7} /></span>
+          <div><b>How scoring works</b><span>Speed + accuracy + streaks</span></div>
+        </div>
+        <div className={styles.scoreGrid}>
+          {scoring.map(s => <div key={s.k}><span>{s.k}</span><b>{s.v}</b></div>)}
+        </div>
+      </section>
+
+      {/* ---------- features ---------- */}
+      <section id="features" className={styles.section}>
+        <div className={styles.sectionHead}>
+          <h2>Built for <em>game-show</em> energy</h2>
+        </div>
+        <div className={styles.features}>
+          {features.map(f => (
+            <div key={f.title} className={styles.feature} style={{ background: f.bg }}>
+              <div className={styles.featureTop}>
+                <h3>{f.title}</h3>
+                <span className={styles.featureIcon} style={{ color: f.ink }}><Icon name={f.icon} size={20} stroke={7} /></span>
+              </div>
+              <p>{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- closing ---------- */}
+      <section className={styles.closing}>
+        <h2>Ask.<br />Buzz.<br />Repeat.</h2>
+        <div className={styles.closingSide}>
+          <Sticker text="create with purpose · " icon="bolt" bg="var(--lilac)" ink="var(--lilac-ink)" size={150} rotate={-10} />
+          <Sticker text="quiz is my superpower · " icon="flame" bg="var(--pink)" ink="var(--pink-ink)" size={130} rotate={14} />
+          <p>Your first quiz is already waiting in the studio. Hit host, share the PIN, and let the room do the rest.</p>
+          <Link href="/host" className="btn">Start hosting <span aria-hidden>→</span></Link>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <span className="logo" style={{ fontSize: 20 }}>Buzzline<span className="dot" /></span>
+        <span>Made for classrooms, team socials and quiz nights.</span>
+      </footer>
     </div>
   );
 }
