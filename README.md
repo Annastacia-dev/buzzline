@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Buzzline
 
-## Getting Started
+A live multiplayer quiz game. One big screen hosts; players join on their phones with a PIN.
 
-First, run the development server:
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # or: npm run build && npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Host screen: http://localhost:3000/host. Pick or write a quiz, then click **Host this quiz**.
+- Players: open the address shown in the lobby (your computer's Wi-Fi IP, port 3000) and enter the PIN.
+  On Windows you may need to allow Node through the firewall the first time.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it plays
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Lobby → 3‑second "get ready" → question with timer → answer reveal and chart → scoreboard → … → podium.
 
-## Learn More
+Scoring: a correct answer is worth 500–1000 points (faster is more), ×2 on double-points questions,
+plus a streak bonus of +100 for each answer in a row (up to +500). A round ends early once everyone has answered.
 
-To learn more about Next.js, take a look at the following resources:
+## How it's built
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js App Router**. Pages: `app/page.tsx` (join), `app/play` (phone), `app/host` (quiz studio + stage).
+- **Real-time** uses Server-Sent Events from `app/api/events/route.ts`; actions are plain POST route handlers.
+- **Game state** is in memory in `lib/game.ts`. That means it needs a single long-running Node process
+  (`next dev` / `next start`, or a VPS/Render/Railway/Fly). It will **not** work on serverless hosts like Vercel
+  without moving state to something shared (for example Redis pub/sub).
+- **Quizzes** are saved in the host browser's localStorage. Use Export/Import JSON to move them between machines.
