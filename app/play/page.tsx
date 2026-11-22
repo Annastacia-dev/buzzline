@@ -132,8 +132,9 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
         const n = Math.ceil((startsIn - READY_MS) / 1000);
         body = (
           <div className="msg">
-            <span className="pill">{v.total} question{v.total === 1 ? '' : 's'}</span>
             <h1>Get <em>ready!</em></h1>
+            <div className="quiz-title-pill">{v.title}</div>
+            <span className="pill">{v.total} question{v.total === 1 ? '' : 's'}</span>
             <Scallop color="var(--paper)" size={150} key={n} className="pop">
               <span className="bignum">{n}</span>
             </Scallop>

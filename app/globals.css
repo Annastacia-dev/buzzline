@@ -207,7 +207,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .editor-top .field:focus { border-color: var(--line); background: var(--paper); }
 .qcard { display: grid; gap: 14px; }
 .qcard-head { display: flex; align-items: center; gap: 10px; font-weight: 600; flex-wrap: wrap; font-size: 14px; }
-.qcard-head > span:first-child { background: var(--ink); color: #fff; padding: 5px 12px; border-radius: 999px; }
+.qcard-head .qnum { background: var(--ink); color: #fff; padding: 5px 12px; border-radius: 999px; }
 .qcard-head .spacer { flex: 1; }
 .qcard-head select { padding: 6px 8px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper); }
 .qcard-head input[type=checkbox] { accent-color: var(--ink); }
@@ -444,3 +444,43 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .auto-secs .qsel-list { left: auto; right: 0; transform-origin: top right; }
 .gen-field .qsel { display: block; }
 .qcard-head .qsel-btn { background: var(--cream, #fbf6ec); border-color: transparent; }
+
+/* ---------- quiz title on the join page ---------- */
+.join-quiz { position: relative; min-height: 0; display: grid; justify-items: center; }
+.join-quiz-tag { display: inline-grid; gap: 2px; justify-items: center; padding: 10px 20px 12px; border-radius: 22px; background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--ink); max-width: min(380px, 100%); rotate: -2deg; }
+.join-quiz-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.join-quiz-tag b { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 1.15; overflow-wrap: anywhere; }
+.join-quiz-miss { font-size: 14px; font-weight: 600; color: var(--muted); }
+.quiz-title-pill { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1.2; text-align: center; overflow-wrap: anywhere; max-width: 100%; }
+
+/* ---------- studio: preview / edit tabs ---------- */
+.quiz-heading { flex: 1; min-width: 220px; margin: 0; font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; padding: 14px 4px; overflow-wrap: anywhere; }
+.editor-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.editor-bar .spacer { flex: 1; }
+.quiz-meta { font-size: 14px; font-weight: 600; }
+.tabs { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
+.tabs button { border: 0; background: transparent; font: inherit; font-weight: 700; font-size: 15px; color: var(--ink); padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
+.tabs button:hover:not(.on) { background: var(--cream, #fbf6ec); }
+.tabs button.on { background: var(--ink); color: #fff; }
+.tabs button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.quiz-panel { display: flex; flex-direction: column; gap: 16px; }
+.preview-note { margin: 0; font-size: 14px; }
+
+/* Preview cards: answers shown like the big screen, with no hint of which is right. */
+.pcard { display: grid; gap: 14px; }
+.pcard header { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pcard h2 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 800; line-height: 1.25; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.pans { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pans-tile { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; font-weight: 700; min-height: 56px; overflow-wrap: anywhere; }
+.pans-tile > :first-child { flex: none; width: 22px; height: 22px; color: var(--deep); }
+@media (max-width: 640px) { .pans { grid-template-columns: 1fr; } }
+
+/* Drag to reorder (edit tab). */
+.drag-handle { cursor: grab; user-select: none; font-size: 20px; line-height: 1; color: var(--muted); padding: 4px 2px; border-radius: 8px; touch-action: none; }
+.drag-handle:hover { color: var(--ink); background: var(--cream, #fbf6ec); }
+.qcard { position: relative; transition: opacity .15s; }
+.qcard.dragging { opacity: .4; }
+.qcard.drop-before::before, .qcard.drop-after::after { content: ''; position: absolute; left: 12px; right: 12px; height: 5px; border-radius: 999px; background: var(--pink-ink); }
+.qcard.drop-before::before { top: -11px; }
+.qcard.drop-after::after { bottom: -11px; }

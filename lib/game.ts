@@ -94,6 +94,18 @@ async function expireIfDue(g: GameRow) {
 
 // ---------- actions ----------
 
+/** Public, PIN-only lookup so the join page can show which quiz you're joining. */
+export async function gameTitle(pinIn: unknown) {
+  const pin = String(pinIn ?? '').trim();
+  if (!/^\d{6}$/.test(pin)) throw new GameError('Enter the 6-digit PIN', 400);
+  const { data, error } = await db().from('buzz_games').select('quiz->>title, state').eq('pin', pin).maybeSingle();
+  fail(error);
+  const g = data as { title: string | null; state: State } | null;
+  if (!g) throw new GameError('No game with that PIN', 404);
+  return { title: g.title || 'Untitled quiz', started: g.state !== 'lobby' };
+}
+
+
 export async function createGame(quiz: Quiz) {
   const err = validateQuiz(quiz);
   if (err) throw new GameError(err, 400);

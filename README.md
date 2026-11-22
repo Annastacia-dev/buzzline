@@ -53,7 +53,9 @@ Each server instance allows 10 generations per visitor per hour. Without `ANTHRO
   the first read after the buzzer ends the question. This makes it safe on serverless hosts like Vercel.
 - **Region**: `vercel.json` runs functions in Dublin (`dub1`), next to the Supabase project (eu-west-1).
   If your Supabase project is elsewhere, change it to the nearest Vercel region.
-- **Quizzes** are saved in the host browser's localStorage. **Import spreadsheet** creates a quiz from a Kahoot-format `.xlsx`
+- **Quizzes** are saved in the host browser's localStorage. Each quiz opens in **Preview** (questions and answers, with the right
+  answer hidden); **Edit quiz** shows the answers and lets the host add, edit, duplicate, delete and reorder questions
+  (drag the handle or use the arrows). **Import spreadsheet** creates a quiz from a Kahoot-format `.xlsx`
   (header row Question, Answer 1–4, Time limit (seconds), Correct answer(s), with Kahoot's official template also accepted;
   read in the browser by `lib/spreadsheet.ts`). Rows it can't use are listed after the import.
   **Download spreadsheet template** under the button gives a ready `.xlsx` with those columns and four example questions

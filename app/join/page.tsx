@@ -11,12 +11,31 @@ export default function JoinPage() {
   const [name, setName] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  // The quiz behind a complete PIN, so players can see what they're joining.
+  const [game, setGame] = useState<{ pin: string; title?: string; started?: boolean; missing?: boolean } | null>(null);
 
   useEffect(() => {
     const qp = new URLSearchParams(location.search).get('pin');
     if (qp) setPin(qp);
     setName(localStorage.getItem('bz.lastName') ?? '');
   }, []);
+
+  useEffect(() => {
+    if (!/^\d{6}$/.test(pin)) { setGame(null); return; }
+    const ctl = new AbortController();
+    const t = setTimeout(() => {
+      fetch('/api/game?' + new URLSearchParams({ pin }), { signal: ctl.signal, cache: 'no-store' })
+        .then(async r => {
+          if (r.status === 404) return setGame({ pin, missing: true });
+          if (!r.ok) return setGame(null);
+          const j = await r.json();
+          setGame({ pin, title: j.title, started: j.started });
+        })
+        .catch(() => {});
+    }, 250);
+    return () => { clearTimeout(t); ctl.abort(); };
+  }, [pin]);
+  const shown = game?.pin === pin ? game : null;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -37,6 +56,15 @@ export default function JoinPage() {
       <Scallop color="var(--pink)" size={200} rotate={20} style={{ position: 'absolute', bottom: -60, left: -50 }} />
       <Link href="/" className="logo" style={{ position: 'relative' }}>Buzzline<span className="dot" /></Link>
       <h1 style={{ fontSize: 'clamp(44px, 12vw, 64px)', lineHeight: .95, position: 'relative' }}>Ready to<br /><em>buzz in?</em></h1>
+      <div className="join-quiz" aria-live="polite">
+        {shown?.title && (
+          <span className="join-quiz-tag pop" key={shown.pin}>
+            <span className="join-quiz-label">{shown.started ? 'Game in progress' : "You're joining"}</span>
+            <b>{shown.title}</b>
+          </span>
+        )}
+        {shown?.missing && <span className="join-quiz-miss">No game with that PIN yet. Check the big screen.</span>}
+      </div>
       <form className="card" onSubmit={submit} autoComplete="off"
         style={{ width: 'min(380px, 100%)', display: 'grid', gap: 10, background: 'var(--butter)', padding: 16, position: 'relative' }}>
         <input className="field" value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, ''))} inputMode="numeric" maxLength={6}
