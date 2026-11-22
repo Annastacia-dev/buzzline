@@ -1,8 +1,10 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, refreshGame, Shape, useGameStream, useNow, type Stamped } from '@/lib/client';
 import { Music, Sound, SoundToggle } from '@/lib/sound';
 import { Avatar } from '@/lib/avatars';
+import { Confetti } from '@/lib/confetti';
+import { podiumTimeline } from '@/lib/podium';
 import type { HostView, EndView, Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
@@ -281,48 +283,101 @@ function Leaderboard({ h, act, busy }: ScreenProps) {
   );
 }
 
+const ORD = ['', '1st', '2nd', '3rd'];
+
+/** End of game: 3rd, then 2nd, then a longer drumroll and 1st with confetti. Timing shared with phones (lib/podium). */
 function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
   const lb = h.leaderboard ?? [];
+  const { steps, done } = useMemo(() => podiumTimeline(h.players.length), [h.players.length]);
+  const [shown, setShown] = useState<number[]>([]); // ranks revealed so far
+  const [rolling, setRolling] = useState(0);        // rank whose drumroll is playing
+  const [finished, setFinished] = useState(false);
+  const [boom, setBoom] = useState(0);
+  const timers = useRef<number[]>([]);
+
+  const skip = () => {
+    timers.current.forEach(clearTimeout);
+    Sound.cutRoll();
+    setRolling(0); setShown([1, 2, 3]); setFinished(true); setBoom(b => b + 1);
+    Music.play('podium');
+  };
+
   useEffect(() => {
-    Music.stop(); Sound.fanfare();
-    const t = setTimeout(() => Music.play('podium'), 2500);
-    return () => clearTimeout(t);
-  }, []);
+    Music.stop();
+    const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
+    for (const st of steps) {
+      at(st.rollAt, () => { setRolling(st.rank); Sound.roll(st.roll / 1000); });
+      at(st.at, () => {
+        setRolling(0);
+        setShown(x => [...x, st.rank]);
+        if (st.rank === 1) { Sound.fanfare(); setBoom(b => b + 1); } else Sound.place();
+      });
+    }
+    at(done + 1000, () => setFinished(true));
+    at(done + 2600, () => Music.play('podium'));
+    const ts = timers.current;
+    return () => ts.forEach(clearTimeout);
+  }, [steps, done]);
+
+  const last = [3, 2, 1].filter(r => shown.includes(r)).pop();
+  const headline = shown.includes(1) && lb[0] ? <>{lb[0].name} <em>wins!</em></>
+    : rolling === 1 ? <>And the winner <em>is…</em></>
+    : rolling ? <>In {ORD[rolling]} <em>place…</em></>
+    : last && lb[last - 1] ? <>{ORD[last]}: <em>{lb[last - 1].name}</em></>
+    : <>And the podium <em>goes to…</em></>;
+
   // Display order: 2nd, 1st, 3rd.
   const spots = [
-    { p: lb[1], medal: '2nd', height: 190, color: 'var(--lilac)', delay: 600 },
-    { p: lb[0], medal: '1st', height: 270, color: 'var(--butter)', delay: 1200 },
-    { p: lb[2], medal: '3rd', height: 140, color: 'var(--pink)', delay: 0 },
+    { rank: 2, height: 190, color: 'var(--lilac)' },
+    { rank: 1, height: 270, color: 'var(--butter)' },
+    { rank: 3, height: 140, color: 'var(--pink)' },
   ];
   return (
     <>
-      <Sticker text="good game · well played · " icon="trophy" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-12}
-        style={{ position: 'absolute', top: 90, left: '8%' }} />
-      <Sticker text="quiz is my superpower · " icon="flame" bg="var(--pink)" ink="var(--pink-ink)" size={130} rotate={10}
-        style={{ position: 'absolute', top: 120, right: '8%' }} />
-      <h1 style={{ textAlign: 'center', fontSize: 56, position: 'relative' }}>{h.title}</h1>
-      <div className="podium">
-        {spots.map((s, i) => s.p ? (
-          <div key={i} className="rise" style={{ animationDelay: `${s.delay}ms` }}>
-            <Avatar i={s.p.avatar} size={i === 1 ? 96 : 76} className="bob" />
-            <div className="name">{s.p.name}</div>
-            <div className="block" style={{ height: s.height, background: s.color }}>
-              <span className="m">{s.medal}</span>
-              <span>{s.p.score.toLocaleString()}</span>
-            </div>
-          </div>
-        ) : <div key={i} />)}
+      <Confetti fire={boom} />
+      {finished && <>
+        <Sticker text="good game · well played · " icon="trophy" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-12}
+          className="pop" style={{ position: 'absolute', top: 90, left: '8%' }} />
+        <Sticker text="quiz is my superpower · " icon="flame" bg="var(--pink)" ink="var(--pink-ink)" size={130} rotate={10}
+          className="pop" style={{ position: 'absolute', top: 120, right: '8%' }} />
+      </>}
+      <div style={{ textAlign: 'center', position: 'relative' }}>
+        <div className="label">{h.title}</div>
+        <h1 key={String(rolling) + shown.join()} className="podium-title pop">{headline}</h1>
       </div>
-      {lb.length > 3 && (
+      <div className="podium">
+        {spots.map(sp => {
+          const p = lb[sp.rank - 1];
+          if (!p) return <div key={sp.rank} />;
+          const on = shown.includes(sp.rank);
+          return (
+            <div key={sp.rank} className={`${on ? 'in' : ''} ${rolling === sp.rank ? 'suspense' : ''} ${sp.rank === 1 ? 'first' : ''}`}>
+              {on && <div className="who">
+                <Avatar i={p.avatar} size={sp.rank === 1 ? 104 : 80} className="bob" />
+                <div className="name">{p.name}</div>
+              </div>}
+              <div className="block" style={{ height: on ? sp.height : 44, background: sp.color }}>
+                {on ? <><span className="m">{ORD[sp.rank]}</span><span>{p.score.toLocaleString()}</span></> : <span className="m q">?</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {finished && lb.length > 3 && (
         <div className="board">
           {lb.slice(3).map((p, i) => (
-            <div key={p.name} className="row" style={{ fontSize: 18, padding: '10px 18px' }}>
+            <div key={p.name} className="row rise" style={{ fontSize: 18, padding: '10px 18px', animationDelay: `${i * 60}ms` }}>
               <span className="r">{i + 4}</span><Avatar i={p.avatar} size={32} /><span className="n">{p.name}</span><b>{p.score.toLocaleString()}</b>
             </div>
           ))}
         </div>
       )}
-      <div style={{ textAlign: 'center' }}><button className="btn" onClick={onLeave}>Back to my quizzes</button></div>
+      {/* Skip sits bottom-right, never where "Back" appears, so a late click can't end the game by accident. */}
+      <div style={{ textAlign: finished ? 'center' : 'right', minHeight: 52 }}>
+        {finished
+          ? <button className="btn rise" onClick={onLeave}>Back to my quizzes</button>
+          : <button className="btn ghost small" onClick={skip}>Skip reveal →</button>}
+      </div>
     </>
   );
 }

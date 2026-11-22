@@ -230,6 +230,8 @@ export const Music = {
 
 // ---------- effects ----------
 
+let rollBus: GainNode | undefined;
+
 /** Runs fn with the current audio time, or does nothing if audio isn't available. */
 const fx = (fn: (t: number) => void) => () => { const c = audio(); if (c) fn(c.currentTime + 0.01); };
 
@@ -255,10 +257,30 @@ export const Sound = {
   good: fx(t => { tone(660, t, 0.14, { type: 'triangle', vol: 0.22 }); tone(990, t + 0.1, 0.25, { type: 'triangle', vol: 0.2 }); tone(1320, t + 0.2, 0.3, { type: 'triangle', vol: 0.12 }); }),
   bad: fx(t => { tone(330, t, 0.18, { type: 'square', vol: 0.08, filter: 1200 }); tone(247, t + 0.16, 0.35, { type: 'square', vol: 0.08, filter: 1000 }); }),
   /** Snare roll that builds, then a cymbal-ish crash. ~1.5s. */
-  drumroll: fx(t => {
-    for (let i = 0; i < 32; i++) snare(t + i * 0.042, sfxBus, 0.04 + (i / 32) * 0.22);
-    hiss(t + 1.36, 1.2, { vol: 0.3, freq: 5000 });
-    tone(130.8, t + 1.36, 0.5, { vol: 0.6, glide: 45 });
+  drumroll: () => Sound.roll(1.36),
+  /** A building snare roll of `secs` seconds that ends on a crash (the crash lands exactly at the end). */
+  roll(secs: number) {
+    const c = audio();
+    if (!c) return;
+    Sound.cutRoll();
+    const bus = rollBus = c.createGain(); // its own gain, so a skip can silence notes already scheduled
+    bus.connect(sfxBus);
+    const t = c.currentTime + 0.01, n = Math.round(secs / 0.042);
+    for (let i = 0; i < n; i++) snare(t + i * 0.042, bus, 0.03 + (i / n) ** 1.6 * 0.26);
+    hiss(t + secs, 1.4, { vol: 0.32, freq: 5000, bus });
+    tone(130.8, t + secs, 0.5, { vol: 0.6, glide: 45, bus });
+  },
+  /** Silences a drumroll in progress. */
+  cutRoll() {
+    if (!rollBus || !ctx) return;
+    const bus = rollBus;
+    bus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.03);
+    setTimeout(() => bus.disconnect(), 400);
+    rollBus = undefined;
+  },
+  /** Podium place revealed (3rd and 2nd): bright brass stab. */
+  place: fx(t => {
+    [523, 659, 784].forEach(f => { tone(f, t, 0.5, { type: 'sawtooth', vol: 0.06, filter: 2400, attack: 0.015 }); tone(f * 2, t, 0.35, { type: 'triangle', vol: 0.05 }); });
   }),
   /** Brassy fanfare for the podium. ~2.4s. */
   fanfare: fx(t => {

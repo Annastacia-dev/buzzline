@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, refreshGame, Shape, useGameStream, useNow } from '@/lib/client';
 import { Sound, SoundToggle } from '@/lib/sound';
 import { AVATARS, Avatar } from '@/lib/avatars';
+import { revealAtFor } from '@/lib/podium';
 import type { PlayerView, EndView } from '@/lib/types';
 import { Scallop, Icon } from '@/lib/deco';
 
@@ -43,11 +44,23 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
   const now = useNow(v.state === 'question');
   const myAvatar = avatar ?? v.avatar;
 
+  // Game over: hold the result until the big screen's podium reveal gets to this player's place.
+  const [revealed, setRevealed] = useState(false);
+  const over = v.state === 'end';
+  useEffect(() => {
+    if (!over) return;
+    const t = setTimeout(() => {
+      setRevealed(true);
+      if (v.rank === 1) Sound.fanfare(); else if (v.rank <= 3) Sound.good(); else Sound.pop();
+    }, revealAtFor(v.rank, v.playerCount));
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [over]);
+
   // Feedback sounds once per screen change.
   useEffect(() => {
     if (v.state === 'lobby') Sound.pop();
     if (v.state === 'reveal') v.last?.correct ? Sound.good() : Sound.bad();
-    if (v.state === 'end' && v.rank <= 3) Sound.fanfare();
     if (v.state === 'end') sessionStorage.removeItem('bz.player');
     setErr('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,6 +200,17 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
     case 'end': {
       mood = 'end';
       const podium = v.rank <= 3;
+      if (!revealed) {
+        mood = 'ready';
+        body = (
+          <div className="msg">
+            <Scallop color="var(--paper)" size={150} className="drum"><span className="bignum" aria-hidden>🥁</span></Scallop>
+            <h1>Drum<em>roll…</em></h1>
+            <p>The podium is on the big screen.</p>
+          </div>
+        );
+        break;
+      }
       body = (
         <div className="msg">
           <p>Final position</p>
