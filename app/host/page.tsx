@@ -37,7 +37,8 @@ export default function HostPage() {
 
   function leave() { sessionStorage.removeItem('bz.host'); setSession(null); }
 
-  if (!ready) return null;
+  // Render a loading shell (not null) before the session is read, so the server has something to prerender.
+  if (!ready) return <div className="center" aria-busy="true"><div className="spinner" /></div>;
   if (!session) return <Studio onHost={host} error={error} />;
   return <Stage session={session} onLeave={leave} />;
 }
@@ -51,6 +52,13 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   const [auto, setAutoState] = useState(false);
   useEffect(() => { setAutoState(localStorage.getItem('bz.auto') === '1'); }, []);
   const setAuto = (on: boolean) => { setAutoState(on); localStorage.setItem('bz.auto', on ? '1' : '0'); };
+  // How long the reveal and scoreboard stay up before auto mode moves on; the host picks it.
+  const [autoSecs, setAutoSecsState] = useState(DEFAULT_AUTO_SECS);
+  useEffect(() => {
+    const n = Number(localStorage.getItem('bz.autoSecs'));
+    if (AUTO_CHOICES.includes(n)) setAutoSecsState(n);
+  }, []);
+  const setAutoSecs = (n: number) => { setAutoSecsState(n); localStorage.setItem('bz.autoSecs', String(n)); };
   const [dialog, ask] = useAlertDialog();
   const [report, setReport] = useState(false);
   const step = v && 'qIndex' in v ? `${v.state}:${v.qIndex}` : v?.state;
@@ -83,6 +91,15 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
             title="Move on automatically after each answer reveal and scoreboard">
             <span className="switch" aria-hidden />Auto
           </button>
+          {auto && (
+            <label className="pill auto-secs" title="Seconds each answer reveal and scoreboard stays up before moving on">
+              <span className="sr-only">Seconds before moving on</span>
+              <span aria-hidden>⏱</span>
+              <select value={autoSecs} onChange={e => setAutoSecs(Number(e.target.value))}>
+                {AUTO_CHOICES.map(n => <option key={n} value={n}>{n}s</option>)}
+              </select>
+            </label>
+          )}
           <SoundToggle />
           {/* On the podium the game is over: no "End game", the report instead. */}
           {h.state === 'end'
@@ -96,8 +113,8 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
       {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
       {h.state === 'lobby' && <Lobby h={h} act={act} busy={busy} />}
       {h.state === 'question' && <QuestionScreen key={h.qIndex} h={h} act={act} busy={busy} />}
-      {h.state === 'reveal' && <Reveal h={h} act={act} busy={busy} auto={auto} />}
-      {h.state === 'leaderboard' && <Leaderboard h={h} act={act} busy={busy} auto={auto} />}
+      {h.state === 'reveal' && <Reveal h={h} act={act} busy={busy} auto={auto} autoSecs={autoSecs} />}
+      {h.state === 'leaderboard' && <Leaderboard h={h} act={act} busy={busy} auto={auto} autoSecs={autoSecs} />}
       {/* Leaving the podium keeps the game, so phones keep their results; idle games are cleaned up after 6 hours. */}
       {h.state === 'end' && <Podium h={h} onLeave={onLeave} onReport={() => setReport(true)} />}
       {report && <Analytics pin={session.pin} token={session.token} onClose={() => setReport(false)} />}
@@ -105,10 +122,11 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   );
 }
 
-type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void; busy: string; auto?: boolean };
+type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void; busy: string; auto?: boolean; autoSecs?: number };
 
-/** Seconds each screen stays up in auto mode before moving on. */
-const AUTO_SECS = { reveal: 6, leaderboard: 7 };
+/** Seconds the reveal and scoreboard stay up in auto mode before moving on: the host's choice, 6 by default. */
+const AUTO_CHOICES = [3, 5, 6, 8, 10, 15, 20, 30];
+const DEFAULT_AUTO_SECS = 6;
 
 /**
  * The "move on" button. In auto mode it fills up over `secs` and presses itself; clicking still works,
@@ -126,7 +144,7 @@ function NextButton({ label, act, busy, auto, secs }: { label: string; act: Scre
   return (
     <button className={`btn ${auto ? 'auto-next' : ''}`} onClick={() => act('next')} aria-busy={busy === 'next'}
       style={auto ? ({ '--auto': `${secs}s` } as React.CSSProperties) : undefined}>
-      {auto && <span className="auto-fill" aria-hidden />}
+      {auto && <span key={secs} className="auto-fill" aria-hidden />}
       {label}{auto && <span className="sr-only"> (moves on automatically in {secs} seconds)</span>}
     </button>
   );
@@ -264,7 +282,7 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
   );
 }
 
-function Reveal({ h, act, busy, auto }: ScreenProps) {
+function Reveal({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: ScreenProps) {
   const q = h.question!;
   useEffect(() => { Music.stop(); Sound.reveal(); }, []);
   const dist = h.distribution ?? [];
@@ -296,13 +314,13 @@ function Reveal({ h, act, busy, auto }: ScreenProps) {
         ))}
       </div>
       <div style={{ textAlign: 'right' }}>
-        <NextButton label={h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'} act={act} busy={busy} auto={auto} secs={AUTO_SECS.reveal} />
+        <NextButton label={h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'} act={act} busy={busy} auto={auto} secs={autoSecs} />
       </div>
     </>
   );
 }
 
-function Leaderboard({ h, act, busy, auto }: ScreenProps) {
+function Leaderboard({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: ScreenProps) {
   useEffect(() => {
     Music.stop(); Sound.drumroll();
     const t = setTimeout(() => Music.play('scoreboard'), 1500);
@@ -323,7 +341,7 @@ function Leaderboard({ h, act, busy, auto }: ScreenProps) {
           </div>
         ))}
       </div>
-      <div style={{ textAlign: 'right' }}><NextButton label="Next question →" act={act} busy={busy} auto={auto} secs={AUTO_SECS.leaderboard} /></div>
+      <div style={{ textAlign: 'right' }}><NextButton label="Next question →" act={act} busy={busy} auto={auto} secs={autoSecs} /></div>
     </>
   );
 }

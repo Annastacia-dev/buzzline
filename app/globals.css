@@ -278,7 +278,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .alert-dialog[open] { animation: pop .28s cubic-bezier(.3, 1.4, .5, 1); }
 .alert-body { background: var(--paper); border-radius: var(--radius); padding: 28px 28px 22px; box-shadow: 0 24px 60px rgba(22, 22, 22, .25); }
 .alert-body h2 { font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 10px; overflow-wrap: anywhere; }
-.alert-body p { margin: 0; color: var(--muted); line-height: 1.5; }
+.alert-body p { margin: 0; color: var(--muted); line-height: 1.5; white-space: pre-line; }
 .alert-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; flex-wrap: wrap; }
 .alert-actions .btn.light { box-shadow: inset 0 0 0 1.5px var(--line); }
 .btn.danger-solid { background: var(--bad); color: #fff; }
@@ -382,3 +382,13 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .spinner.small { width: 20px; height: 20px; border-width: 3px; flex: none; }
 .gen-dialog .error { margin: 0; color: var(--bad); }
 .btn.ai { background: linear-gradient(135deg, #d4cdf8, #f7bddf); color: var(--ink); }
+.gen-loader { display: flex; align-items: center; gap: 16px; padding: 12px 14px; border-radius: 22px; background: var(--cream, #fbf6ec); }
+.gen-sticker { flex: none; animation: pop .45s cubic-bezier(.3, 1.4, .5, 1); }
+.gen-sticker .sticker { animation: spin 9s linear infinite; }
+.gen-loader .gen-line { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 1.25; color: var(--ink); animation: gen-in .4s ease-out; }
+.gen-loader .gen-note { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+@keyframes gen-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .gen-sticker, .gen-sticker .sticker, .gen-line { animation: none; } }
+.auto-secs { display: inline-flex; align-items: center; gap: 4px; padding-right: 6px; }
+.auto-secs select { border: 0; background: transparent; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer; padding: 0 2px; }
+.auto-secs:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }

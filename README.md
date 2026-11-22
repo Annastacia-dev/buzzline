@@ -27,6 +27,9 @@ Players get a random avatar when they join and can pick another in the lobby. Th
 and sound effects for each stage (lobby, countdown, question, last five seconds, reveal, scoreboard, podium);
 phones play short effects only. Both have a mute button. Everything is synthesized in `lib/sound.tsx`, no audio files.
 
+**Auto** (top bar) moves from the answer reveal to the scoreboard to the next question by itself; the host picks how many
+seconds each of those screens stays up (6 by default).
+
 Scoring: a correct answer is worth 500–1000 points (faster is more), ×2 on double-points questions,
 plus a streak bonus of +100 for each answer in a row (up to +500). A round ends early once everyone has answered.
 
@@ -50,4 +53,6 @@ Each server instance allows 10 generations per visitor per hour. Without `ANTHRO
   the first read after the buzzer ends the question. This makes it safe on serverless hosts like Vercel.
 - **Region**: `vercel.json` runs functions in Dublin (`dub1`), next to the Supabase project (eu-west-1).
   If your Supabase project is elsewhere, change it to the nearest Vercel region.
-- **Quizzes** are saved in the host browser's localStorage. Use Export/Import JSON to move them between machines.
+- **Quizzes** are saved in the host browser's localStorage. **Import spreadsheet** creates a quiz from a Kahoot-format `.xlsx`
+  (header row Question, Answer 1–4, Time limit (seconds), Correct answer(s), with Kahoot's official template also accepted;
+  read in the browser by `lib/spreadsheet.ts`). Rows it can't use are listed after the import.

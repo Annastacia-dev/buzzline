@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import type { Quiz } from '@/lib/types';
+import { Sticker, type IconName } from '@/lib/deco';
 
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90];
 const COUNTS = [5, 8, 10, 12, 15, 20];
@@ -84,7 +85,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
         </div>
 
         {error && <p className="error" role="alert">{error}</p>}
-        {busy && <p className="gen-wait" role="status"><span className="spinner small" aria-hidden /> Writing {count} questions about {topic.trim()}… this can take up to a minute.</p>}
+        {busy && <GenLoader topic={topic.trim()} count={count} time={time} />}
 
         <div className="alert-actions">
           <button type="button" className="btn light" onClick={close}>Cancel</button>
@@ -92,5 +93,54 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
         </div>
       </form>
     </dialog>
+  );
+}
+
+// While Claude writes: a slowly spinning sticker and a cheeky line, both changing every few seconds.
+const STICKERS: { text: string; icon: IconName; bg: string; ink: string }[] = [
+  { text: 'quiz in the oven · quiz in the oven · ', icon: 'flame', bg: 'var(--pink)', ink: 'var(--pink-ink)' },
+  { text: 'big brain energy · big brain energy · ', icon: 'sparkle', bg: 'var(--lilac)', ink: 'var(--lilac-ink)' },
+  { text: 'fun facts loading · fun facts loading · ', icon: 'bolt', bg: 'var(--butter)', ink: 'var(--butter-ink)' },
+  { text: 'trust the process · trust the process · ', icon: 'smile', bg: 'var(--sage)', ink: 'var(--sage-ink)' },
+  { text: 'future champions · future champions · ', icon: 'trophy', bg: 'var(--butter)', ink: 'var(--butter-ink)' },
+  { text: 'no peeking · no peeking · no peeking · ', icon: 'star', bg: 'var(--pink)', ink: 'var(--pink-ink)' },
+];
+
+function lines(topic: string, count: number, time: number) {
+  return [
+    `Brewing ${count} questions about ${topic}…`,
+    'Bribing the trivia gods…',
+    'Teaching the wrong answers to look convincing…',
+    'Hiding the right answer behind a decoy…',
+    `Asking a very serious librarian about ${topic}…`,
+    'Shuffling answers like a card shark…',
+    'Fact-checking with a stern face…',
+    'Adding a pinch of spice to one question…',
+    'Polishing the buzzers…',
+    `Counting to ${time}, very slowly…`,
+    'Warming up the scoreboard…',
+    'Almost there. Probably. Definitely maybe.',
+  ];
+}
+
+function GenLoader({ topic, count, time }: { topic: string; count: number; time: number }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI(n => n + 1), 2600);
+    return () => clearInterval(t);
+  }, []);
+  const all = lines(topic, count, time);
+  const st = STICKERS[i % STICKERS.length];
+  return (
+    <div className="gen-loader">
+      <span className="sr-only" role="status">Generating {count} questions about {topic}. This can take up to a minute.</span>
+      <div className="gen-sticker" key={`s${i % STICKERS.length}`} aria-hidden>
+        <Sticker {...st} size={96} />
+      </div>
+      <div aria-hidden>
+        <p className="gen-line" key={`l${i}`}>{all[i % all.length]}</p>
+        <p className="gen-note">Good quizzes take up to a minute.</p>
+      </div>
+    </div>
   );
 }
