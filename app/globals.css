@@ -365,3 +365,20 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .ptable td { font-variant-numeric: tabular-nums; }
 .ptable tbody th { font-weight: 700; }
 .ptable .who { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ---------- Generate with AI ---------- */
+.gen-dialog { max-width: min(560px, calc(100vw - 32px)); }
+.gen-dialog form { display: flex; flex-direction: column; gap: 14px; }
+.gen-dialog h2 { margin-bottom: 0; }
+.gen-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.gen-field > span { font-size: 13px; font-weight: 700; color: var(--muted); }
+.gen-field select.field { padding: 12px 14px; }
+.gen-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.gen-row .gen-field { min-width: 120px; }
+.gen-ideas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; }
+.gen-ideas .pill { cursor: pointer; border: 0; font: inherit; font-size: 13px; }
+.gen-ideas .pill:disabled { opacity: .5; cursor: default; }
+.gen-wait { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.spinner.small { width: 20px; height: 20px; border-width: 3px; flex: none; }
+.gen-dialog .error { margin: 0; color: var(--bad); }
+.btn.ai { background: linear-gradient(135deg, #d4cdf8, #f7bddf); color: var(--ink); }

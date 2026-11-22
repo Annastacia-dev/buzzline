@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { blankQuestion, sampleQuiz } from '@/lib/sample';
 import type { Quiz, Question } from '@/lib/types';
 import { useAlertDialog } from '@/lib/dialog';
+import GenerateDialog from './GenerateDialog';
 
 const KEY = 'bz.quizzes';
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -13,6 +14,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [dialog, ask] = useAlertDialog();
   const [selId, setSelId] = useState<string>('');
+  const [generating, setGenerating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,9 +65,11 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   return (
     <div className="studio">
       {dialog}
+      {generating && <GenerateDialog onClose={() => setGenerating(false)} onDone={q => { setGenerating(false); addQuiz(q); }} />}
       <aside className="side">
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <button className="btn small" onClick={() => addQuiz()}>+ New quiz</button>
+        <button className="btn small ai" onClick={() => setGenerating(true)}>✨ Generate with AI</button>
         <h3>Your quizzes</h3>
         <div className="qlist">
           {quizzes.map(q => (
