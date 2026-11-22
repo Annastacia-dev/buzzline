@@ -75,11 +75,17 @@ type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => v
 function Lobby({ h, act }: ScreenProps) {
   const [urls, setUrls] = useState<string[] | null>(null);
   const [qr, setQr] = useState('');
-  useEffect(() => { fetch('/api/info').then(r => r.json()).then(d => setUrls(d.urls)).catch(() => setUrls([])); }, []);
+  // Only a host page opened on this machine (localhost) needs the LAN address so phones can reach it.
+  // Anywhere else (a deployed site, or a LAN IP) the address in the browser bar is already the right one.
+  useEffect(() => {
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+    if (!local) { setUrls([]); return; }
+    fetch('/api/info').then(r => r.json()).then(d => setUrls(d.urls)).catch(() => setUrls([]));
+  }, []);
   const bare = (u: string) => u.replace(/^https?:\/\//, '') + '/join';
   const joinUrl = urls?.[0] ?? (typeof location !== 'undefined' ? location.origin : '');
 
-  // QR opens the join page with the PIN filled in. Wait for the LAN address: a localhost QR is useless to phones.
+  // QR opens the join page with the PIN filled in. Waits for the address so it never encodes the wrong one.
   useEffect(() => {
     if (!urls) return;
     QRCode.toString(`${joinUrl}/join?pin=${h.pin}`, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#161616', light: '#ffffff' } })

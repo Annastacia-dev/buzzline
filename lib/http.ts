@@ -8,6 +8,7 @@ export function post(fn: (body: Record<string, unknown>) => unknown) {
       return Response.json((await fn(body)) ?? { ok: true });
     } catch (e) {
       const status = e instanceof GameError ? e.status : 500;
+      if (status === 500) console.error(e);
       return Response.json({ error: e instanceof Error ? e.message : 'Server error' }, { status });
     }
   };

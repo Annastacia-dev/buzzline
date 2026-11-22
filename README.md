@@ -4,6 +4,9 @@ A live multiplayer quiz game. One big screen hosts; players join on their phones
 
 ## Run it
 
+1. Create a Supabase project and run `supabase/migrations/*.sql` in its SQL editor (or `supabase db push`).
+2. Copy `.env.example` to `.env.local` and fill in the three values. On Vercel, add the same three env vars.
+
 This project uses [pnpm](https://pnpm.io) (pinned in `package.json`). If you don't have it: `corepack enable`.
 
 ```bash
@@ -24,9 +27,11 @@ plus a streak bonus of +100 for each answer in a row (up to +500). A round ends 
 
 ## How it's built
 
-- **Next.js App Router**. Pages: `app/page.tsx` (join), `app/play` (phone), `app/host` (quiz studio + stage).
-- **Real-time** uses Server-Sent Events from `app/api/events/route.ts`; actions are plain POST route handlers.
-- **Game state** is in memory in `lib/game.ts`. That means it needs a single long-running Node process
-  (`next dev` / `next start`, or a VPS/Render/Railway/Fly). It will **not** work on serverless hosts like Vercel
-  without moving state to something shared (for example Redis pub/sub).
+- **Next.js App Router**. Pages: `app/page.tsx` (landing), `app/join`, `app/play` (phone), `app/host` (quiz studio + stage).
+- **Game state** lives in Supabase (`buzz_games` and `buzz_players` tables, schema in `supabase/migrations/`).
+  Route handlers use the secret key; browsers never touch the tables (RLS is on with no policies).
+  Scoring runs in the `buzz_end_question()` database function so concurrent requests can't double-score.
+- **Real-time** uses Supabase Realtime Broadcast: after each change the server pings channel `buzzline:game:<PIN>`,
+  and each screen refetches its own view from `/api/view`. Question timers need no background job:
+  the first read after the buzzer ends the question. This makes it safe on serverless hosts like Vercel.
 - **Quizzes** are saved in the host browser's localStorage. Use Export/Import JSON to move them between machines.
