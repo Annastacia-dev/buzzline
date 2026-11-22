@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Quiz } from '@/lib/types';
 import { Sticker, type IconName } from '@/lib/deco';
+import { QuizSelect } from '@/lib/select';
 
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90];
 const COUNTS = [5, 8, 10, 12, 15, 20];
@@ -13,7 +14,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
   const ref = useRef<HTMLDialogElement>(null);
   const [topic, setTopic] = useState('');
   const [count, setCount] = useState(10);
-  const [time, setTime] = useState(20);
+  const [time, setTime] = useState(10);
   const [difficulty, setDifficulty] = useState('mixed');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -64,24 +65,21 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
         </div>
 
         <div className="gen-row">
-          <label className="gen-field">
-            <span>Questions</span>
-            <select className="field" value={count} onChange={e => setCount(Number(e.target.value))} disabled={busy}>
-              {COUNTS.map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </label>
-          <label className="gen-field">
-            <span>Seconds each</span>
-            <select className="field" value={time} onChange={e => setTime(Number(e.target.value))} disabled={busy}>
-              {TIMES.map(t => <option key={t} value={t}>{t}s</option>)}
-            </select>
-          </label>
-          <label className="gen-field">
-            <span>Difficulty</span>
-            <select className="field" value={difficulty} onChange={e => setDifficulty(e.target.value)} disabled={busy}>
-              {DIFFICULTIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
-          </label>
+          <div className="gen-field">
+            <span id="gen-count">Questions</span>
+            <QuizSelect labelledBy="gen-count" value={count} onChange={setCount} disabled={busy}
+              options={COUNTS.map(n => ({ value: n, label: String(n) }))} />
+          </div>
+          <div className="gen-field">
+            <span id="gen-time">Seconds each</span>
+            <QuizSelect labelledBy="gen-time" icon="⏱" value={time} onChange={setTime} disabled={busy}
+              options={TIMES.map(t => ({ value: t, label: `${t}s` }))} />
+          </div>
+          <div className="gen-field">
+            <span id="gen-diff">Difficulty</span>
+            <QuizSelect labelledBy="gen-diff" value={difficulty} onChange={setDifficulty} disabled={busy}
+              options={DIFFICULTIES.map(([v, l]) => ({ value: v as string, label: l }))} />
+          </div>
         </div>
 
         {error && <p className="error" role="alert">{error}</p>}

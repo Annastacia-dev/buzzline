@@ -1,5 +1,10 @@
 export type State = 'lobby' | 'question' | 'reveal' | 'leaderboard' | 'end';
 
+/** Every question shows for READY_MS (with a 3-2-1) before answers open. */
+export const READY_MS = 3000;
+/** The first question also waits INTRO_MS before that, behind a "get ready" countdown after Start game. */
+export const INTRO_MS = 10000;
+
 export interface Question { q: string; answers: string[]; correct: number; time: number; double?: boolean }
 export interface Quiz { id?: string; title: string; questions: Question[] }
 

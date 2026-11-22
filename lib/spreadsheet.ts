@@ -10,10 +10,10 @@ const MAX_ROWS = 500;
 
 export interface SheetImport { questions: Question[]; skipped: string[] }
 
-/** Nearest allowed time limit; 20s when the cell is empty or not a number. */
+/** Nearest allowed time limit; 10s (the default) when the cell is empty or not a number. */
 export function snapTime(v: unknown) {
   const n = Number(String(v ?? '').replace(/[^\d.]/g, ''));
-  if (!n) return 20;
+  if (!n) return 10;
   return TIMES.reduce((best, t) => (Math.abs(t - n) < Math.abs(best - n) ? t : best), TIMES[0]);
 }
 

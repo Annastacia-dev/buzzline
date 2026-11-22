@@ -21,14 +21,14 @@ pnpm dev           # or: pnpm build && pnpm start
 
 ## How it plays
 
-Lobby → 3‑second "get ready" → question with timer → answer reveal and chart → scoreboard → … → podium.
+Lobby → 10‑second countdown after Start game → 3‑second "get ready" → question with timer → answer reveal and chart → scoreboard → … → podium.
 
 Players get a random avatar when they join and can pick another in the lobby. The big screen plays music
 and sound effects for each stage (lobby, countdown, question, last five seconds, reveal, scoreboard, podium);
 phones play short effects only. Both have a mute button. Everything is synthesized in `lib/sound.tsx`, no audio files.
 
 **Auto** (top bar) moves from the answer reveal to the scoreboard to the next question by itself; the host picks how many
-seconds each of those screens stays up (6 by default).
+seconds each of those screens stays up (3 by default).
 
 Scoring: a correct answer is worth 500–1000 points (faster is more), ×2 on double-points questions,
 plus a streak bonus of +100 for each answer in a row (up to +500). A round ends early once everyone has answered.
@@ -56,3 +56,5 @@ Each server instance allows 10 generations per visitor per hour. Without `ANTHRO
 - **Quizzes** are saved in the host browser's localStorage. **Import spreadsheet** creates a quiz from a Kahoot-format `.xlsx`
   (header row Question, Answer 1–4, Time limit (seconds), Correct answer(s), with Kahoot's official template also accepted;
   read in the browser by `lib/spreadsheet.ts`). Rows it can't use are listed after the import.
+  **Download spreadsheet template** under the button gives a ready `.xlsx` with those columns and four example questions
+  (built in the browser by `lib/template.ts`); a filled-in template also imports into Kahoot.

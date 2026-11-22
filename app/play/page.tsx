@@ -6,7 +6,7 @@ import { api, refreshGame, Shape, useGameStream, useNow } from '@/lib/client';
 import { Sound, SoundToggle } from '@/lib/sound';
 import { AVATARS, Avatar } from '@/lib/avatars';
 import { revealAtFor } from '@/lib/podium';
-import type { PlayerView, EndView } from '@/lib/types';
+import { READY_MS, type PlayerView, type EndView } from '@/lib/types';
 import { Scallop, Icon } from '@/lib/deco';
 
 type Session = { id: string; token: string; pin: string };
@@ -126,7 +126,21 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
       const mine = v.myAnswer ?? (picked?.q === v.qIndex ? picked.choice : null);
       const sending = v.myAnswer == null && picked?.q === v.qIndex && !picked.sent;
 
-      if (startsIn > 0) {
+      if (v.qIndex === 0 && startsIn > READY_MS) {
+        // After Start game: a 10-second countdown before the first question.
+        mood = 'ready';
+        const n = Math.ceil((startsIn - READY_MS) / 1000);
+        body = (
+          <div className="msg">
+            <span className="pill">{v.total} question{v.total === 1 ? '' : 's'}</span>
+            <h1>Get <em>ready!</em></h1>
+            <Scallop color="var(--paper)" size={150} key={n} className="pop">
+              <span className="bignum">{n}</span>
+            </Scallop>
+            <p>Eyes on the big screen. The first question is coming.</p>
+          </div>
+        );
+      } else if (startsIn > 0) {
         mood = 'ready';
         body = (
           <div className="msg">

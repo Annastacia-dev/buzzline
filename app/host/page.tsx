@@ -6,8 +6,9 @@ import { Avatar } from '@/lib/avatars';
 import { Confetti } from '@/lib/confetti';
 import { podiumTimeline } from '@/lib/podium';
 import { useAlertDialog } from '@/lib/dialog';
+import { QuizSelect } from '@/lib/select';
 import Analytics from './Analytics';
-import type { HostView, EndView, Quiz } from '@/lib/types';
+import { READY_MS, type HostView, type EndView, type Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
 import Studio from './Studio';
@@ -92,13 +93,8 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
             <span className="switch" aria-hidden />Auto
           </button>
           {auto && (
-            <label className="pill auto-secs" title="Seconds each answer reveal and scoreboard stays up before moving on">
-              <span className="sr-only">Seconds before moving on</span>
-              <span aria-hidden>⏱</span>
-              <select value={autoSecs} onChange={e => setAutoSecs(Number(e.target.value))}>
-                {AUTO_CHOICES.map(n => <option key={n} value={n}>{n}s</option>)}
-              </select>
-            </label>
+            <QuizSelect size="sm" icon="⏱" className="auto-secs" label="Seconds before auto mode moves on" value={autoSecs}
+              onChange={setAutoSecs} options={AUTO_CHOICES.map(n => ({ value: n, label: `${n}s` }))} />
           )}
           <SoundToggle />
           {/* On the podium the game is over: no "End game", the report instead. */}
@@ -124,9 +120,9 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
 
 type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void; busy: string; auto?: boolean; autoSecs?: number };
 
-/** Seconds the reveal and scoreboard stay up in auto mode before moving on: the host's choice, 6 by default. */
+/** Seconds the reveal and scoreboard stay up in auto mode before moving on: the host's choice, 3 by default. */
 const AUTO_CHOICES = [3, 5, 6, 8, 10, 15, 20, 30];
-const DEFAULT_AUTO_SECS = 6;
+const DEFAULT_AUTO_SECS = 3;
 
 /**
  * The "move on" button. In auto mode it fills up over `secs` and presses itself; clicking still works,
@@ -239,15 +235,41 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
   const lastTick = useRef(0);
   const ready = Math.ceil(startsIn / 1000);
   const open = startsIn <= 0;
+  // Before the first question: a 10-second "get ready" countdown (lobby music keeps playing), then the usual 3-2-1.
+  const intro = h.qIndex === 0 && startsIn > READY_MS;
+  const introLeft = Math.ceil((startsIn - READY_MS) / 1000);
 
   // Get ready: whoosh in, beep on 3-2-1. Open: "go" and the question loop, faster for the last 5 seconds.
-  useEffect(() => { Music.stop(); Sound.whoosh(); }, []);
-  useEffect(() => { if (!open && ready > 0 && ready <= 3) Sound.count(); }, [open, ready]);
+  useEffect(() => { if (!intro) { Music.stop(); Sound.whoosh(); } }, [intro]);
+  useEffect(() => { if (intro && introLeft > 0) (introLeft <= 3 ? Sound.count : Sound.tick)(); }, [intro, introLeft]);
+  useEffect(() => { if (!intro && !open && ready > 0 && ready <= 3) Sound.count(); }, [intro, open, ready]);
   useEffect(() => { if (open && left > 0) { Sound.go(); Music.play('question'); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (open && secs <= 5 && secs > 0 && secs !== lastTick.current) { lastTick.current = secs; Sound.tick(); Music.play('hurry'); }
     if (open && secs === 0) Music.stop();
   }, [secs, open]);
+
+  if (intro) {
+    return (
+      <div className="countdown-overlay intro">
+        <Blob color="var(--pink)" size={340} style={{ position: 'absolute', top: -90, left: -70 }} />
+        <Scallop color="var(--butter)" size={280} rotate={14} style={{ position: 'absolute', bottom: -70, right: -50 }} />
+        <Sticker text="get ready · get ready · get ready · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-10}
+          className="intro-sticker" style={{ position: 'absolute', top: '5%', right: '4%' }} />
+        <div style={{ display: 'grid', gap: 18, justifyItems: 'center', padding: 24, position: 'relative' }}>
+          <span className="pill">{h.total} question{h.total === 1 ? '' : 's'} · {h.players.length} player{h.players.length === 1 ? '' : 's'}</span>
+          <h1 style={{ fontSize: 'clamp(36px, 6vw, 84px)', maxWidth: 1100 }}>{h.title}</h1>
+          <p className="intro-sub">Phones ready? The first question is coming in…</p>
+          <Scallop color="var(--paper)" size={210} key={introLeft} className="pop" aria-live="off">
+            <span className="bignum" style={{ fontSize: 110 }}>{introLeft}</span>
+          </Scallop>
+          <div className="intro-avatars" aria-label={`${h.players.length} players`}>
+            {h.players.slice(0, 24).map((p, i) => <Avatar key={p.id} i={p.avatar} size={44} style={{ animationDelay: `${(i % 12) * 60}ms` }} className="bob" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (startsIn > 0) {
     return (

@@ -3,7 +3,7 @@
 // can't apply the same step twice. Scoring runs in the buzz_end_question() database function.
 import crypto from 'crypto';
 import { db, notify } from './supabase-server';
-import type { Quiz, Question, HostView, PlayerView, State, GameAnalytics } from './types';
+import { READY_MS, INTRO_MS, type Quiz, type Question, type HostView, type PlayerView, type State, type GameAnalytics } from './types';
 import { avatarCount, validAvatar } from './avatars';
 
 interface GameRow {
@@ -17,7 +17,6 @@ interface PlayerRow {
   joined_at: string;
 }
 
-const READY_MS = 3000;  // "get ready" before answers open
 const GRACE_MS = 300;   // network slack after the buzzer
 const MAX_PLAYERS = 200;
 
@@ -68,8 +67,10 @@ const ranked = (ps: PlayerRow[]) => [...ps].sort((a, b) => b.score - a.score || 
 
 /** Moves a game from (fromState, fromIndex) to the next question. Returns false if someone else already did. */
 async function startQuestion(g: GameRow, fromState: State) {
+  // Starting from the lobby adds the 10-second "get ready" countdown before the first question.
+  const wait = READY_MS + (fromState === 'lobby' ? INTRO_MS : 0);
   const { data, error } = await db().from('buzz_games')
-    .update({ state: 'question', q_index: g.q_index + 1, q_start: new Date(Date.now() + READY_MS).toISOString(), updated_at: new Date().toISOString() })
+    .update({ state: 'question', q_index: g.q_index + 1, q_start: new Date(Date.now() + wait).toISOString(), updated_at: new Date().toISOString() })
     .eq('pin', g.pin).eq('state', fromState).eq('q_index', g.q_index)
     .select('pin');
   fail(error);

@@ -1,6 +1,6 @@
 import type { Quiz, Question } from './types';
 
-export const blankQuestion = (): Question => ({ q: '', answers: ['', '', '', ''], correct: 0, time: 20 });
+export const blankQuestion = (): Question => ({ q: '', answers: ['', '', '', ''], correct: 0, time: 10 });
 
 export const sampleQuiz = (): Quiz => ({
   id: 'sample',

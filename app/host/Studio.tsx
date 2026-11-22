@@ -6,6 +6,8 @@ import type { Quiz, Question } from '@/lib/types';
 import { useAlertDialog } from '@/lib/dialog';
 import GenerateDialog from './GenerateDialog';
 import { importSpreadsheet, TIMES } from '@/lib/spreadsheet';
+import { downloadTemplate } from '@/lib/template';
+import { QuizSelect } from '@/lib/select';
 
 const KEY = 'bz.quizzes';
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -80,6 +82,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         <button className="btn small" onClick={() => addQuiz()}>+ New quiz</button>
         <button className="btn small ai" onClick={() => setGenerating(true)}>✨ Generate with AI</button>
         <button className="btn ghost small" onClick={() => fileRef.current?.click()} title="Kahoot-format .xlsx: Question, Answer 1–4, Time limit, Correct answer(s)">⇪ Import spreadsheet</button>
+        <button type="button" className="linkbtn" onClick={downloadTemplate}>Download spreadsheet template</button>
         <h3>Your quizzes</h3>
         <div className="qlist">
           {quizzes.map(q => (
@@ -110,9 +113,9 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
               <div className="qcard-head">
                 <span>Question {i + 1}</span>
                 <span className="spacer" />
-                <label>⏱ <select value={q.time} onChange={e => setQ(i, x => { x.time = Number(e.target.value); })}>
-                  {(TIMES.includes(q.time) ? TIMES : [...TIMES, q.time].sort((a, b) => a - b)).map(t => <option key={t} value={t}>{t}s</option>)}
-                </select></label>
+                <QuizSelect size="sm" icon="⏱" label={`Question ${i + 1} time limit`} value={q.time}
+                  onChange={t => setQ(i, x => { x.time = t; })}
+                  options={(TIMES.includes(q.time) ? TIMES : [...TIMES, q.time].sort((a, b) => a - b)).map(t => ({ value: t, label: `${t}s` }))} />
                 <label><input type="checkbox" checked={!!q.double} onChange={e => setQ(i, x => { x.double = e.target.checked; })} /> 2× points</label>
                 <button className="iconbtn" title="Toggle 2 / 4 answers" onClick={() => setQ(i, x => {
                   if (x.answers.length === 4) { x.answers = ['True', 'False']; x.correct = Math.min(x.correct, 1); }
