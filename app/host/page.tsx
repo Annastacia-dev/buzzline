@@ -1,11 +1,12 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { api, refreshGame, Shape, useGameStream, useNow, type Stamped } from '@/lib/client';
 import { Music, Sound, SoundToggle } from '@/lib/sound';
 import { Avatar } from '@/lib/avatars';
 import { Confetti } from '@/lib/confetti';
 import { podiumTimeline } from '@/lib/podium';
 import { useAlertDialog } from '@/lib/dialog';
+import Analytics from './Analytics';
 import type { HostView, EndView, Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
@@ -51,6 +52,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   useEffect(() => { setAutoState(localStorage.getItem('bz.auto') === '1'); }, []);
   const setAuto = (on: boolean) => { setAutoState(on); localStorage.setItem('bz.auto', on ? '1' : '0'); };
   const [dialog, ask] = useAlertDialog();
+  const [report, setReport] = useState(false);
   const step = v && 'qIndex' in v ? `${v.state}:${v.qIndex}` : v?.state;
 
   useEffect(() => { if (v?.state === 'closed') onLeave(); }, [v?.state, onLeave]);
@@ -82,9 +84,12 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
             <span className="switch" aria-hidden />Auto
           </button>
           <SoundToggle />
-          <button className="btn ghost small" onClick={async () => {
-            if (await ask({ title: 'End this game?', message: 'Everyone will be sent out of the game and the scores will be lost.', confirm: 'End game', cancel: 'Keep playing', danger: true })) act('end');
-          }}>End game</button>
+          {/* On the podium the game is over: no "End game", the report instead. */}
+          {h.state === 'end'
+            ? <button className="btn small" onClick={() => setReport(true)}>Analytics</button>
+            : <button className="btn ghost small" onClick={async () => {
+                if (await ask({ title: 'End this game?', message: 'Everyone will be sent out of the game and the scores will be lost.', confirm: 'End game', cancel: 'Keep playing', danger: true })) act('end');
+              }}>End game</button>}
         </div>
       </div>
       {dialog}
@@ -93,7 +98,9 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
       {h.state === 'question' && <QuestionScreen key={h.qIndex} h={h} act={act} busy={busy} />}
       {h.state === 'reveal' && <Reveal h={h} act={act} busy={busy} auto={auto} />}
       {h.state === 'leaderboard' && <Leaderboard h={h} act={act} busy={busy} auto={auto} />}
-      {h.state === 'end' && <Podium h={h} onLeave={() => act('end')} />}
+      {/* Leaving the podium keeps the game, so phones keep their results; idle games are cleaned up after 6 hours. */}
+      {h.state === 'end' && <Podium h={h} onLeave={onLeave} onReport={() => setReport(true)} />}
+      {report && <Analytics pin={session.pin} token={session.token} onClose={() => setReport(false)} />}
     </div>
   );
 }
@@ -324,18 +331,36 @@ function Leaderboard({ h, act, busy, auto }: ScreenProps) {
 const ORD = ['', '1st', '2nd', '3rd'];
 
 /** End of game: 3rd, then 2nd, then a longer drumroll and 1st with confetti. Timing shared with phones (lib/podium). */
-function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
+type Light = 'off' | 'sweep' | 'land' | 'fade';
+
+function Crown() {
+  return (
+    <svg className="crown" viewBox="0 0 72 50" width="76" height="53" aria-hidden>
+      <path d="M8 42 5 15l15 13L36 7l16 21 15-13-3 27z" fill="#f6c945" stroke="#161616" strokeWidth="3.5" strokeLinejoin="round" />
+      <rect x="8" y="39" width="56" height="8" rx="4" fill="#f6c945" stroke="#161616" strokeWidth="3.5" />
+      <circle cx="5" cy="13" r="4.5" fill="#f7bddf" stroke="#161616" strokeWidth="3" />
+      <circle cx="36" cy="6" r="4.5" fill="#d4cdf8" stroke="#161616" strokeWidth="3" />
+      <circle cx="67" cy="13" r="4.5" fill="#bfdc94" stroke="#161616" strokeWidth="3" />
+    </svg>
+  );
+}
+
+function Podium({ h, onLeave, onReport }: { h: Stamped<HostView>; onLeave: () => void; onReport: () => void }) {
   const lb = h.leaderboard ?? [];
   const { steps, done } = useMemo(() => podiumTimeline(h.players.length), [h.players.length]);
   const [shown, setShown] = useState<number[]>([]); // ranks revealed so far
   const [rolling, setRolling] = useState(0);        // rank whose drumroll is playing
   const [finished, setFinished] = useState(false);
   const [boom, setBoom] = useState(0);
+  const [light, setLight] = useState<Light>('off'); // spotlight for 1st place
   const timers = useRef<number[]>([]);
+  const spot = useRef<HTMLDivElement>(null);
+  const firstSpot = useRef<HTMLDivElement>(null);
 
   const skip = () => {
     timers.current.forEach(clearTimeout);
     Sound.cutRoll();
+    setLight('off');
     setRolling(0); setShown([1, 2, 3]); setFinished(true); setBoom(b => b + 1);
     Music.play('podium');
   };
@@ -344,18 +369,39 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
     Music.stop();
     const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
     for (const st of steps) {
-      at(st.rollAt, () => { setRolling(st.rank); Sound.roll(st.roll / 1000); });
+      at(st.rollAt, () => {
+        setRolling(st.rank); Sound.roll(st.roll / 1000);
+        if (st.rank === 1) { setLight('sweep'); Sound.lightsOut(); } // lights down, spotlight searches the stage
+      });
       at(st.at, () => {
         setRolling(0);
         setShown(x => [...x, st.rank]);
-        if (st.rank === 1) { Sound.fanfare(); setBoom(b => b + 1); } else Sound.place();
+        if (st.rank === 1) { Sound.fanfare(); setBoom(b => b + 1); setLight('land'); } else Sound.place();
       });
+    }
+    const first = steps.find(st => st.rank === 1);
+    if (first) {
+      at(first.at + 2600, () => setLight('fade')); // lights back up
+      at(first.at + 3400, () => setLight('off'));
     }
     at(done + 1000, () => setFinished(true));
     at(done + 2600, () => Music.play('podium'));
     const ts = timers.current;
     return () => ts.forEach(clearTimeout);
   }, [steps, done]);
+
+  // The spotlight lands on the winner: freeze it where the sweep left it, then glide onto 1st place.
+  useLayoutEffect(() => {
+    const el = spot.current, target = firstSpot.current;
+    if (light !== 'land' || !el || !target) return;
+    const cs = getComputedStyle(el);
+    el.style.left = cs.left; el.style.top = cs.top;
+    el.style.animation = 'none';
+    void el.offsetWidth; // apply the frozen position before transitioning away from it
+    const r = target.getBoundingClientRect();
+    el.style.left = `${r.left + r.width / 2}px`;
+    el.style.top = `${r.bottom - 330}px`; // around the crown, avatar and name once the pedestal has grown
+  }, [light]);
 
   const last = [3, 2, 1].filter(r => shown.includes(r)).pop();
   const headline = shown.includes(1) && lb[0] ? <>{lb[0].name} <em>wins!</em></>
@@ -373,6 +419,7 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
   return (
     <>
       <Confetti fire={boom} />
+      {light !== 'off' && <div ref={spot} className={`spot ${light}`} aria-hidden />}
       {finished && <>
         <Sticker text="good game · well played · " icon="trophy" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-12}
           className="pop" style={{ position: 'absolute', top: 90, left: '8%' }} />
@@ -381,7 +428,7 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
       </>}
       <div style={{ textAlign: 'center', position: 'relative' }}>
         <div className="label">{h.title}</div>
-        <h1 key={String(rolling) + shown.join()} className="podium-title pop">{headline}</h1>
+        <h1 key={String(rolling) + shown.join()} className={`podium-title pop ${light === 'sweep' || light === 'land' ? 'lit' : ''}`}>{headline}</h1>
       </div>
       <div className="podium">
         {spots.map(sp => {
@@ -389,8 +436,10 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
           if (!p) return <div key={sp.rank} />;
           const on = shown.includes(sp.rank);
           return (
-            <div key={sp.rank} className={`${on ? 'in' : ''} ${rolling === sp.rank ? 'suspense' : ''} ${sp.rank === 1 ? 'first' : ''}`}>
+            <div key={sp.rank} ref={sp.rank === 1 ? firstSpot : undefined}
+              className={`${on ? 'in' : ''} ${rolling === sp.rank ? 'suspense' : ''} ${sp.rank === 1 ? 'first' : ''}`}>
               {on && <div className="who">
+                {sp.rank === 1 && <Crown />}
                 <Avatar i={p.avatar} size={sp.rank === 1 ? 104 : 80} className="bob" />
                 <div className="name">{p.name}</div>
               </div>}
@@ -413,7 +462,10 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
       {/* Skip sits bottom-right, never where "Back" appears, so a late click can't end the game by accident. */}
       <div style={{ textAlign: finished ? 'center' : 'right', minHeight: 52 }}>
         {finished
-          ? <button className="btn rise" onClick={onLeave}>Back to my quizzes</button>
+          ? <span style={{ display: 'inline-flex', gap: 10 }}>
+              <button className="btn light rise" onClick={onReport}>See analytics</button>
+              <button className="btn rise" onClick={onLeave}>Back to my quizzes</button>
+            </span>
           : <button className="btn ghost small" onClick={skip}>Skip reveal →</button>}
       </div>
     </>

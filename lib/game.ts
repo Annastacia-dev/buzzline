@@ -3,7 +3,7 @@
 // can't apply the same step twice. Scoring runs in the buzz_end_question() database function.
 import crypto from 'crypto';
 import { db, notify } from './supabase-server';
-import type { Quiz, Question, HostView, PlayerView, State } from './types';
+import type { Quiz, Question, HostView, PlayerView, State, GameAnalytics } from './types';
 import { avatarCount, validAvatar } from './avatars';
 
 interface GameRow {
@@ -13,6 +13,7 @@ interface PlayerRow {
   id: string; pin: string; token: string; name: string; avatar: number; score: number; streak: number; rank: number; prev_rank: number;
   answer: { q: number; choice: number; ms: number } | null;
   last: { correct: boolean; points: number; bonus: number; missed?: boolean } | null;
+  history: { q: number; choice: number | null; ms: number | null; correct: boolean; points: number }[];
   joined_at: string;
 }
 
@@ -288,4 +289,58 @@ export async function getView(params: URLSearchParams): Promise<HostView | Playe
 
   const p = ps.find(x => x.id === params.get('id') && x.token === params.get('token'));
   return p ? playerView(g, ps, p) : { state: 'kicked' };
+}
+
+// ---------- analytics ----------
+
+const mean = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+
+/** The host's report for a game: per-question and per-player results. Host only. */
+export async function getAnalytics(pin: unknown, tok: unknown): Promise<GameAnalytics> {
+  const g = await mustGame(pin);
+  if (g.host_token !== tok) throw new GameError('Not the host', 403);
+  const ps = await loadPlayers(g.pin);
+  // Questions that have been scored: all up to the current one, unless it's still open.
+  const scored = g.state === 'lobby' ? 0 : g.state === 'question' ? g.q_index : g.q_index + 1;
+
+  const questions = g.quiz.questions.slice(0, scored).map((q, i) => {
+    const rows = ps.map(p => ({ p, h: (p.history ?? []).find(h => h.q === i) })).filter(r => r.h);
+    const answered = rows.filter(r => r.h!.choice != null);
+    const right = answered.filter(r => r.h!.correct);
+    const fastest = right.reduce<{ name: string; ms: number } | null>(
+      (best, r) => (best && best.ms <= r.h!.ms! ? best : { name: r.p.name, ms: r.h!.ms! }), null);
+    return {
+      q: q.q, answers: q.answers, correct: q.correct, double: q.double, time: q.time,
+      counts: q.answers.map((_, c) => answered.filter(r => r.h!.choice === c).length),
+      answered: answered.length, correctCount: right.length, missed: rows.length - answered.length, players: rows.length,
+      avgMs: mean(answered.map(r => r.h!.ms!)), fastest,
+    };
+  });
+
+  const players = ranked(ps).map((p, i) => {
+    const hist = [...(p.history ?? [])].sort((a, b) => a.q - b.q);
+    let run = 0, bestStreak = 0;
+    for (const h of hist) { run = h.correct ? run + 1 : 0; bestStreak = Math.max(bestStreak, run); }
+    const answered = hist.filter(h => h.choice != null);
+    return {
+      name: p.name, avatar: p.avatar, rank: i + 1, score: p.score,
+      correct: hist.filter(h => h.correct).length, answered: answered.length,
+      avgMs: mean(answered.map(h => h.ms!)), bestStreak,
+    };
+  });
+
+  const total = questions.reduce((a, q) => a + q.players, 0);
+  const rate = (q: (typeof questions)[number]) => (q.players ? q.correctCount / q.players : 0);
+  const byRate = questions.map((q, i) => ({ i, r: rate(q) })).sort((a, b) => a.r - b.r);
+  return {
+    title: g.quiz.title,
+    summary: {
+      players: ps.length, questions: questions.length,
+      accuracy: total ? questions.reduce((a, q) => a + q.correctCount, 0) / total : 0,
+      avgMs: mean(ps.flatMap(p => (p.history ?? []).filter(h => h.q < scored && h.ms != null).map(h => h.ms!))),
+      hardest: byRate.length > 1 ? byRate[0].i : null,
+      easiest: byRate.length > 1 ? byRate[byRate.length - 1].i : null,
+    },
+    questions, players,
+  };
 }

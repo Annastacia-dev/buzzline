@@ -278,6 +278,8 @@ export const Sound = {
     setTimeout(() => bus.disconnect(), 400);
     rollBus = undefined;
   },
+  /** Stage lights cut for the 1st-place spotlight: a low clunk. */
+  lightsOut: fx(t => { tone(90, t, 0.45, { vol: 0.5, glide: 38 }); hiss(t, 0.18, { vol: 0.25, type: 'lowpass', freq: 900 }); }),
   /** Podium place revealed (3rd and 2nd): bright brass stab. */
   place: fx(t => {
     [523, 659, 784].forEach(f => { tone(f, t, 0.5, { type: 'sawtooth', vol: 0.06, filter: 2400, attack: 0.015 }); tone(f * 2, t, 0.35, { type: 'triangle', vol: 0.05 }); });

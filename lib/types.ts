@@ -24,3 +24,20 @@ export interface PlayerView {
 
 /** Terminal messages pushed when a game ends or a player is removed. */
 export type EndView = { state: 'closed' | 'kicked' };
+
+/** End-of-game report for the host. Times in ms. Only scored questions are included. */
+export interface GameAnalytics {
+  title: string;
+  summary: { players: number; questions: number; accuracy: number; avgMs: number | null; hardest: number | null; easiest: number | null };
+  questions: {
+    q: string; answers: string[]; correct: number; double?: boolean; time: number;
+    counts: number[];          // players per answer
+    answered: number; correctCount: number; missed: number; players: number;
+    avgMs: number | null;      // over players who answered
+    fastest: { name: string; ms: number } | null; // fastest correct answer
+  }[];
+  players: {
+    name: string; avatar: number; rank: number; score: number;
+    correct: number; answered: number; avgMs: number | null; bestStreak: number;
+  }[];
+}
