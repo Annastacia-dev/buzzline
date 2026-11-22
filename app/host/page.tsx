@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { api, Shape, Sound, useGameStream, useNow, type Stamped } from '@/lib/client';
+import { api, refreshGame, Shape, useGameStream, useNow, type Stamped } from '@/lib/client';
+import { Music, Sound, SoundToggle } from '@/lib/sound';
+import { Avatar } from '@/lib/avatars';
 import type { HostView, EndView, Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
@@ -39,15 +41,25 @@ export default function HostPage() {
 function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void }) {
   const v = useGameStream<HostView | EndView>({ ...session, role: 'host' });
   const [err, setErr] = useState('');
+  // The button that was just pressed, shown as pending until the screen moves on.
+  const [busy, setBusy] = useState('');
+  const step = v && 'qIndex' in v ? `${v.state}:${v.qIndex}` : v?.state;
 
   useEffect(() => { if (v?.state === 'closed') onLeave(); }, [v?.state, onLeave]);
+  useEffect(() => { setBusy(''); }, [step]);
+  useEffect(() => () => Music.stop(), []);
   if (!v || v.state === 'closed' || v.state === 'kicked') return <div className="center"><div className="spinner" /></div>;
   const h = v as Stamped<HostView>;
 
   const act = async (action: string, extra: object = {}) => {
+    const moves = action === 'start' || action === 'next' || action === 'skip';
+    if (moves && busy) return; // already on its way
     setErr('');
-    try { await api('/api/host', { ...session, action, ...extra }); }
-    catch (e) { setErr((e as Error).message); }
+    if (moves) { setBusy(action); Sound.lock(); }
+    try {
+      await api('/api/host', { ...session, action, ...extra });
+      refreshGame(); // don't wait for the realtime ping to show our own move
+    } catch (e) { setErr((e as Error).message); setBusy(''); }
   };
 
   return (
@@ -57,24 +69,32 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {h.qIndex >= 0 && <span className="pill">Question {Math.min(h.qIndex + 1, h.total)} / {h.total}</span>}
           <span className="pill">PIN {h.pin}</span>
+          <SoundToggle />
           <button className="btn ghost small" onClick={() => confirm('End this game for everyone?') && act('end')}>End game</button>
         </div>
       </div>
       {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
-      {h.state === 'lobby' && <Lobby h={h} act={act} />}
-      {h.state === 'question' && <QuestionScreen h={h} act={act} />}
-      {h.state === 'reveal' && <Reveal h={h} act={act} />}
-      {h.state === 'leaderboard' && <Leaderboard h={h} act={act} />}
+      {h.state === 'lobby' && <Lobby h={h} act={act} busy={busy} />}
+      {h.state === 'question' && <QuestionScreen key={h.qIndex} h={h} act={act} busy={busy} />}
+      {h.state === 'reveal' && <Reveal h={h} act={act} busy={busy} />}
+      {h.state === 'leaderboard' && <Leaderboard h={h} act={act} busy={busy} />}
       {h.state === 'end' && <Podium h={h} onLeave={() => act('end')} />}
     </div>
   );
 }
 
-type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void };
+type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void; busy: string };
 
-function Lobby({ h, act }: ScreenProps) {
+function Lobby({ h, act, busy }: ScreenProps) {
   const [urls, setUrls] = useState<string[] | null>(null);
   const [qr, setQr] = useState('');
+  useEffect(() => { Music.play('lobby'); }, []);
+  // Pop for every new player.
+  const seen = useRef(h.players.length);
+  useEffect(() => {
+    if (h.players.length > seen.current) Sound.pop();
+    seen.current = h.players.length;
+  }, [h.players.length]);
   // Only a host page opened on this machine (localhost) needs the LAN address so phones can reach it.
   // Anywhere else (a deployed site, or a LAN IP) the address in the browser bar is already the right one.
   useEffect(() => {
@@ -116,12 +136,14 @@ function Lobby({ h, act }: ScreenProps) {
       <div style={{ textAlign: 'center', position: 'relative' }}><h2 style={{ fontSize: 40 }}>{h.title}</h2></div>
       <div className="stage-top" style={{ maxWidth: 1100, width: '100%', margin: '0 auto', position: 'relative' }}>
         <div className="stat"><b>{h.players.length}</b><span>player{h.players.length === 1 ? '' : 's'}</span></div>
-        <button className="btn" onClick={() => act('start')} disabled={!h.players.length} style={{ fontSize: 22, padding: '18px 44px' }}>Start game <span aria-hidden>→</span></button>
+        <button className="btn" onClick={() => act('start')} disabled={!h.players.length} aria-busy={busy === 'start'} style={{ fontSize: 22, padding: '18px 44px' }}>Start game <span aria-hidden>→</span></button>
       </div>
       <div className="chips" style={{ flex: 1, position: 'relative' }}>
         {h.players.length === 0 && <p className="muted">Waiting for players…</p>}
         {h.players.map(p => (
-          <button key={p.id} className="chip pop" title="Click to remove" onClick={() => act('kick', { playerId: p.id })}>{p.name}</button>
+          <button key={p.id} className="chip pop" title="Click to remove" onClick={() => act('kick', { playerId: p.id })}>
+            <Avatar i={p.avatar} size={36} />{p.name}
+          </button>
         ))}
       </div>
     </>
@@ -142,7 +164,7 @@ function Ring({ left, total }: { left: number; total: number }) {
   );
 }
 
-function QuestionScreen({ h, act }: ScreenProps) {
+function QuestionScreen({ h, act, busy }: ScreenProps) {
   const now = useNow(true);
   const q = h.question!;
   const elapsed = now - h.at;
@@ -150,9 +172,17 @@ function QuestionScreen({ h, act }: ScreenProps) {
   const left = Math.max(0, (h.remaining ?? 0) - elapsed);
   const secs = Math.ceil(left / 1000);
   const lastTick = useRef(0);
+  const ready = Math.ceil(startsIn / 1000);
+  const open = startsIn <= 0;
+
+  // Get ready: whoosh in, beep on 3-2-1. Open: "go" and the question loop, faster for the last 5 seconds.
+  useEffect(() => { Music.stop(); Sound.whoosh(); }, []);
+  useEffect(() => { if (!open && ready > 0 && ready <= 3) Sound.count(); }, [open, ready]);
+  useEffect(() => { if (open && left > 0) { Sound.go(); Music.play('question'); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (startsIn <= 0 && secs <= 5 && secs > 0 && secs !== lastTick.current) { lastTick.current = secs; Sound.tick(); }
-  }, [secs, startsIn]);
+    if (open && secs <= 5 && secs > 0 && secs !== lastTick.current) { lastTick.current = secs; Sound.tick(); Music.play('hurry'); }
+    if (open && secs === 0) Music.stop();
+  }, [secs, open]);
 
   if (startsIn > 0) {
     return (
@@ -182,13 +212,14 @@ function QuestionScreen({ h, act }: ScreenProps) {
       <div className="answers">
         {q.answers.map((a, i) => <div key={i} className={`tile c${i}`}><Shape i={i} /><span>{a}</span></div>)}
       </div>
-      <div style={{ textAlign: 'right' }}><button className="btn ghost small" onClick={() => act('skip')}>Skip timer →</button></div>
+      <div style={{ textAlign: 'right' }}><button className="btn ghost small" onClick={() => act('skip')} aria-busy={busy === 'skip'}>Skip timer →</button></div>
     </>
   );
 }
 
-function Reveal({ h, act }: ScreenProps) {
+function Reveal({ h, act, busy }: ScreenProps) {
   const q = h.question!;
+  useEffect(() => { Music.stop(); Sound.reveal(); }, []);
   const dist = h.distribution ?? [];
   const max = Math.max(1, ...dist);
   const [grow, setGrow] = useState(false);
@@ -218,13 +249,18 @@ function Reveal({ h, act }: ScreenProps) {
         ))}
       </div>
       <div style={{ textAlign: 'right' }}>
-        <button className="btn" onClick={() => act('next')}>{h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'}</button>
+        <button className="btn" onClick={() => act('next')} aria-busy={busy === 'next'}>{h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'}</button>
       </div>
     </>
   );
 }
 
-function Leaderboard({ h, act }: ScreenProps) {
+function Leaderboard({ h, act, busy }: ScreenProps) {
+  useEffect(() => {
+    Music.stop(); Sound.drumroll();
+    const t = setTimeout(() => Music.play('scoreboard'), 1500);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <>
       <h1 style={{ textAlign: 'center', fontSize: 64 }}>Score<em>board</em></h1>
@@ -232,6 +268,7 @@ function Leaderboard({ h, act }: ScreenProps) {
         {h.leaderboard!.map((p, i) => (
           <div key={p.name} className="row rise" style={{ animationDelay: `${i * 80}ms` }}>
             <span className="r">{i + 1}</span>
+            <Avatar i={p.avatar} size={42} />
             <span className="n">{p.name} {p.streak >= 2 && <span className="pill" title="streak" style={{ color: 'var(--pink-ink)', verticalAlign: 'middle' }}><Icon name="flame" size={14} stroke={8} />{p.streak}</span>}</span>
             {p.up > 0 && <span className="up">▲{p.up}</span>}
             {p.gained > 0 && <span className="g">+{p.gained.toLocaleString()}</span>}
@@ -239,14 +276,18 @@ function Leaderboard({ h, act }: ScreenProps) {
           </div>
         ))}
       </div>
-      <div style={{ textAlign: 'right' }}><button className="btn" onClick={() => act('next')}>Next question →</button></div>
+      <div style={{ textAlign: 'right' }}><button className="btn" onClick={() => act('next')} aria-busy={busy === 'next'}>Next question →</button></div>
     </>
   );
 }
 
 function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
   const lb = h.leaderboard ?? [];
-  useEffect(() => { Sound.fanfare(); }, []);
+  useEffect(() => {
+    Music.stop(); Sound.fanfare();
+    const t = setTimeout(() => Music.play('podium'), 2500);
+    return () => clearTimeout(t);
+  }, []);
   // Display order: 2nd, 1st, 3rd.
   const spots = [
     { p: lb[1], medal: '2nd', height: 190, color: 'var(--lilac)', delay: 600 },
@@ -263,6 +304,7 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
       <div className="podium">
         {spots.map((s, i) => s.p ? (
           <div key={i} className="rise" style={{ animationDelay: `${s.delay}ms` }}>
+            <Avatar i={s.p.avatar} size={i === 1 ? 96 : 76} className="bob" />
             <div className="name">{s.p.name}</div>
             <div className="block" style={{ height: s.height, background: s.color }}>
               <span className="m">{s.medal}</span>
@@ -275,7 +317,7 @@ function Podium({ h, onLeave }: { h: Stamped<HostView>; onLeave: () => void }) {
         <div className="board">
           {lb.slice(3).map((p, i) => (
             <div key={p.name} className="row" style={{ fontSize: 18, padding: '10px 18px' }}>
-              <span className="r">{i + 4}</span><span className="n">{p.name}</span><b>{p.score.toLocaleString()}</b>
+              <span className="r">{i + 4}</span><Avatar i={p.avatar} size={32} /><span className="n">{p.name}</span><b>{p.score.toLocaleString()}</b>
             </div>
           ))}
         </div>

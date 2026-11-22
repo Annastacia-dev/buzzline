@@ -22,6 +22,10 @@ pnpm dev           # or: pnpm build && pnpm start
 
 Lobby → 3‑second "get ready" → question with timer → answer reveal and chart → scoreboard → … → podium.
 
+Players get a random avatar when they join and can pick another in the lobby. The big screen plays music
+and sound effects for each stage (lobby, countdown, question, last five seconds, reveal, scoreboard, podium);
+phones play short effects only. Both have a mute button. Everything is synthesized in `lib/sound.tsx`, no audio files.
+
 Scoring: a correct answer is worth 500–1000 points (faster is more), ×2 on double-points questions,
 plus a streak bonus of +100 for each answer in a row (up to +500). A round ends early once everyone has answered.
 
@@ -30,8 +34,11 @@ plus a streak bonus of +100 for each answer in a row (up to +500). A round ends 
 - **Next.js App Router**. Pages: `app/page.tsx` (landing), `app/join`, `app/play` (phone), `app/host` (quiz studio + stage).
 - **Game state** lives in Supabase (`buzz_games` and `buzz_players` tables, schema in `supabase/migrations/`).
   Route handlers use the secret key; browsers never touch the tables (RLS is on with no policies).
-  Scoring runs in the `buzz_end_question()` database function so concurrent requests can't double-score.
+  Answers go through `buzz_answer()` and scoring through `buzz_end_question()`: database functions that lock
+  the game row, so simultaneous answers can't double-score or miss ending the round.
 - **Real-time** uses Supabase Realtime Broadcast: after each change the server pings channel `buzzline:game:<PIN>`,
   and each screen refetches its own view from `/api/view`. Question timers need no background job:
   the first read after the buzzer ends the question. This makes it safe on serverless hosts like Vercel.
+- **Region**: `vercel.json` runs functions in Dublin (`dub1`), next to the Supabase project (eu-west-1).
+  If your Supabase project is elsewhere, change it to the nearest Vercel region.
 - **Quizzes** are saved in the host browser's localStorage. Use Export/Import JSON to move them between machines.

@@ -4,12 +4,13 @@
 import crypto from 'crypto';
 import { db, notify } from './supabase-server';
 import type { Quiz, Question, HostView, PlayerView, State } from './types';
+import { avatarCount, validAvatar } from './avatars';
 
 interface GameRow {
   pin: string; host_token: string; quiz: Quiz; state: State; q_index: number; q_start: string | null; updated_at: string;
 }
 interface PlayerRow {
-  id: string; pin: string; token: string; name: string; score: number; streak: number; rank: number; prev_rank: number;
+  id: string; pin: string; token: string; name: string; avatar: number; score: number; streak: number; rank: number; prev_rank: number;
   answer: { q: number; choice: number; ms: number } | null;
   last: { correct: boolean; points: number; bonus: number; missed?: boolean } | null;
   joined_at: string;
@@ -124,44 +125,57 @@ export async function join(pinIn: unknown, nameIn: unknown) {
   const name = String(nameIn ?? '').trim().replace(/\s+/g, ' ').slice(0, 16);
   if (!name) throw new GameError('Pick a nickname', 400);
 
-  const { count, error: cErr } = await db().from('buzz_players').select('id', { count: 'exact', head: true }).eq('pin', g.pin);
+  const { data: taken, error: cErr } = await db().from('buzz_players').select('avatar').eq('pin', g.pin);
   fail(cErr);
-  if ((count ?? 0) >= MAX_PLAYERS) throw new GameError('Game is full');
+  const count = taken?.length ?? 0;
+  if (count >= MAX_PLAYERS) throw new GameError('Game is full');
+
+  // A random avatar nobody in this game has yet (any, once all are used).
+  const used = new Set((taken ?? []).map(p => p.avatar));
+  const free = Array.from({ length: avatarCount }, (_, i) => i).filter(i => !used.has(i));
+  const pool = free.length ? free : Array.from({ length: avatarCount }, (_, i) => i);
+  const avatar = pool[crypto.randomInt(pool.length)];
 
   const tok = token();
-  const { data, error } = await db().from('buzz_players').insert({ pin: g.pin, token: tok, name }).select('id').single();
+  const { data, error } = await db().from('buzz_players').insert({ pin: g.pin, token: tok, name, avatar }).select('id').single();
   if (error?.code === '23505') throw new GameError('That nickname is taken');
   fail(error);
   // Host refetches; lobby phones just update their player count from the ping (no refetch storm).
-  await notify(g.pin, { to: 'host', players: (count ?? 0) + 1 });
-  return { id: data!.id as string, token: tok, pin: g.pin };
+  await notify(g.pin, { to: 'host', players: count + 1 });
+  return { id: data!.id as string, token: tok, pin: g.pin, avatar };
 }
 
-export async function answer(pin: unknown, id: unknown, tok: unknown, choice: unknown) {
-  const arrived = Date.now(); // time the answer before any database round trip, so DB latency doesn't cost points
-  const g = await mustGame(pin);
-  if (g.state !== 'question') throw new GameError('Too late');
-  const q = currentQ(g);
-  const ms = arrived - openAt(g);
-  if (ms < 0) throw new GameError('Not open yet');
-  if (ms > q.time * 1000 + GRACE_MS) { await expireIfDue(g); throw new GameError('Too late'); }
-  if (!Number.isInteger(choice) || (choice as number) < 0 || (choice as number) >= q.answers.length) throw new GameError('Bad choice', 400);
-
-  // Only if this player hasn't answered this question yet.
-  const { data, error } = await db().from('buzz_players')
-    .update({ answer: { q: g.q_index, choice, ms: Math.min(ms, q.time * 1000) } })
-    .eq('id', String(id)).eq('token', String(tok)).eq('pin', g.pin)
-    .or(`answer.is.null,answer->>q.neq.${g.q_index}`)
-    .select('id');
+export async function setAvatar(pin: unknown, id: unknown, tok: unknown, avatar: unknown) {
+  if (!validAvatar(avatar)) throw new GameError('Unknown avatar', 400);
+  const { data, error } = await db().from('buzz_players').update({ avatar })
+    .eq('id', String(id)).eq('token', String(tok)).eq('pin', String(pin ?? '')).select('id');
   fail(error);
-  if (!data?.length) {
-    const { data: p } = await db().from('buzz_players').select('id').eq('id', String(id)).eq('token', String(tok)).maybeSingle();
-    throw p ? new GameError('Already answered') : new GameError('Not in this game', 403);
-  }
+  if (!data?.length) throw new GameError('Not in this game', 403);
+  await notify(String(pin), { to: 'host' });
+}
 
-  const players = await loadPlayers(g.pin);
-  if (players.every(p => answeredNow(g, p))) await endQuestion(g.pin, g.q_index);
-  else await notify(g.pin, { to: 'host' });
+const ANSWER_ERRORS: Record<string, GameError> = {
+  no_game: new GameError('No game with that PIN', 404),
+  not_open: new GameError('Not open yet'),
+  too_late: new GameError('Too late'),
+  bad_choice: new GameError('Bad choice', 400),
+  already: new GameError('Already answered'),
+  not_in_game: new GameError('Not in this game', 403),
+};
+
+/** Records an answer. One database call (buzz_answer) does the checks, the save, and ends the round if it was the last. */
+export async function answer(pin: unknown, id: unknown, tok: unknown, choice: unknown) {
+  const arrived = new Date(); // time the answer before any database round trip, so DB latency doesn't cost points
+  if (!Number.isInteger(choice)) throw ANSWER_ERRORS.bad_choice;
+  const p = String(pin ?? '').trim();
+  const { data, error } = await db().rpc('buzz_answer', {
+    p_pin: p, p_id: String(id), p_token: String(tok), p_choice: choice, p_arrived: arrived.toISOString(),
+  });
+  fail(error);
+  if (data === 'ok') return notify(p, { to: 'host' });      // answer count changed
+  if (data === 'ended') return notify(p, { to: 'all' });    // last answer: round scored, everyone moves on
+  if (data === 'too_late') await notify(p, { to: 'all' });  // may have just closed an expired round
+  throw ANSWER_ERRORS[data as string] ?? new Error(`Unexpected answer result: ${data}`);
 }
 
 export async function hostAction(pin: unknown, tok: unknown, action: unknown, playerId?: unknown) {
@@ -209,7 +223,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   const v: HostView = {
     role: 'host', state: g.state, pin: g.pin, title: g.quiz.title,
     qIndex: g.q_index, total: g.quiz.questions.length,
-    players: ps.map(p => ({ id: p.id, name: p.name, score: p.score })),
+    players: ps.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score })),
   };
   if (g.state === 'question' || g.state === 'reveal') {
     const q = currentQ(g);
@@ -227,7 +241,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   }
   if (g.state === 'leaderboard' || g.state === 'end') {
     v.leaderboard = ranked(ps).slice(0, g.state === 'end' ? 10 : 5).map(p => ({
-      name: p.name, score: p.score, streak: p.streak, gained: p.last?.points ?? 0,
+      name: p.name, avatar: p.avatar, score: p.score, streak: p.streak, gained: p.last?.points ?? 0,
       up: p.prev_rank ? p.prev_rank - p.rank : 0,
     }));
   }
@@ -236,7 +250,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
 
 function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
   const v: PlayerView = {
-    role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, name: p.name,
+    role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, name: p.name, avatar: p.avatar,
     score: p.score, rank: p.rank, playerCount: ps.length,
     qIndex: g.q_index, total: g.quiz.questions.length,
   };
@@ -261,14 +275,15 @@ function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
 
 /** The current view for one screen. Also ends an expired question, so timers need no background job. */
 export async function getView(params: URLSearchParams): Promise<HostView | PlayerView | { state: 'closed' | 'kicked' }> {
-  let g = await loadGame(params.get('pin'));
+  const pin = String(params.get('pin') ?? '').trim();
+  // Game and players in parallel: one database round trip instead of two.
+  let [g, ps] = await Promise.all([loadGame(pin), loadPlayers(pin)]);
   if (!g) return { state: 'closed' };
   const isHost = params.get('role') === 'host';
   if (isHost && params.get('token') !== g.host_token) return { state: 'closed' };
 
-  if (await expireIfDue(g)) g = (await loadGame(g.pin))!;
+  if (await expireIfDue(g)) [g, ps] = await Promise.all([loadGame(pin), loadPlayers(pin)]);
   if (!g) return { state: 'closed' };
-  const ps = await loadPlayers(g.pin);
   if (isHost) return hostView(g, ps);
 
   const p = ps.find(x => x.id === params.get('id') && x.token === params.get('token'));

@@ -1,5 +1,6 @@
 // Server-only Supabase access. Uses the secret key, so never import this from a client component.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { after } from 'next/server';
 
 let client: SupabaseClient | undefined;
 
@@ -15,8 +16,16 @@ export function db(): SupabaseClient {
 /** What changed, so screens know whether to refetch. 'host' = only the host screen cares (e.g. answer counts). */
 export type Ping = { to: 'all' | 'host'; players?: number };
 
-/** Tells every screen in a game that its view changed. Sent over REST, so it works from serverless functions. */
+/**
+ * Tells every screen in a game that its view changed. Sent over REST, so it works from serverless functions.
+ * Runs after the response is sent (next/server `after`), so the person who clicked isn't kept waiting for it.
+ */
 export async function notify(pin: string, ping: Ping) {
+  try { after(() => send(pin, ping)); }
+  catch { await send(pin, ping); } // outside a request (scripts): just send it now
+}
+
+async function send(pin: string, ping: Ping) {
   const channel = db().channel(`buzzline:game:${pin}`);
   try {
     const res = await channel.httpSend('update', ping);

@@ -20,6 +20,10 @@ export async function api<T = { ok: true }>(path: string, body: unknown): Promis
   return data as T;
 }
 
+const REFRESH = 'buzzline:refresh';
+/** Refetch this screen's view now, e.g. right after its own action, instead of waiting for the realtime ping. */
+export const refreshGame = () => window.dispatchEvent(new Event(REFRESH));
+
 /** A pushed view plus the local time it arrived, so countdowns ignore clock skew between devices. */
 export type Stamped<T> = T & { at: number };
 
@@ -43,7 +47,11 @@ export function useGameStream<T extends { state: string }>(params: Record<string
       clearTimeout(timer);
       if (v.state === 'closed' || v.state === 'kicked') return;
       // Just after the buzzer the server ends the question on read, so ask again then.
-      timer = setTimeout(load, v.state === 'question' ? (v.remaining ?? 0) + 600 : 15000);
+      let wait = v.state === 'question' ? (v.remaining ?? 0) + 600 : 15000;
+      // The big screen also checks every 2.5s in the lobby and during questions, so a dropped
+      // realtime message can never leave "0 of 3 answered" or a missing player on screen.
+      if (isHost && (v.state === 'question' || v.state === 'lobby')) wait = Math.min(wait, 2500);
+      timer = setTimeout(load, wait);
     };
 
     async function load() {
@@ -73,12 +81,14 @@ export function useGameStream<T extends { state: string }>(params: Record<string
       .subscribe(status => { if (status === 'SUBSCRIBED') load(); }); // catch anything missed while connecting
 
     load();
+    window.addEventListener(REFRESH, load);
     const onVisible = () => { if (document.visibilityState === 'visible') load(); };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       alive = false;
       clearTimeout(timer);
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener(REFRESH, load);
       sb.removeChannel(channel);
     };
   }, [key]);
@@ -96,24 +106,3 @@ export function useNow(active: boolean, ms = 100) {
   }, [active, ms]);
   return active ? now : performance.now();
 }
-
-/** Tiny synth so there's audio feedback without any asset files. */
-export const Sound = (() => {
-  let ctx: AudioContext | undefined;
-  const beep = (freq: number, dur = 0.12, type: OscillatorType = 'sine', vol = 0.15, when = 0) => {
-    try {
-      ctx ??= new AudioContext();
-      const t = ctx.currentTime + when;
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + dur);
-    } catch {}
-  };
-  return {
-    tick: () => beep(880, 0.05, 'square', 0.05),
-    good: () => { beep(660, 0.12, 'triangle'); beep(990, 0.2, 'triangle', 0.15, 0.1); },
-    bad: () => beep(220, 0.25, 'sawtooth', 0.08),
-    fanfare: () => [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.25, 'triangle', 0.15, i * 0.12)),
-  };
-})();

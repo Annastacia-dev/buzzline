@@ -239,3 +239,21 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qr span { font-weight: 700; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; }
 .qr span::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--pink-ink); }
 @media (max-width: 760px) { .qr-code { width: 140px; height: 140px; } }
+
+/* ---------- avatars ---------- */
+.avatar { display: inline-grid; place-items: center; border-radius: 50%; flex: none; line-height: 1; box-shadow: inset 0 0 0 2px rgba(22, 22, 22, .08); user-select: none; }
+.bob { animation: pop .45s cubic-bezier(.3, 1.5, .5, 1) both, bob 2.4s ease-in-out .5s infinite; }
+@keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+.chip { display: inline-flex; align-items: center; gap: 10px; padding-left: 8px; }
+.phone footer .who { display: flex; align-items: center; gap: 10px; }
+.avatar-pick { display: grid; gap: 8px; width: 100%; max-width: 340px; }
+.avatar-pick > p { font-size: 14px; font-weight: 600; margin: 0; }
+.avatar-pick > div { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; background: rgba(255, 255, 255, .55); border-radius: 22px; padding: 10px; }
+.avatar-pick button { display: grid; place-items: center; padding: 3px; border-radius: 50%; background: none; border: 0; cursor: pointer; transition: transform .12s; }
+.avatar-pick button:active { transform: scale(.9); }
+.avatar-pick button.on { box-shadow: 0 0 0 3px var(--ink); }
+
+/* ---------- sound + pending buttons ---------- */
+.sound-toggle { display: inline-grid; place-items: center; padding: 7px 9px; border: 0; cursor: pointer; color: var(--ink); }
+.btn[aria-busy="true"] { cursor: progress; opacity: .7; animation: busy 0.9s ease-in-out infinite; }
+@keyframes busy { 50% { opacity: .45; } }

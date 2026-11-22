@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api, Shape, Sound, useGameStream, useNow } from '@/lib/client';
+import { api, refreshGame, Shape, useGameStream, useNow } from '@/lib/client';
+import { Sound, SoundToggle } from '@/lib/sound';
+import { AVATARS, Avatar } from '@/lib/avatars';
 import type { PlayerView, EndView } from '@/lib/types';
-import { Scallop, Sticker, Icon } from '@/lib/deco';
+import { Scallop, Icon } from '@/lib/deco';
 
 type Session = { id: string; token: string; pin: string };
 
@@ -33,12 +35,17 @@ export default function PlayPage() {
 }
 
 function Player({ v, session }: { v: PlayerView & { at: number }; session: Session }) {
-  const [picked, setPicked] = useState<{ q: number; choice: number } | null>(null);
+  // The answer tapped for this question; `sent` once the server has accepted it.
+  const [picked, setPicked] = useState<{ q: number; choice: number; sent: boolean } | null>(null);
   const [err, setErr] = useState('');
+  // Avatar just tapped, shown straight away while the server catches up.
+  const [avatar, setAvatar] = useState<number | null>(null);
   const now = useNow(v.state === 'question');
+  const myAvatar = avatar ?? v.avatar;
 
   // Feedback sounds once per screen change.
   useEffect(() => {
+    if (v.state === 'lobby') Sound.pop();
     if (v.state === 'reveal') v.last?.correct ? Sound.good() : Sound.bad();
     if (v.state === 'end' && v.rank <= 3) Sound.fanfare();
     if (v.state === 'end') sessionStorage.removeItem('bz.player');
@@ -47,10 +54,28 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
   }, [v.state, v.qIndex]);
 
   async function choose(choice: number) {
-    setPicked({ q: v.qIndex, choice });
+    if (picked?.q === v.qIndex) return;
+    const q = v.qIndex;
+    setErr('');
+    setPicked({ q, choice, sent: false });
+    Sound.lock();
     navigator.vibrate?.(30);
-    try { await api('/api/answer', { ...session, choice }); }
-    catch (e) { setErr((e as Error).message); }
+    try {
+      await api('/api/answer', { ...session, choice });
+      setPicked({ q, choice, sent: true });
+    } catch (e) {
+      // Not accepted (too early, too late...): back to the tiles with the reason, never a false "Locked in".
+      setPicked(null);
+      setErr((e as Error).message);
+    }
+    refreshGame();
+  }
+
+  async function chooseAvatar(i: number) {
+    setAvatar(i);
+    Sound.pop();
+    try { await api('/api/avatar', { ...session, avatar: i }); refreshGame(); }
+    catch (e) { setAvatar(null); setErr((e as Error).message); }
   }
 
   let body: React.ReactNode;
@@ -59,10 +84,22 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
     case 'lobby':
       body = (
         <div className="msg">
-          <Sticker text="you're in · you're in · " icon="smile" bg="var(--peach)" ink="var(--peach-ink)" size={150} rotate={-8} className="pop" />
-          <h1>Look up!</h1>
-          <p>Find your name on the big screen.<br />The game starts any second.</p>
+          <Avatar i={myAvatar} size={104} className="pop bob" key={myAvatar} />
+          <h1>You&apos;re <em>in!</em></h1>
+          <p>Find yourself on the big screen.<br />The game starts any second.</p>
           <span className="pill">{v.playerCount} player{v.playerCount === 1 ? '' : 's'} so far</span>
+          <div className="avatar-pick">
+            <p>Tap to pick your avatar</p>
+            <div role="radiogroup" aria-label="Avatar">
+              {AVATARS.map((_, i) => (
+                <button key={i} type="button" role="radio" aria-checked={i === myAvatar} aria-label={`Avatar ${i + 1}`}
+                  className={i === myAvatar ? 'on' : ''} onClick={() => chooseAvatar(i)}>
+                  <Avatar i={i} size={40} />
+                </button>
+              ))}
+            </div>
+            {err && <div className="error">{err}</div>}
+          </div>
         </div>
       );
       break;
@@ -74,6 +111,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
       const total = (v.remaining ?? 0) - (v.startsIn ?? 0);
       const left = (v.remaining ?? 0) - elapsed;
       const mine = v.myAnswer ?? (picked?.q === v.qIndex ? picked.choice : null);
+      const sending = v.myAnswer == null && picked?.q === v.qIndex && !picked.sent;
 
       if (startsIn > 0) {
         mood = 'ready';
@@ -91,8 +129,8 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
         body = (
           <div className="msg">
             <div className={`tile c${mine} pop`} style={{ minHeight: 0, padding: 18, borderRadius: '50%' }}><Shape i={mine} /></div>
-            <h1>Locked <em>in</em></h1>
-            <p>{err || 'Hang tight for the others…'}</p>
+            <h1>{sending ? <>Sending<em>…</em></> : <>Locked <em>in</em></>}</h1>
+            <p>{sending ? 'One sec' : 'Hang tight for the others…'}</p>
           </div>
         );
       } else {
@@ -101,6 +139,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           <>
             <div className="bar"><div style={{ width: `${Math.max(0, left / total) * 100}%` }} /></div>
             <div className="qtext">{q.q}</div>
+            {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
             <div className={`answers ${q.answers.length === 2 ? 'two' : ''}`}>
               {q.answers.map((a, i) => (
                 <button key={i} className={`tile c${i}`} onClick={() => choose(i)} disabled={left <= 0}>
@@ -167,10 +206,13 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
     <div className="phone" data-mood={mood}>
       <header>
         <span className="logo" style={{ fontSize: 20 }}>Buzzline<span className="dot" /></span>
-        <span className="pill">{v.qIndex >= 0 ? `Q ${Math.min(v.qIndex + 1, v.total)} / ${v.total}` : `PIN ${v.pin}`}</span>
+        <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <SoundToggle />
+          <span className="pill">{v.qIndex >= 0 ? `Q ${Math.min(v.qIndex + 1, v.total)} / ${v.total}` : `PIN ${v.pin}`}</span>
+        </span>
       </header>
       <main>{body}</main>
-      <footer><span>{v.name}</span><b>{v.score.toLocaleString()}</b></footer>
+      <footer><span className="who"><Avatar i={myAvatar} size={30} />{v.name}</span><b>{v.score.toLocaleString()}</b></footer>
     </div>
   );
 }
