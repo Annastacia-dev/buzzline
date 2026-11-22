@@ -46,6 +46,10 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   const [err, setErr] = useState('');
   // The button that was just pressed, shown as pending until the screen moves on.
   const [busy, setBusy] = useState('');
+  // Auto mode: reveal → scoreboard → next question without clicks. Remembered in this browser.
+  const [auto, setAutoState] = useState(false);
+  useEffect(() => { setAutoState(localStorage.getItem('bz.auto') === '1'); }, []);
+  const setAuto = (on: boolean) => { setAutoState(on); localStorage.setItem('bz.auto', on ? '1' : '0'); };
   const [dialog, ask] = useAlertDialog();
   const step = v && 'qIndex' in v ? `${v.state}:${v.qIndex}` : v?.state;
 
@@ -73,6 +77,10 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {h.qIndex >= 0 && <span className="pill">Question {Math.min(h.qIndex + 1, h.total)} / {h.total}</span>}
           <span className="pill">PIN {h.pin}</span>
+          <button type="button" className={`pill auto-toggle ${auto ? 'on' : ''}`} aria-pressed={auto} onClick={() => setAuto(!auto)}
+            title="Move on automatically after each answer reveal and scoreboard">
+            <span className="switch" aria-hidden />Auto
+          </button>
           <SoundToggle />
           <button className="btn ghost small" onClick={async () => {
             if (await ask({ title: 'End this game?', message: 'Everyone will be sent out of the game and the scores will be lost.', confirm: 'End game', cancel: 'Keep playing', danger: true })) act('end');
@@ -83,14 +91,39 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
       {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
       {h.state === 'lobby' && <Lobby h={h} act={act} busy={busy} />}
       {h.state === 'question' && <QuestionScreen key={h.qIndex} h={h} act={act} busy={busy} />}
-      {h.state === 'reveal' && <Reveal h={h} act={act} busy={busy} />}
-      {h.state === 'leaderboard' && <Leaderboard h={h} act={act} busy={busy} />}
+      {h.state === 'reveal' && <Reveal h={h} act={act} busy={busy} auto={auto} />}
+      {h.state === 'leaderboard' && <Leaderboard h={h} act={act} busy={busy} auto={auto} />}
       {h.state === 'end' && <Podium h={h} onLeave={() => act('end')} />}
     </div>
   );
 }
 
-type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void; busy: string };
+type ScreenProps = { h: Stamped<HostView>; act: (a: string, extra?: object) => void; busy: string; auto?: boolean };
+
+/** Seconds each screen stays up in auto mode before moving on. */
+const AUTO_SECS = { reveal: 6, leaderboard: 7 };
+
+/**
+ * The "move on" button. In auto mode it fills up over `secs` and presses itself; clicking still works,
+ * and switching auto off part-way cancels it (switching back on restarts the countdown).
+ */
+function NextButton({ label, act, busy, auto, secs }: { label: string; act: ScreenProps['act']; busy: string; auto?: boolean; secs: number }) {
+  // The timer must call the latest act: the one from the first render still thinks the previous move is pending.
+  const latest = useRef(act);
+  useEffect(() => { latest.current = act; });
+  useEffect(() => {
+    if (!auto) return;
+    const t = setTimeout(() => latest.current('next'), secs * 1000);
+    return () => clearTimeout(t);
+  }, [auto, secs]);
+  return (
+    <button className={`btn ${auto ? 'auto-next' : ''}`} onClick={() => act('next')} aria-busy={busy === 'next'}
+      style={auto ? ({ '--auto': `${secs}s` } as React.CSSProperties) : undefined}>
+      {auto && <span className="auto-fill" aria-hidden />}
+      {label}{auto && <span className="sr-only"> (moves on automatically in {secs} seconds)</span>}
+    </button>
+  );
+}
 
 function Lobby({ h, act, busy }: ScreenProps) {
   const [urls, setUrls] = useState<string[] | null>(null);
@@ -224,7 +257,7 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
   );
 }
 
-function Reveal({ h, act, busy }: ScreenProps) {
+function Reveal({ h, act, busy, auto }: ScreenProps) {
   const q = h.question!;
   useEffect(() => { Music.stop(); Sound.reveal(); }, []);
   const dist = h.distribution ?? [];
@@ -256,13 +289,13 @@ function Reveal({ h, act, busy }: ScreenProps) {
         ))}
       </div>
       <div style={{ textAlign: 'right' }}>
-        <button className="btn" onClick={() => act('next')} aria-busy={busy === 'next'}>{h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'}</button>
+        <NextButton label={h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'} act={act} busy={busy} auto={auto} secs={AUTO_SECS.reveal} />
       </div>
     </>
   );
 }
 
-function Leaderboard({ h, act, busy }: ScreenProps) {
+function Leaderboard({ h, act, busy, auto }: ScreenProps) {
   useEffect(() => {
     Music.stop(); Sound.drumroll();
     const t = setTimeout(() => Music.play('scoreboard'), 1500);
@@ -283,7 +316,7 @@ function Leaderboard({ h, act, busy }: ScreenProps) {
           </div>
         ))}
       </div>
-      <div style={{ textAlign: 'right' }}><button className="btn" onClick={() => act('next')} aria-busy={busy === 'next'}>Next question →</button></div>
+      <div style={{ textAlign: 'right' }}><NextButton label="Next question →" act={act} busy={busy} auto={auto} secs={AUTO_SECS.leaderboard} /></div>
     </>
   );
 }
