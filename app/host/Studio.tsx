@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { blankQuestion, sampleQuiz } from '@/lib/sample';
 import type { Quiz, Question } from '@/lib/types';
+import { useAlertDialog } from '@/lib/dialog';
 
 const KEY = 'bz.quizzes';
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -10,6 +11,7 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 /** Quiz library + editor. Quizzes live in this browser's localStorage. */
 export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; error: string }) {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [dialog, ask] = useAlertDialog();
   const [selId, setSelId] = useState<string>('');
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -32,8 +34,10 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     setSelId(nq.id);
   }
 
-  function remove() {
-    if (!quiz || !confirm(`Delete "${quiz.title}"?`)) return;
+  async function remove() {
+    if (!quiz) return;
+    const ok = await ask({ title: `Delete "${quiz.title}"?`, message: 'This removes the quiz from this browser. Export it first if you want a copy.', confirm: 'Delete quiz', danger: true });
+    if (!ok) return;
     const rest = quizzes.filter(q => q.id !== selId);
     save(rest);
     setSelId(rest[0]?.id ?? '');
@@ -53,11 +57,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
       const q = JSON.parse(await f.text());
       if (!Array.isArray(q.questions)) throw new Error();
       addQuiz({ title: q.title || f.name, questions: q.questions });
-    } catch { alert('That file is not a Buzzline quiz.'); }
+    } catch { ask({ title: "That file isn't a Buzzline quiz", message: 'Pick a .json file made with Export JSON.', confirm: 'OK', cancel: null }); }
   }
 
   return (
     <div className="studio">
+      {dialog}
       <aside className="side">
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <button className="btn small" onClick={() => addQuiz()}>+ New quiz</button>

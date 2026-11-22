@@ -5,6 +5,7 @@ import { Music, Sound, SoundToggle } from '@/lib/sound';
 import { Avatar } from '@/lib/avatars';
 import { Confetti } from '@/lib/confetti';
 import { podiumTimeline } from '@/lib/podium';
+import { useAlertDialog } from '@/lib/dialog';
 import type { HostView, EndView, Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
@@ -45,6 +46,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   const [err, setErr] = useState('');
   // The button that was just pressed, shown as pending until the screen moves on.
   const [busy, setBusy] = useState('');
+  const [dialog, ask] = useAlertDialog();
   const step = v && 'qIndex' in v ? `${v.state}:${v.qIndex}` : v?.state;
 
   useEffect(() => { if (v?.state === 'closed') onLeave(); }, [v?.state, onLeave]);
@@ -72,9 +74,12 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
           {h.qIndex >= 0 && <span className="pill">Question {Math.min(h.qIndex + 1, h.total)} / {h.total}</span>}
           <span className="pill">PIN {h.pin}</span>
           <SoundToggle />
-          <button className="btn ghost small" onClick={() => confirm('End this game for everyone?') && act('end')}>End game</button>
+          <button className="btn ghost small" onClick={async () => {
+            if (await ask({ title: 'End this game?', message: 'Everyone will be sent out of the game and the scores will be lost.', confirm: 'End game', cancel: 'Keep playing', danger: true })) act('end');
+          }}>End game</button>
         </div>
       </div>
+      {dialog}
       {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
       {h.state === 'lobby' && <Lobby h={h} act={act} busy={busy} />}
       {h.state === 'question' && <QuestionScreen key={h.qIndex} h={h} act={act} busy={busy} />}

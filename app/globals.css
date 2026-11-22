@@ -271,3 +271,17 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .drum { animation: drum .18s ease-in-out infinite alternate; }
 @keyframes drum { to { transform: rotate(4deg) scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .podium .suspense .block, .drum { animation: none; } }
+
+/* ---------- alert dialog ---------- */
+.alert-dialog { border: 0; padding: 0; background: transparent; max-width: min(460px, calc(100vw - 32px)); width: 100%; overflow: visible; color: var(--ink); }
+.alert-dialog::backdrop { background: rgba(22, 22, 22, .45); backdrop-filter: blur(3px); animation: fade .15s ease-out; }
+.alert-dialog[open] { animation: pop .28s cubic-bezier(.3, 1.4, .5, 1); }
+.alert-body { background: var(--paper); border-radius: var(--radius); padding: 28px 28px 22px; box-shadow: 0 24px 60px rgba(22, 22, 22, .25); }
+.alert-body h2 { font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 10px; overflow-wrap: anywhere; }
+.alert-body p { margin: 0; color: var(--muted); line-height: 1.5; }
+.alert-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; flex-wrap: wrap; }
+.alert-actions .btn.light { box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn.danger-solid { background: var(--bad); color: #fff; }
+.alert-dialog .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+@keyframes fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .alert-dialog[open], .alert-dialog::backdrop { animation: none; } }
