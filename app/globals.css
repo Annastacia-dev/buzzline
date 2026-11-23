@@ -813,120 +813,145 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .join-page { background: var(--bg); transition: background-color .4s ease; }
 .join-page > :not(.doodle) { position: relative; z-index: 1; }
 
-/* ---------- Glass: frosted, translucent panels floating over a slowly flowing pastel wash ---------- */
+/* ---------- Glass: thick clear acrylic slabs on a calm, light surface ----------
+   Each piece is mostly clear, with a bright rim, a domed highlight across the top, a soft tinted glow just inside
+   its edges and a tinted shadow underneath. Colour lives in the glass edges, not the background. */
 [data-theme=glass] {
-  --bg: #eef0fb; --paper: rgba(255, 255, 255, .5); --ink: #1d1b3a; --muted: #5d5b7a; --line: rgba(255, 255, 255, .7);
-  --butter: rgba(255, 214, 140, .42); --butter-ink: #b45309;
-  --sage:   rgba(110, 231, 200, .36); --sage-ink:   #0f766e;
-  --olive:  rgba(186, 230, 253, .5);
-  --lilac:  rgba(167, 139, 250, .34); --lilac-ink:  #5b21b6;
-  --peri:   rgba(129, 140, 248, .34); --peri-ink:   #3730a3;
-  --pink:   rgba(244, 114, 182, .3);  --pink-ink:   #be185d;
-  --peach:  rgba(253, 186, 140, .4);  --peach-ink:  #c2410c;
-  --mint:   rgba(94, 234, 212, .32);  --mint-ink:   #0f766e;
-  --coral:  rgba(251, 113, 133, .3);  --coral-ink:  #be123c;
-  --good: #0f9f6e; --bad: #e11d48;
+  --bg: #eceef1; --paper: rgba(255, 255, 255, .55); --ink: #17171d; --muted: #6a6b78; --line: rgba(255, 255, 255, .85);
+  --butter: rgba(245, 196, 81, .22); --butter-ink: #9a6c00;
+  --sage:   rgba(95, 211, 176, .2);  --sage-ink:   #1f8a6c;
+  --olive:  rgba(197, 217, 143, .45);
+  --lilac:  rgba(155, 135, 255, .2); --lilac-ink:  #5b47d6;
+  --peri:   rgba(155, 135, 255, .16); --peri-ink:  #5b47d6;
+  --pink:   rgba(255, 159, 128, .26); --pink-ink:  #c4573a;
+  --peach:  rgba(255, 159, 128, .2); --peach-ink:  #c4573a;
+  --mint:   rgba(95, 211, 176, .2);  --mint-ink:   #1f8a6c;
+  --coral:  rgba(255, 140, 140, .2); --coral-ink:  #c2414b;
+  --good: #1f8a6c; --bad: #c2414b;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
   --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --radius: 30px;
-  /* the wash: soft colour pools that drift slowly behind the glass */
-  --glass-wash:
-    radial-gradient(40% 50% at 12% 18%, #ffc6e6 0, transparent 70%),
-    radial-gradient(45% 55% at 88% 10%, #bfe6ff 0, transparent 70%),
-    radial-gradient(45% 50% at 78% 88%, #c9f5e6 0, transparent 70%),
-    radial-gradient(40% 50% at 18% 92%, #ddd3ff 0, transparent 70%),
-    linear-gradient(135deg, #eef0ff, #fdf1f8 55%, #eefaf6);
-  /* one recipe for every pane of glass: blur what is behind, a bright rim and a soft drop */
-  --glass-blur: blur(22px) saturate(170%);
-  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -1px 0 rgba(255, 255, 255, .35), inset 0 0 0 1px rgba(255, 255, 255, .55);
-  --glass-drop: 0 10px 34px -8px rgba(45, 40, 110, .22);
+  /* the surface everything rests on: soft daylight from above, nothing loud */
+  --glass-wash: radial-gradient(90% 60% at 50% 0%, #f8f9fb 0, rgba(248, 249, 251, 0) 70%), linear-gradient(180deg, #eef0f3, #e5e7eb);
+  /* one slab recipe. --glow (edge light) and --shade (shadow colour) are tinted per piece */
+  --glow: rgba(255, 255, 255, .7);
+  --shade: rgba(40, 42, 70, .26);
+  --dome: radial-gradient(120% 70% at 50% -12%, rgba(255, 255, 255, .95) 0, rgba(255, 255, 255, .4) 42%, rgba(255, 255, 255, 0) 68%);
+  --clear: linear-gradient(180deg, rgba(255, 255, 255, .62), rgba(255, 255, 255, .3));
+  --blur: blur(10px) saturate(140%);
   font-family: var(--font-main);
   color: var(--ink);
 }
-@keyframes glass-flow { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } }
-:is(.stage, .phone, .qstage, .join-page)[data-theme=glass], [data-theme=glass] .countdown-overlay {
-  background: var(--glass-wash); background-size: 160% 160%; animation: glass-flow 26s ease-in-out infinite;
+:is(.stage, .phone, .qstage, .join-page)[data-theme=glass], [data-theme=glass] .countdown-overlay { background: var(--glass-wash); }
+/* the slab recipe is declared on every element, so it picks up that element's own --glow and --shade */
+[data-theme=glass], [data-theme=glass] * {
+  --slab-edge: inset 0 1.5px 0 #fff, inset 0 -2px 4px rgba(255, 255, 255, .85), inset 0 0 0 1.5px rgba(255, 255, 255, .8), inset 0 0 18px 2px var(--glow);
+  --slab-drop: 0 0 0 1px rgba(20, 22, 45, .07), 0 2px 3px rgba(20, 22, 45, .07), 0 16px 28px -14px var(--shade);
+  --slab: var(--slab-edge), var(--slab-drop);
 }
-@media (prefers-reduced-motion: reduce) {
-  :is(.stage, .phone, .qstage, .join-page)[data-theme=glass], [data-theme=glass] .countdown-overlay { animation: none; }
-}
-/* Classic's shapes make way for the glass */
+
+/* tints: each sets the edge glow, the shadow and a faint fill */
+[data-theme=glass] .tint-lav, [data-theme=glass] .c0 { --glow: rgba(155, 135, 255, .55); --shade: rgba(110, 90, 230, .45); --tint: rgba(155, 135, 255, .3); --deep: #5b47d6; }
+[data-theme=glass] .c1 { --glow: rgba(255, 150, 115, .55); --shade: rgba(230, 120, 85, .42); --tint: rgba(255, 159, 128, .3); --deep: #c4573a; }
+[data-theme=glass] .c2 { --glow: rgba(80, 205, 170, .55); --shade: rgba(40, 165, 130, .42); --tint: rgba(95, 211, 176, .3); --deep: #1f8a6c; }
+[data-theme=glass] .c3 { --glow: rgba(240, 190, 70, .6); --shade: rgba(205, 150, 30, .42); --tint: rgba(245, 196, 81, .3); --deep: #9a6c00; }
+
+/* Classic's stickers make way for the glass */
 :is(.stage[data-theme=glass], [data-theme=glass] :is(.countdown-overlay, .pinbox)) > :is(.shapebox, .sticker) { display: none; }
+[data-theme=glass] .shapebox { filter: drop-shadow(0 12px 18px rgba(40, 42, 70, .12)); }
 
-[data-theme=glass] h1, [data-theme=glass] h2, [data-theme=glass] h3, [data-theme=glass] .bignum,
-[data-theme=glass] .stage-q, [data-theme=glass] .logo { letter-spacing: -0.025em; font-weight: 700; }
-/* accent words: a colour gradient through the glass */
-[data-theme=glass] em, [data-theme=glass] .it {
-  font-style: normal; font-weight: inherit; letter-spacing: inherit;
-  background: linear-gradient(100deg, #7c3aed, #db2777 60%, #f97316); -webkit-background-clip: text; background-clip: text; color: transparent;
-}
+[data-theme=glass] :is(h1, h2, h3, .bignum, .stage-q, .logo) { letter-spacing: -0.025em; font-weight: 700; }
+[data-theme=glass] em, [data-theme=glass] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; color: #6b57e0; }
 
-/* panes of glass */
-[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .ring, .row, .kpi, .qcard, .tabs, .qthumb, .pans-tile, .chip, .qr, .field, .pill, .flash, .tile) {
-  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-rim), var(--glass-drop);
+/* clear slabs: panels, cards, counters, fields */
+[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .row, .kpi, .qcard, .qthumb, .chip, .qr, .field, .flash, .tabs, .pill) {
+  background: var(--dome), var(--clear); border: 0; box-shadow: var(--slab);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
-[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .ring, .row, .kpi, .qcard, .tabs, .qthumb, .chip, .qr, .field, .flash) { background: rgba(255, 255, 255, .46); border: 0; }
-[data-theme=glass] .pill { background: rgba(255, 255, 255, .5); }
-[data-theme=glass] .pill.dark, [data-theme=glass] .qthumb-n, [data-theme=glass] .qcard-head .qnum { background: rgba(29, 27, 58, .82); color: #fff; }
+[data-theme=glass] .pill { --slab-drop: 0 0 0 1px rgba(20, 22, 45, .06), 0 6px 14px -8px var(--shade); }
+[data-theme=glass] .pill.dark, [data-theme=glass] .qthumb-n, [data-theme=glass] .qcard-head .qnum {
+  --glow: rgba(155, 135, 255, .6); --shade: rgba(110, 90, 230, .4);
+  background: var(--dome), linear-gradient(180deg, rgba(196, 184, 255, .55), rgba(155, 135, 255, .4)); color: var(--ink); box-shadow: var(--slab);
+}
+[data-theme=glass] .pinbox { --glow: rgba(155, 135, 255, .45); --shade: rgba(110, 90, 230, .32); }
+[data-theme=glass] .pinbox .label { color: #6b57e0; }
 [data-theme=glass] .chip { rotate: 0deg !important; }
-[data-theme=glass] .field:focus { box-shadow: var(--glass-rim), 0 0 0 3px rgba(124, 58, 237, .35); }
-[data-theme=glass] .qthumb.on { box-shadow: var(--glass-rim), 0 0 0 2.5px rgba(124, 58, 237, .55), var(--glass-drop); }
-[data-theme=glass] .row .r { background: rgba(255, 255, 255, .6); }
-[data-theme=glass] .row:nth-child(1) .r { background: linear-gradient(135deg, #fde68a, #f9a8d4); }
+[data-theme=glass] .chip:nth-child(4n+1) { --glow: rgba(155, 135, 255, .5); } [data-theme=glass] .chip:nth-child(4n+2) { --glow: rgba(255, 150, 115, .5); }
+[data-theme=glass] .chip:nth-child(4n+3) { --glow: rgba(80, 205, 170, .5); }  [data-theme=glass] .chip:nth-child(4n+4) { --glow: rgba(240, 190, 70, .55); }
+[data-theme=glass] .field { border-radius: 999px; }
+[data-theme=glass] .field:focus { --glow: rgba(155, 135, 255, .7); box-shadow: var(--slab), 0 0 0 3px rgba(155, 135, 255, .25); }
+[data-theme=glass] .qthumb.on { --glow: rgba(155, 135, 255, .75); --shade: rgba(110, 90, 230, .4); }
+[data-theme=glass] .tabs button.on { background: var(--dome), linear-gradient(180deg, rgba(196, 184, 255, .6), rgba(155, 135, 255, .42)); color: var(--ink); box-shadow: inset 0 1.5px 0 #fff, inset 0 0 12px rgba(155, 135, 255, .5); }
+[data-theme=glass] .tabs button:hover:not(.on) { background: rgba(255, 255, 255, .55); }
+[data-theme=glass] .row .r { background: var(--dome), rgba(255, 255, 255, .6); box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .8), 0 3px 8px -3px rgba(40, 42, 70, .25); }
+[data-theme=glass] .row:nth-child(1) .r { background: var(--dome), rgba(245, 196, 81, .45); }
+[data-theme=glass] .row:nth-child(2) .r { background: var(--dome), rgba(155, 135, 255, .35); }
+[data-theme=glass] .row:nth-child(3) .r { background: var(--dome), rgba(255, 159, 128, .4); }
 
-/* buttons: dark smoked glass with a bright top edge; light and ghost ones are clear glass */
+/* round things are glass beads: the timer, answer shapes and ticks */
+[data-theme=glass] .bar { height: 10px; border-radius: 99px; background: rgba(255, 255, 255, .65); box-shadow: inset 0 1px 2px rgba(20, 22, 45, .12), 0 1px 0 #fff; }
+[data-theme=glass] .bar > div { border-radius: 99px; background: linear-gradient(90deg, #c4b8ff, #8d7bf0); box-shadow: 0 0 8px rgba(141, 123, 240, .55); }
+[data-theme=glass] .ring circle:first-child { stroke: rgba(255, 255, 255, .7); }
+[data-theme=glass] .ring circle:last-child:not([stroke="var(--bad)"]) { stroke: #8d7bf0; filter: drop-shadow(0 0 6px rgba(141, 123, 240, .55)); }
+[data-theme=glass] .ring circle[stroke="var(--bad)"] { filter: drop-shadow(0 0 6px rgba(194, 65, 75, .5)); }
+[data-theme=glass] .ring { background: var(--dome), var(--clear); box-shadow: var(--slab); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+[data-theme=glass] .tile .shape {
+  background: radial-gradient(90% 60% at 50% 10%, #fff 0, rgba(255, 255, 255, .55) 55%, rgba(255, 255, 255, .25) 100%);
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .9), inset 0 0 8px var(--glow), 0 4px 8px -3px var(--shade);
+}
+
+/* buttons: lavender glass for the main action, clear glass for the rest; dark text throughout */
 [data-theme=glass] .btn {
-  background: linear-gradient(180deg, rgba(64, 58, 128, .92), rgba(29, 27, 58, .94)); color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 8px 22px -6px rgba(29, 27, 58, .45);
+  --glow: rgba(155, 135, 255, .65); --shade: rgba(110, 90, 230, .5);
+  background: var(--dome), linear-gradient(180deg, rgba(196, 184, 255, .6), rgba(155, 135, 255, .45)); color: var(--ink);
+  box-shadow: var(--slab); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
-[data-theme=glass] .btn.light, [data-theme=glass] .btn.ghost {
-  background: rgba(255, 255, 255, .5); color: var(--ink); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-rim), 0 6px 18px -8px rgba(45, 40, 110, .3);
+[data-theme=glass] .btn.light, [data-theme=glass] .btn.ghost { --glow: rgba(255, 255, 255, .7); --shade: rgba(40, 42, 70, .26); background: var(--dome), var(--clear); }
+[data-theme=glass] .btn.ghost { --glow: rgba(80, 205, 170, .45); }
+[data-theme=glass] .btn.danger { --glow: rgba(255, 140, 140, .6); --shade: rgba(220, 90, 90, .4); background: var(--dome), rgba(255, 200, 200, .4); color: #b3303a; }
+[data-theme=glass] .btn:disabled { opacity: .45; }
+
+/* answers: clear slabs with a coloured glow in the glass (the shapes tell them apart too) */
+[data-theme=glass] :is(.tile, .pans-tile) {
+  background: var(--dome), linear-gradient(180deg, rgba(255, 255, 255, .5), var(--tint, rgba(255, 255, 255, .3)));
+  border: 0; box-shadow: var(--slab); color: var(--ink);
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
-[data-theme=glass] .btn.ghost { background: rgba(255, 255, 255, .28); }
-[data-theme=glass] .tabs button.on { background: rgba(29, 27, 58, .85); color: #fff; }
-[data-theme=glass] .tabs button:hover:not(.on) { background: rgba(255, 255, 255, .5); }
+[data-theme=glass] .pcard.flash .pans-tile { border: 0; box-shadow: var(--slab); }
+[data-theme=glass] .tile.right { --glow: var(--shade); box-shadow: var(--slab-edge), 0 0 0 2.5px var(--deep), 0 0 26px 2px var(--shade), var(--slab-drop); }
+[data-theme=glass] .tile .tick { background: var(--deep); color: #fff; }
+[data-theme=glass] .bars .col { background: var(--dome), linear-gradient(180deg, rgba(255, 255, 255, .45), var(--tint)); box-shadow: var(--slab); color: var(--ink); }
+[data-theme=glass] .bars > div:nth-child(1) .shape { fill: #5b47d6; } [data-theme=glass] .bars > div:nth-child(2) .shape { fill: #c4573a; }
+[data-theme=glass] .bars > div:nth-child(3) .shape { fill: #1f8a6c; } [data-theme=glass] .bars > div:nth-child(4) .shape { fill: #9a6c00; }
+[data-theme=glass] .podium .block { background: var(--dome), var(--clear) !important; box-shadow: var(--slab-edge); }
 
-/* answers: tinted glass in violet, pink, teal and amber (the shapes tell them apart too) */
-[data-theme=glass] .c0 { background: linear-gradient(160deg, rgba(196, 181, 253, .62), rgba(139, 92, 246, .34)); --deep: #5b21b6; }
-[data-theme=glass] .c1 { background: linear-gradient(160deg, rgba(251, 207, 232, .66), rgba(236, 72, 153, .3)); --deep: #be185d; }
-[data-theme=glass] .c2 { background: linear-gradient(160deg, rgba(167, 243, 208, .62), rgba(20, 184, 166, .3)); --deep: #0f766e; }
-[data-theme=glass] .c3 { background: linear-gradient(160deg, rgba(254, 230, 160, .7), rgba(245, 158, 11, .3)); --deep: #b45309; }
-[data-theme=glass] .tile .shape { background: rgba(255, 255, 255, .75); }
-[data-theme=glass] .tile.right { box-shadow: var(--glass-rim), 0 0 0 3px rgba(255, 255, 255, .9), 0 0 0 6px var(--deep, var(--ink)), var(--glass-drop); }
-[data-theme=glass] .tile .tick { background: var(--ink); }
-[data-theme=glass] .bars .col { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-rim); }
-[data-theme=glass] .bars > div:nth-child(1) .shape { fill: #5b21b6; } [data-theme=glass] .bars > div:nth-child(2) .shape { fill: #be185d; }
-[data-theme=glass] .bars > div:nth-child(3) .shape { fill: #0f766e; } [data-theme=glass] .bars > div:nth-child(4) .shape { fill: #b45309; }
-[data-theme=glass] .podium .block { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-rim); }
-
-/* grid reveal: the tiles are frosted panes that melt away */
-[data-theme=glass] .reveal-tile { -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6); }
-[data-theme=glass] :is(.stage-img, .reveal) { box-shadow: var(--glass-rim), var(--glass-drop); }
-
-/* countdowns and the phone screens: deeper washes, so each moment still has its own colour */
-[data-theme=glass] .countdown-overlay {
-  --glass-wash:
-    radial-gradient(45% 55% at 15% 20%, #a78bfa 0, transparent 70%), radial-gradient(45% 55% at 85% 80%, #f472b6 0, transparent 70%),
-    radial-gradient(40% 45% at 80% 15%, #7dd3fc 0, transparent 70%), linear-gradient(135deg, #c7d2fe, #fbcfe8);
+/* pictures and grid reveal: the picture sits in a glass frame; the tiles are frosted panes */
+[data-theme=glass] :is(.stage-img, .reveal) { box-shadow: 0 0 0 6px rgba(255, 255, 255, .55), 0 0 0 7px rgba(20, 22, 45, .07), 0 18px 30px -14px rgba(40, 42, 70, .35); }
+[data-theme=glass] .reveal-tile {
+  background: var(--dome), linear-gradient(180deg, rgba(255, 255, 255, .55), var(--tint)) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .7), inset 0 0 12px var(--glow);
 }
-.phone[data-theme=glass] footer { background: rgba(29, 27, 58, .82); color: #fff; -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
-.phone[data-theme=glass][data-mood=ready] { --glass-wash: radial-gradient(50% 50% at 20% 20%, #a78bfa 0, transparent 70%), radial-gradient(50% 50% at 80% 80%, #7dd3fc 0, transparent 70%), linear-gradient(135deg, #c7d2fe, #e0e7ff); }
-.phone[data-theme=glass][data-mood=locked] { --glass-wash: radial-gradient(55% 50% at 30% 25%, #c4b5fd 0, transparent 70%), linear-gradient(135deg, #ede9fe, #e0e7ff); }
-.phone[data-theme=glass][data-mood=good] { --glass-wash: radial-gradient(55% 50% at 25% 20%, #6ee7b7 0, transparent 70%), radial-gradient(50% 50% at 80% 85%, #7dd3fc 0, transparent 70%), linear-gradient(135deg, #d1fae5, #e0f2fe); }
-.phone[data-theme=glass][data-mood=bad] { --glass-wash: radial-gradient(55% 50% at 25% 20%, #fda4af 0, transparent 70%), radial-gradient(50% 50% at 80% 85%, #f9a8d4 0, transparent 70%), linear-gradient(135deg, #ffe4e6, #fce7f3); }
-.phone[data-theme=glass]:is([data-mood=rank], [data-mood=end]) { --glass-wash: radial-gradient(50% 50% at 20% 15%, #fde68a 0, transparent 70%), radial-gradient(50% 50% at 85% 85%, #f9a8d4 0, transparent 70%), linear-gradient(135deg, #fef3c7, #fce7f3); }
-.phone[data-theme=glass][data-mood=lobby] .avatar-pick > div { background: rgba(255, 255, 255, .4); }
+
+/* countdowns and the phone screens: the same calm surface, faintly tinted for each moment */
+[data-theme=glass] .countdown-overlay { --glass-wash: radial-gradient(80% 60% at 50% 0%, #f7f6fd 0, rgba(247, 246, 253, 0) 70%), linear-gradient(180deg, #eceaf7, #e2e0f0); }
+.phone[data-theme=glass][data-mood=ready] { --glass-wash: linear-gradient(180deg, #efedf9, #e3e0f3); }
+.phone[data-theme=glass][data-mood=locked] { --glass-wash: linear-gradient(180deg, #f0eff8, #e6e4f2); }
+.phone[data-theme=glass][data-mood=good] { --glass-wash: linear-gradient(180deg, #ecf7f2, #dcefe7); }
+.phone[data-theme=glass][data-mood=bad] { --glass-wash: linear-gradient(180deg, #faf0ec, #f1e1da); }
+.phone[data-theme=glass]:is([data-mood=rank], [data-mood=end]) { --glass-wash: linear-gradient(180deg, #f8f4e8, #eee7d3); }
+.phone[data-theme=glass] footer { background: var(--dome), var(--clear); color: var(--ink); box-shadow: var(--slab); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.phone[data-theme=glass][data-mood=lobby] .avatar-pick > div { background: rgba(255, 255, 255, .45); }
 .phone[data-theme=glass] > :is(header, main, footer) { position: relative; z-index: 1; }
 
 /* studio preview */
 .qstage[data-theme=glass] { border-radius: 28px; padding: 14px 18px 18px; overflow-x: hidden; }
 .qstage[data-theme=glass] .flash { border-radius: 30px; }
 .qstage[data-theme=glass] .flash-deck::before, .qstage[data-theme=glass] .flash-deck::after {
-  border: 0; background: rgba(255, 255, 255, .32); box-shadow: var(--glass-rim); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border: 0; background: var(--clear); box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .8), 0 10px 20px -12px rgba(40, 42, 70, .3);
 }
-[data-theme=glass] .pcard.flash .pans-tile { border: 0; box-shadow: var(--glass-rim), 0 8px 22px -10px rgba(45, 40, 110, .35); }
+.qstage[data-theme=glass] .flash-deck::before { --glow: rgba(155, 135, 255, .5); box-shadow: inset 0 0 16px rgba(155, 135, 255, .45), inset 0 0 0 1px #fff; }
+.qstage[data-theme=glass] .flash-deck::after { box-shadow: inset 0 0 16px rgba(80, 205, 170, .4), inset 0 0 0 1px #fff; }
 
 /* ---------- Toybox: chunky 3D blocks with glossy tops and deep edges that press down when tapped ---------- */
 [data-theme=toybox] {

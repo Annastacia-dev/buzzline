@@ -55,8 +55,9 @@ all side by side.
   flat grey circles behind the illustrations, with a buzzer mascot.
 - **Toybox**: chunky 3D blocks with glossy tops and deep coloured edges that press down when tapped, the rounded
   Fredoka font, and Classic's shapes lifted off the page as 3D cut-outs.
-- **Glass**: frosted, translucent panels (`backdrop-filter`) floating over a slowly drifting pastel wash, tinted-glass
-  answer tiles and the device's own system font. Each phone screen gets its own wash colour.
+- **Glass**: thick clear acrylic slabs on a calm, light surface: bright rims, a domed highlight across the top, soft
+  coloured glows inside the edges (lavender, peach, mint, amber) and tinted shadows, with near-black text in the
+  device's own system font. Answer shapes and the timer are glass beads; grid reveal tiles are frosted panes.
 
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.
