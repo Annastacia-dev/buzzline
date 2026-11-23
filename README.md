@@ -48,9 +48,11 @@ player's phone use it.
 
 - **Classic** (default): cream paper, pastel blocks, black pills and stickers.
 - **Doodlebug**: blue ink on beige paper, handwriting (Caveat Brush and Patrick Hand) and wobbly hand-drawn outlines,
-  with doodle illustrations by a little bee mascot (`lib/doodles.tsx`).
+  with doodle illustrations by a little bee mascot.
+- **Inkblot**: black and white line art, Space Grotesk with Space Mono labels, solid ink accents, hatched fills and
+  flat grey circles behind the illustrations, with a buzzer mascot.
 
-Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
+Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.
 
 ## Brand, SEO and GEO

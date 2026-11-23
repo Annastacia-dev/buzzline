@@ -659,7 +659,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .phone[data-theme=doodlebug][data-mood=rank], .phone[data-theme=doodlebug][data-mood=end] { background: var(--bg); }
 
 /* Classic's blobs and round stickers make way for the doodles */
-:is(.stage[data-theme=doodlebug], [data-theme=doodlebug] .countdown-overlay, [data-theme=doodlebug] .pinbox) > :is(.shapebox, .sticker) { display: none; }
+:is(.stage:is([data-theme=doodlebug], [data-theme=inkblot]), :is([data-theme=doodlebug], [data-theme=inkblot]) :is(.countdown-overlay, .pinbox)) > :is(.shapebox, .sticker) { display: none; }
 .doodle { flex: none; color: var(--ink); pointer-events: none; }
 .doodle.float { position: absolute; z-index: 0; }
 .doodle.bob { animation: bob 2.8s ease-in-out infinite; }
@@ -685,8 +685,100 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .theme-pick button.on { background: var(--ink); color: #fff; }
 .theme-pick .sw { display: inline-grid; grid-template-columns: 1fr 1fr; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px var(--ink); flex: none; }
 .theme-pick button.on .sw { box-shadow: 0 0 0 1.5px #fff; }
+.theme-pick .sw.inkblot + span { font-family: var(--font-ink-mono); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
 .theme-pick .sw.doodlebug + span { font-family: var(--font-hand-display); font-size: 17px; font-weight: 400; letter-spacing: .01em; }
 .phone[data-theme=doodlebug] { position: relative; }
 .phone[data-theme=doodlebug] > :is(header, main, footer) { position: relative; z-index: 1; }
 .theme-pick .sw i { display: block; }
 [data-theme=doodlebug] .ans-edit input[type=text] { color: var(--ink); }
+
+/* ---------- Inkblot: black and white line art, chunky grotesk, mono labels, solid ink accents ---------- */
+[data-theme=inkblot] {
+  --bg: #f4f4f2; --paper: #ffffff; --ink: #111111; --muted: #6b6b6b; --line: #d4d4d2; --disc: #e4e4e2;
+  --butter: #ececea; --butter-ink: #111111;
+  --sage: #e2e2e0;   --sage-ink: #111111;
+  --olive: #dcdcda;
+  --lilac: #e8e8e6;  --lilac-ink: #111111;
+  --peri: #111111;   --peri-ink: #111111;
+  --pink: #f7f7f5;   --pink-ink: #111111;
+  --peach: #e6e6e3;  --peach-ink: #111111;
+  --mint: #dfdfdc;   --mint-ink: #111111;
+  --coral: #d9d9d6;  --coral-ink: #111111;
+  --good: #111111; --bad: #111111;
+  --font-display: var(--font-ink), system-ui, sans-serif;
+  --font-main: var(--font-ink), system-ui, sans-serif;
+  --font-mono: var(--font-ink-mono), ui-monospace, monospace;
+  --radius: 24px;
+  font-family: var(--font-main);
+  color: var(--ink);
+}
+[data-theme=inkblot] h1, [data-theme=inkblot] h2, [data-theme=inkblot] h3, [data-theme=inkblot] .bignum, [data-theme=inkblot] .stage-q { letter-spacing: -0.035em; font-weight: 700; }
+/* accent words: knocked out of a solid ink bar */
+[data-theme=inkblot] em, [data-theme=inkblot] .it {
+  font-style: normal; font-weight: inherit; background: var(--ink); color: var(--paper); padding: 0 .16em; border-radius: .14em;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+/* small labels in mono, like a game HUD */
+[data-theme=inkblot] :is(.pill, .label, .stat span, .qthumb-time, .chip, .tag) { font-family: var(--font-mono); letter-spacing: -0.01em; }
+[data-theme=inkblot] .pill { font-size: 12px; text-transform: uppercase; font-weight: 700; }
+
+/* outlines: even 2px ink lines, rounded corners, no colour */
+[data-theme=inkblot] :is(.tile, .stage-q, .stat, .pinbox, .chip, .row, .card, .kpi, .pans-tile) { border: 2px solid var(--ink); }
+[data-theme=inkblot] .pill { box-shadow: inset 0 0 0 1.5px var(--ink); background: var(--paper); }
+[data-theme=inkblot] :is(.qr, .ring) { box-shadow: 0 0 0 2px var(--ink); }
+[data-theme=inkblot] .pinbox { background: var(--paper); }
+[data-theme=inkblot] .chip { background: var(--paper) !important; rotate: 0deg !important; }
+[data-theme=inkblot] .chip:hover { background: var(--ink) !important; color: var(--paper); }
+[data-theme=inkblot] .row .r { background: var(--paper); box-shadow: inset 0 0 0 2px var(--ink); }
+[data-theme=inkblot] .row:nth-child(1) .r { background: var(--ink); color: var(--paper); }
+[data-theme=inkblot] .row .g { background: var(--ink); color: var(--paper); }
+[data-theme=inkblot] .podium .block { border: 2px solid var(--ink); border-bottom: 0; }
+[data-theme=inkblot] .podium > div:nth-child(2) .block { background: var(--ink) !important; color: var(--paper); }
+[data-theme=inkblot] .bars .col { border: 2px solid var(--ink); }
+[data-theme=inkblot] .bars > div .shape { fill: var(--ink); }
+[data-theme=inkblot] .bar { background: var(--paper); box-shadow: inset 0 0 0 2px var(--ink); height: 12px; border-radius: 99px; }
+[data-theme=inkblot] .bar > div { border-radius: 99px; }
+
+/* text on ink-filled things uses the paper colour */
+[data-theme=inkblot] .btn, [data-theme=inkblot] .pill.dark, [data-theme=inkblot] .tile .tick,
+[data-theme=inkblot] .tabs button.on, [data-theme=inkblot] .qcard-head .qnum { color: var(--paper); }
+[data-theme=inkblot] .pill.dark { background: var(--ink); }
+.phone[data-theme=inkblot] footer { color: var(--paper); }
+[data-theme=inkblot] .btn { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .02em; font-size: .92em; }
+[data-theme=inkblot] .btn.light { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+[data-theme=inkblot] .btn.ghost { color: var(--ink); box-shadow: inset 0 0 0 2px currentColor; }
+
+/* answers: solid ink, white, grey, hatched (the shapes tell them apart too) */
+[data-theme=inkblot] .c0 { background: var(--ink); color: var(--paper); --deep: var(--paper); }
+[data-theme=inkblot] .c1 { background: var(--paper); --deep: var(--ink); }
+[data-theme=inkblot] .c2 { background: #e4e4e2; --deep: var(--ink); }
+[data-theme=inkblot] .c3 { background: repeating-linear-gradient(-45deg, #ffffff 0 7px, #d9d9d6 7px 9px); --deep: var(--ink); }
+[data-theme=inkblot] .tile .shape { box-shadow: 0 0 0 2px var(--ink); }
+[data-theme=inkblot] .tile.c0 .shape { background: transparent; box-shadow: 0 0 0 2px var(--paper); }
+[data-theme=inkblot] .tile.right { box-shadow: 0 0 0 4px var(--paper), 0 0 0 6px var(--ink); }
+[data-theme=inkblot] .ans-edit input[type=text] { color: var(--ink); }
+
+/* black screens: the countdowns and the phone's waiting screens flip to white on ink */
+[data-theme=inkblot] .countdown-overlay,
+.phone[data-theme=inkblot]:is([data-mood=ready], [data-mood=lobby]) {
+  --ink: #ffffff; --paper: #1d1d1d; --muted: #b9b9b9; --line: rgba(255, 255, 255, .3); --bg: #111111; --disc: #2c2c2c;
+  background: #111111; color: var(--ink);
+}
+.phone[data-theme=inkblot][data-mood=lobby] .avatar-pick > div { background: rgba(255, 255, 255, .08); }
+.phone[data-theme=inkblot][data-mood=lobby] .avatar-pick button.on { box-shadow: 0 0 0 3px #ffffff; }
+.phone[data-theme=inkblot] .avatar { box-shadow: 0 0 0 2px var(--ink); filter: grayscale(1) contrast(1.1); }
+[data-theme=inkblot] .avatar { filter: grayscale(1) contrast(1.1); }
+.phone[data-theme=inkblot][data-mood=locked] { background: #e4e4e2; }
+.phone[data-theme=inkblot][data-mood=good] { background: #ffffff; }
+.phone[data-theme=inkblot][data-mood=bad] { background: repeating-linear-gradient(-45deg, #f4f4f2 0 9px, #e6e6e3 9px 11px); }
+.phone[data-theme=inkblot]:is([data-mood=rank], [data-mood=end], [data-mood=play]) { background: var(--bg); }
+.phone[data-theme=inkblot] { position: relative; }
+.phone[data-theme=inkblot] > :is(header, main, footer) { position: relative; z-index: 1; }
+
+/* studio preview */
+.qstage[data-theme=inkblot] { background: var(--bg); border-radius: 28px; padding: 14px 18px 18px; overflow-x: hidden; }
+.qstage[data-theme=inkblot] .flash { box-shadow: 6px 6px 0 var(--ink); }
+.qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
+.qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
+/* themed stages paint their own paper (the page behind is Classic cream) */
+.stage[data-theme]:not([data-theme=classic]) { background: var(--bg); }

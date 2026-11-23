@@ -161,7 +161,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
               {THEMES.map(t => (
                 <button key={t.id} type="button" role="radio" aria-checked={theme === t.id} className={theme === t.id ? 'on' : ''}
                   title={`${t.name}: ${t.blurb}`} onClick={() => update(z => ({ ...z, theme: t.id }))}>
-                  <span className={`sw ${t.id}`} aria-hidden>{t.swatch.map(c => <i key={c} style={{ background: c }} />)}</span>
+                  <span className={`sw ${t.id}`} aria-hidden>{t.swatch.map((c, k) => <i key={k} style={{ background: c }} />)}</span>
                   <span>{t.name}</span>
                 </button>
               ))}
@@ -228,7 +228,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                 ? <p className="muted preview-note">Answers are hidden here so the quiz stays a surprise. Open <b>Edit quiz</b> to see and change them.</p>
                 : <p className="muted preview-note">Drag questions in the list to reorder them. The filled circle marks the correct answer.</p>}
               <div className={`flash-deck ${tab}`}>
-                {theme === 'doodlebug' && <Doodle name="bee" size={120} className="deck-doodle bob" />}
+                {theme !== 'classic' && <Doodle theme={theme} name="mascot" size={120} className="deck-doodle bob" />}
               {tab === 'preview' ? (
                 <article className="card pcard flash" key={`p${ci}`}>
                   <header>
