@@ -14,6 +14,8 @@ import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
 import Studio from './Studio';
 import { Doodle } from '@/lib/doodles';
 import { themeInk } from '@/lib/themes';
+import { GridReveal, clearedAt, revealSeed } from '@/lib/reveal';
+
 
 type HostSession = { pin: string; token: string };
 
@@ -310,7 +312,9 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
       <div className="stage-q">{q.q}</div>
       <div className="stage-mid">
         <Ring left={left} total={q.time * 1000} />
-        {q.image
+        {q.image && q.reveal
+          ? <GridReveal src={q.image} size="stage" seed={revealSeed(h.pin, h.qIndex)} cleared={clearedAt(1 - left / (q.time * 1000))} />
+          : q.image
           ? <img className="stage-img" src={q.image} alt="" />
           : <Doodle theme={h.theme} name="mascot" size={190} className="bob" />}
         {q.double && <span className="pill dark">2× points</span>}
@@ -336,6 +340,7 @@ function Reveal({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: ScreenProp
     <>
       <div className="stage-q">{q.q}</div>
       <div className="stage-mid">
+        {q.image && q.reveal && <img className="stage-img reveal-answer pop" src={q.image} alt="" />}
         <div className="bars">
           {dist.map((n, i) => (
             <div key={i}>

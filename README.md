@@ -68,7 +68,10 @@ Quizzes are saved in the browser, so the studio has three ways to move them arou
   WebP (a GIF becomes a still of its first frame), then `/api/image` checks the file's real type and size (1.2 MB),
   asks Claude Haiku whether it is suitable for all ages (`lib/moderate.ts`) and only then stores it in the public
   `buzz-images` Supabase Storage bucket. Nudity, sexual content, gore, hate symbols and the like are refused, and so
-  is any upload the check can't complete, so image uploads need `ANTHROPIC_API_KEY` too. The host screen shows it in place of the mascot. Quizzes only keep image URLs from that
+  is any upload the check can't complete, so image uploads need `ANTHROPIC_API_KEY` too.
+- **🧩 Grid reveal**: tick it under a question's image and the picture starts hidden behind a 5 × 4 grid of tiles
+  that clear one at a time, in a random order, while the timer runs. The last tile only goes when time is up, and the
+  answer screen shows the whole picture. Good for "what's in the picture?" rounds (`lib/reveal.tsx`). The host screen shows it in place of the mascot. Quizzes only keep image URLs from that
   bucket, so a shared quiz can't pull in pictures from other sites.
 
 Both API routes are rate-limited per IP (30 shares and 120 images an hour). The table and bucket are created by

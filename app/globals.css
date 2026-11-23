@@ -793,3 +793,18 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qimg-edit img { width: 160px; height: 100px; object-fit: cover; border-radius: 12px; background: var(--bg); flex: none; }
 .qimg-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
 .side-restore { margin-top: 0; }
+
+/* ---------- grid reveal pictures (lib/reveal.tsx) ---------- */
+.reveal { position: relative; width: fit-content; margin-inline: auto; line-height: 0; border-radius: 22px; overflow: hidden; background: var(--paper); box-shadow: 0 0 0 2.5px var(--ink); flex: 0 1 auto; min-width: 0; }
+.reveal img { display: block; max-width: 100%; object-fit: contain; user-select: none; }
+.reveal-stage img { max-width: min(56vw, 900px); max-height: 38vh; }
+.reveal-preview { border-radius: 18px; }
+.reveal-preview img { max-height: 260px; }
+.reveal-grid { position: absolute; inset: 0; display: grid; }
+.reveal-tile { display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--paper); transition: opacity .45s ease, transform .45s cubic-bezier(.3, 1.4, .5, 1); }
+.reveal-tile span { font-family: var(--font-display); font-weight: 800; font-size: clamp(14px, 2.4vh, 28px); line-height: 1; color: var(--deep, var(--ink)); opacity: .55; }
+.reveal-tile.off { opacity: 0; transform: scale(.4) rotate(-12deg); pointer-events: none; }
+.stage-mid:has(.reveal) { align-items: center; }
+.reveal-answer { max-height: 250px; max-width: min(34vw, 520px); }
+.qimg-reveal { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .reveal-tile { transition: opacity .3s ease; } .reveal-tile.off { transform: none; } }

@@ -123,7 +123,7 @@ export function cleanQuiz(quiz: Quiz): Quiz {
         correct: q.correct,
         time: Math.min(120, Math.max(5, Number(q.time) || 20)),
         double: !!q.double,
-        ...(image ? { image } : {}),
+        ...(image ? { image, ...(q.reveal ? { reveal: true } : {}) } : {}),
       };
     }),
   };
@@ -253,7 +253,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   };
   if (g.state === 'question' || g.state === 'reveal') {
     const q = currentQ(g);
-    v.question = { q: q.q, answers: q.answers, time: q.time, double: q.double, image: q.image };
+    v.question = { q: q.q, answers: q.answers, time: q.time, double: q.double, image: q.image, reveal: q.reveal };
     v.answered = ps.filter(p => answeredNow(g, p)).length;
   }
   if (g.state === 'question') {

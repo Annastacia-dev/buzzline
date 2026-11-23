@@ -10,6 +10,7 @@ import { downloadTemplate } from '@/lib/template';
 import { QuizSelect } from '@/lib/select';
 import { api, Shape } from '@/lib/client';
 import { shrinkImage } from '@/lib/images';
+import { GridReveal, clearedAt } from '@/lib/reveal';
 import { Doodle } from '@/lib/doodles';
 import { THEMES, themeOf, DEFAULT_THEME, type ThemeId } from '@/lib/themes';
 
@@ -317,7 +318,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                         onClick={() => setCur(i)}>
                         <span className="qthumb-top">
                           <span className="qthumb-n">{i + 1}</span>
-                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}{q.image ? ' · 🖼' : ''}</span>
+                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}{q.image ? (q.reveal ? ' · 🧩' : ' · 🖼') : ''}</span>
                         </span>
                         <span className="qthumb-q">{q.q || <i>No question text yet</i>}</span>
                         <span className={`qthumb-ans ${q.answers.length === 2 ? 'two' : ''}`} aria-hidden>
@@ -343,9 +344,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                     <span className="pill dark">Question {ci + 1}</span>
                     <span className="pill">⏱ {cq.time}s</span>
                     {cq.double && <span className="pill">2× points</span>}
+                    {cq.image && cq.reveal && <span className="pill">🧩 Grid reveal</span>}
                   </header>
                   <h2>{cq.q || <span className="muted">No question text yet</span>}</h2>
-                  {cq.image && <img className="q-img" src={cq.image} alt={`Picture for question ${ci + 1}`} />}
+                  {cq.image && (cq.reveal
+                    ? <GridReveal src={cq.image} size="preview" seed={ci + 1} cleared={clearedAt(0.45)} alt={`Picture for question ${ci + 1}, partly hidden: tiles clear as the timer runs`} />
+                    : <img className="q-img" src={cq.image} alt={`Picture for question ${ci + 1}`} />)}
                   <div className={`pans ${cq.answers.length === 2 ? 'two' : ''}`}>
                     {cq.answers.map((a, j) => (
                       <div key={j} className={`pans-tile c${j}`}><Shape i={j} /><span>{a || '—'}</span></div>
@@ -383,7 +387,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                           <button type="button" className="btn light small" onClick={() => imgRef.current?.click()} aria-busy={busy} disabled={busy}>
                             {busy ? 'Uploading…' : cq.image ? 'Replace image' : '🖼 Add an image'}
                           </button>
-                          {cq.image && !busy && <button type="button" className="btn ghost small" onClick={() => setQ(ci, x => { delete x.image; })}>Remove</button>}
+                          {cq.image && !busy && <button type="button" className="btn ghost small" onClick={() => setQ(ci, x => { delete x.image; delete x.reveal; })}>Remove</button>}
+                          {cq.image && !busy && (
+                            <label className="qimg-reveal" title="The picture starts hidden behind tiles that clear one by one while the timer runs">
+                              <input type="checkbox" checked={!!cq.reveal} onChange={e => setQ(ci, x => { if (e.target.checked) x.reveal = true; else delete x.reveal; })} /> 🧩 Grid reveal
+                            </label>
+                          )}
                           {!cq.image && !busy && <span className="muted">or drop one here. Shown big on the host screen.</span>}
                         </div>
                         <input ref={imgRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden
