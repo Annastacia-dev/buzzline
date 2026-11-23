@@ -780,7 +780,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -812,3 +812,118 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 /* ---------- join page in the game's theme ---------- */
 .join-page { background: var(--bg); transition: background-color .4s ease; }
 .join-page > :not(.doodle) { position: relative; z-index: 1; }
+
+/* ---------- Glass: frosted, translucent panels floating over a slowly flowing pastel wash ---------- */
+[data-theme=glass] {
+  --bg: #eef0fb; --paper: rgba(255, 255, 255, .5); --ink: #1d1b3a; --muted: #5d5b7a; --line: rgba(255, 255, 255, .7);
+  --butter: rgba(255, 214, 140, .42); --butter-ink: #b45309;
+  --sage:   rgba(110, 231, 200, .36); --sage-ink:   #0f766e;
+  --olive:  rgba(186, 230, 253, .5);
+  --lilac:  rgba(167, 139, 250, .34); --lilac-ink:  #5b21b6;
+  --peri:   rgba(129, 140, 248, .34); --peri-ink:   #3730a3;
+  --pink:   rgba(244, 114, 182, .3);  --pink-ink:   #be185d;
+  --peach:  rgba(253, 186, 140, .4);  --peach-ink:  #c2410c;
+  --mint:   rgba(94, 234, 212, .32);  --mint-ink:   #0f766e;
+  --coral:  rgba(251, 113, 133, .3);  --coral-ink:  #be123c;
+  --good: #0f9f6e; --bad: #e11d48;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --radius: 30px;
+  /* the wash: soft colour pools that drift slowly behind the glass */
+  --glass-wash:
+    radial-gradient(40% 50% at 12% 18%, #ffc6e6 0, transparent 70%),
+    radial-gradient(45% 55% at 88% 10%, #bfe6ff 0, transparent 70%),
+    radial-gradient(45% 50% at 78% 88%, #c9f5e6 0, transparent 70%),
+    radial-gradient(40% 50% at 18% 92%, #ddd3ff 0, transparent 70%),
+    linear-gradient(135deg, #eef0ff, #fdf1f8 55%, #eefaf6);
+  /* one recipe for every pane of glass: blur what is behind, a bright rim and a soft drop */
+  --glass-blur: blur(22px) saturate(170%);
+  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -1px 0 rgba(255, 255, 255, .35), inset 0 0 0 1px rgba(255, 255, 255, .55);
+  --glass-drop: 0 10px 34px -8px rgba(45, 40, 110, .22);
+  font-family: var(--font-main);
+  color: var(--ink);
+}
+@keyframes glass-flow { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } }
+:is(.stage, .phone, .qstage, .join-page)[data-theme=glass], [data-theme=glass] .countdown-overlay {
+  background: var(--glass-wash); background-size: 160% 160%; animation: glass-flow 26s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.stage, .phone, .qstage, .join-page)[data-theme=glass], [data-theme=glass] .countdown-overlay { animation: none; }
+}
+/* Classic's shapes make way for the glass */
+:is(.stage[data-theme=glass], [data-theme=glass] :is(.countdown-overlay, .pinbox)) > :is(.shapebox, .sticker) { display: none; }
+
+[data-theme=glass] h1, [data-theme=glass] h2, [data-theme=glass] h3, [data-theme=glass] .bignum,
+[data-theme=glass] .stage-q, [data-theme=glass] .logo { letter-spacing: -0.025em; font-weight: 700; }
+/* accent words: a colour gradient through the glass */
+[data-theme=glass] em, [data-theme=glass] .it {
+  font-style: normal; font-weight: inherit; letter-spacing: inherit;
+  background: linear-gradient(100deg, #7c3aed, #db2777 60%, #f97316); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* panes of glass */
+[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .ring, .row, .kpi, .qcard, .tabs, .qthumb, .pans-tile, .chip, .qr, .field, .pill, .flash, .tile) {
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-rim), var(--glass-drop);
+}
+[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .ring, .row, .kpi, .qcard, .tabs, .qthumb, .chip, .qr, .field, .flash) { background: rgba(255, 255, 255, .46); border: 0; }
+[data-theme=glass] .pill { background: rgba(255, 255, 255, .5); }
+[data-theme=glass] .pill.dark, [data-theme=glass] .qthumb-n, [data-theme=glass] .qcard-head .qnum { background: rgba(29, 27, 58, .82); color: #fff; }
+[data-theme=glass] .chip { rotate: 0deg !important; }
+[data-theme=glass] .field:focus { box-shadow: var(--glass-rim), 0 0 0 3px rgba(124, 58, 237, .35); }
+[data-theme=glass] .qthumb.on { box-shadow: var(--glass-rim), 0 0 0 2.5px rgba(124, 58, 237, .55), var(--glass-drop); }
+[data-theme=glass] .row .r { background: rgba(255, 255, 255, .6); }
+[data-theme=glass] .row:nth-child(1) .r { background: linear-gradient(135deg, #fde68a, #f9a8d4); }
+
+/* buttons: dark smoked glass with a bright top edge; light and ghost ones are clear glass */
+[data-theme=glass] .btn {
+  background: linear-gradient(180deg, rgba(64, 58, 128, .92), rgba(29, 27, 58, .94)); color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 8px 22px -6px rgba(29, 27, 58, .45);
+}
+[data-theme=glass] .btn.light, [data-theme=glass] .btn.ghost {
+  background: rgba(255, 255, 255, .5); color: var(--ink); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-rim), 0 6px 18px -8px rgba(45, 40, 110, .3);
+}
+[data-theme=glass] .btn.ghost { background: rgba(255, 255, 255, .28); }
+[data-theme=glass] .tabs button.on { background: rgba(29, 27, 58, .85); color: #fff; }
+[data-theme=glass] .tabs button:hover:not(.on) { background: rgba(255, 255, 255, .5); }
+
+/* answers: tinted glass in violet, pink, teal and amber (the shapes tell them apart too) */
+[data-theme=glass] .c0 { background: linear-gradient(160deg, rgba(196, 181, 253, .62), rgba(139, 92, 246, .34)); --deep: #5b21b6; }
+[data-theme=glass] .c1 { background: linear-gradient(160deg, rgba(251, 207, 232, .66), rgba(236, 72, 153, .3)); --deep: #be185d; }
+[data-theme=glass] .c2 { background: linear-gradient(160deg, rgba(167, 243, 208, .62), rgba(20, 184, 166, .3)); --deep: #0f766e; }
+[data-theme=glass] .c3 { background: linear-gradient(160deg, rgba(254, 230, 160, .7), rgba(245, 158, 11, .3)); --deep: #b45309; }
+[data-theme=glass] .tile .shape { background: rgba(255, 255, 255, .75); }
+[data-theme=glass] .tile.right { box-shadow: var(--glass-rim), 0 0 0 3px rgba(255, 255, 255, .9), 0 0 0 6px var(--deep, var(--ink)), var(--glass-drop); }
+[data-theme=glass] .tile .tick { background: var(--ink); }
+[data-theme=glass] .bars .col { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-rim); }
+[data-theme=glass] .bars > div:nth-child(1) .shape { fill: #5b21b6; } [data-theme=glass] .bars > div:nth-child(2) .shape { fill: #be185d; }
+[data-theme=glass] .bars > div:nth-child(3) .shape { fill: #0f766e; } [data-theme=glass] .bars > div:nth-child(4) .shape { fill: #b45309; }
+[data-theme=glass] .podium .block { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-rim); }
+
+/* grid reveal: the tiles are frosted panes that melt away */
+[data-theme=glass] .reveal-tile { -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6); }
+[data-theme=glass] :is(.stage-img, .reveal) { box-shadow: var(--glass-rim), var(--glass-drop); }
+
+/* countdowns and the phone screens: deeper washes, so each moment still has its own colour */
+[data-theme=glass] .countdown-overlay {
+  --glass-wash:
+    radial-gradient(45% 55% at 15% 20%, #a78bfa 0, transparent 70%), radial-gradient(45% 55% at 85% 80%, #f472b6 0, transparent 70%),
+    radial-gradient(40% 45% at 80% 15%, #7dd3fc 0, transparent 70%), linear-gradient(135deg, #c7d2fe, #fbcfe8);
+}
+.phone[data-theme=glass] footer { background: rgba(29, 27, 58, .82); color: #fff; -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+.phone[data-theme=glass][data-mood=ready] { --glass-wash: radial-gradient(50% 50% at 20% 20%, #a78bfa 0, transparent 70%), radial-gradient(50% 50% at 80% 80%, #7dd3fc 0, transparent 70%), linear-gradient(135deg, #c7d2fe, #e0e7ff); }
+.phone[data-theme=glass][data-mood=locked] { --glass-wash: radial-gradient(55% 50% at 30% 25%, #c4b5fd 0, transparent 70%), linear-gradient(135deg, #ede9fe, #e0e7ff); }
+.phone[data-theme=glass][data-mood=good] { --glass-wash: radial-gradient(55% 50% at 25% 20%, #6ee7b7 0, transparent 70%), radial-gradient(50% 50% at 80% 85%, #7dd3fc 0, transparent 70%), linear-gradient(135deg, #d1fae5, #e0f2fe); }
+.phone[data-theme=glass][data-mood=bad] { --glass-wash: radial-gradient(55% 50% at 25% 20%, #fda4af 0, transparent 70%), radial-gradient(50% 50% at 80% 85%, #f9a8d4 0, transparent 70%), linear-gradient(135deg, #ffe4e6, #fce7f3); }
+.phone[data-theme=glass]:is([data-mood=rank], [data-mood=end]) { --glass-wash: radial-gradient(50% 50% at 20% 15%, #fde68a 0, transparent 70%), radial-gradient(50% 50% at 85% 85%, #f9a8d4 0, transparent 70%), linear-gradient(135deg, #fef3c7, #fce7f3); }
+.phone[data-theme=glass][data-mood=lobby] .avatar-pick > div { background: rgba(255, 255, 255, .4); }
+.phone[data-theme=glass] > :is(header, main, footer) { position: relative; z-index: 1; }
+
+/* studio preview */
+.qstage[data-theme=glass] { border-radius: 28px; padding: 14px 18px 18px; overflow-x: hidden; }
+.qstage[data-theme=glass] .flash { border-radius: 30px; }
+.qstage[data-theme=glass] .flash-deck::before, .qstage[data-theme=glass] .flash-deck::after {
+  border: 0; background: rgba(255, 255, 255, .32); box-shadow: var(--glass-rim); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+}
+[data-theme=glass] .pcard.flash .pans-tile { border: 0; box-shadow: var(--glass-rim), 0 8px 22px -10px rgba(45, 40, 110, .35); }

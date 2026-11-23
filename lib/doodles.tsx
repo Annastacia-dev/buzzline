@@ -3,7 +3,7 @@
 // - Doodlebug: pen sketches with a bee mascot, wobbled by a displacement filter.
 // - Inkblot: bold black line art with solid black accents on flat grey circles, and a buzzer mascot.
 import { useId, type CSSProperties, type ReactNode } from 'react';
-import type { ThemeId } from './themes';
+import { hasDoodles, type ThemeId } from './themes';
 
 const ink = { fill: 'none', stroke: 'currentColor', strokeWidth: 3.6, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 const PAPER = 'var(--paper)', TINT = 'var(--sage)', SAND = 'var(--butter)';
@@ -241,7 +241,7 @@ export function Doodle({ theme, name, size = 120, rotate = 0, className = '', st
   theme: ThemeId; name: DoodleName; size?: number; rotate?: number; className?: string; style?: CSSProperties; label?: string;
 }) {
   const id = 'wob' + useId().replace(/[^\w-]/g, '');
-  if (theme === 'classic') return null;
+  if (!hasDoodles(theme)) return null;
   const sketch = theme === 'doodlebug';
   const { box, art } = (sketch ? DOODLES : INKS)[name];
   return (

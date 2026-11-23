@@ -45,14 +45,16 @@ Each server instance allows 10 generations per visitor per hour. Without `ANTHRO
 
 Pick a theme from the dropdown next to **Host this quiz** in the studio. The choice is remembered in the browser and
 stays as you switch quizzes; the preview, the host screen and every player's phone use it. The join page takes on the
-game's theme as soon as the PIN matches a game (including PINs that arrive in a link), and the landing page shows all
-three side by side.
+game's theme as soon as the PIN matches a game (including PINs that arrive in a link), and the landing page shows them
+all side by side.
 
 - **Classic** (default): cream paper, pastel blocks, black pills and stickers.
 - **Doodlebug**: blue ink on beige paper, handwriting (Caveat Brush and Patrick Hand) and wobbly hand-drawn outlines,
   with doodle illustrations by a little bee mascot.
 - **Inkblot**: black and white line art, Space Grotesk with Space Mono labels, solid ink accents, hatched fills and
   flat grey circles behind the illustrations, with a buzzer mascot.
+- **Glass**: frosted, translucent panels (`backdrop-filter`) floating over a slowly drifting pastel wash, tinted-glass
+  answer tiles and the device's own system font. Each phone screen gets its own wash colour.
 
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.

@@ -58,6 +58,11 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     blobs: ['#cdd6f5', '#e9dcbd'], pills: ['#e9dcbd', '#cdd6f5', '#fbf6ea'], deck: ['#e9dcbd', '#cdd6f5'],
     tiles: [['#1f3fb9', '#fbf6ea'], ['#fbf6ea', '#1f3fb9'], ['#cdd6f5', '#1f3fb9'], ['#e9dcbd', '#1f3fb9']],
   },
+  glass: {
+    bg: '#eef0fb', paper: '#ffffff', ink: '#1d1b3a', muted: '#5d5b7a', accent: '#7c3aed',
+    blobs: ['#ffc6e6', '#bfe6ff'], pills: ['#e4e0ff', '#d4f3ea', '#ffffff'], deck: ['#e4e0ff', '#ffe0f0'],
+    tiles: [['#e4dcff', '#5b21b6'], ['#ffd9ec', '#be185d'], ['#d1f3ec', '#0f766e'], ['#ffecc7', '#b45309']],
+  },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
     blobs: ['#e4e4e2', '#ececea'], pills: ['#ececea', '#e2e2e0', '#ffffff'], deck: ['#ececea', '#e2e2e0'],

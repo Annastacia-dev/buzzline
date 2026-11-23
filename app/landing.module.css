@@ -138,7 +138,7 @@
 
 /* ---------- themes ---------- */
 .sectionLede { margin: 14px 0 0; font-size: 19px; line-height: 1.5; max-width: 620px; color: #4a4538; }
-.themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 16px; }
 .theme { margin: 0; display: flex; flex-direction: column; gap: 16px; }
 .themeStage {
   position: relative; background: var(--bg); color: var(--ink); border-radius: 32px; padding: 68px 22px 26px;
@@ -151,5 +151,5 @@
 .themeCard .liveQ { font-size: 20px; }
 .theme figcaption h3 { margin: 0 0 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; }
 .theme figcaption p { margin: 0; line-height: 1.5; color: rgba(22, 22, 22, .7); }
-@media (max-width: 980px) { .themes { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .themes { grid-template-columns: 1fr; } }
+.themeStage[data-theme=glass] { background: var(--glass-wash); }
