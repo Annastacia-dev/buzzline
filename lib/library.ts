@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { db } from './supabase-server';
 import { GameError, cleanQuiz } from './game';
 import { IMAGE_BUCKET, MAX_IMAGE_BYTES } from './images';
+import { checkImage } from './moderate';
 import type { Quiz } from './types';
 
 // Small per-instance limits so one visitor can't fill the database or the bucket. Reset every hour.
@@ -41,23 +42,23 @@ export async function sharedQuiz(idIn: unknown): Promise<Quiz> {
 }
 
 /** Recognises the image formats we accept from their first bytes (the declared type can't be trusted). */
-function sniff(b: Uint8Array): { type: string; ext: string } | null {
+function sniff(b: Uint8Array): { type: 'image/jpeg' | 'image/png' | 'image/webp'; ext: string } | null {
   const ascii = (from: number, to: number) => String.fromCharCode(...b.slice(from, to));
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return { type: 'image/jpeg', ext: 'jpg' };
   if (b[0] === 0x89 && ascii(1, 4) === 'PNG') return { type: 'image/png', ext: 'png' };
-  if (ascii(0, 4) === 'GIF8') return { type: 'image/gif', ext: 'gif' };
   if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return { type: 'image/webp', ext: 'webp' };
   return null;
 }
 
-/** Stores a question image and returns its public URL. */
+/** Checks a question image is suitable for all ages, stores it and returns its public URL. */
 export async function uploadImage(file: unknown, ip: string) {
   rateLimit(`image:${ip}`, 120, 'image uploads');
   if (!(file instanceof Blob)) throw new GameError('No image received', 400);
   if (file.size > MAX_IMAGE_BYTES) throw new GameError('That image is too large (1.2 MB at most)', 413);
   const bytes = new Uint8Array(await file.arrayBuffer());
   const kind = sniff(bytes);
-  if (!kind) throw new GameError('Pick a JPG, PNG, WebP or GIF image', 415);
+  if (!kind) throw new GameError('Pick a JPG, PNG or WebP image', 415);
+  await checkImage(bytes, kind.type);
   const path = `q/${shortId(16)}.${kind.ext}`;
   const { error } = await db().storage.from(IMAGE_BUCKET).upload(path, bytes, { contentType: kind.type, cacheControl: '31536000', upsert: false });
   fail(error);

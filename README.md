@@ -65,8 +65,10 @@ Quizzes are saved in the browser, so the studio has three ways to move them arou
 - **⤓ Back up** downloads every quiz as one JSON file. **Restore a backup** (or Import) adds the quizzes from it,
   skipping ones that are already there.
 - **Question images**: add a picture under any question (click or drop). The browser shrinks it to at most 1600 px
-  WebP, then `/api/image` checks the file's real type and size (1.2 MB) and stores it in the public `buzz-images`
-  Supabase Storage bucket. The host screen shows it in place of the mascot. Quizzes only keep image URLs from that
+  WebP (a GIF becomes a still of its first frame), then `/api/image` checks the file's real type and size (1.2 MB),
+  asks Claude Haiku whether it is suitable for all ages (`lib/moderate.ts`) and only then stores it in the public
+  `buzz-images` Supabase Storage bucket. Nudity, sexual content, gore, hate symbols and the like are refused, and so
+  is any upload the check can't complete, so image uploads need `ANTHROPIC_API_KEY` too. The host screen shows it in place of the mascot. Quizzes only keep image URLs from that
   bucket, so a shared quiz can't pull in pictures from other sites.
 
 Both API routes are rate-limited per IP (30 shares and 120 images an hour). The table and bucket are created by

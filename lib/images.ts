@@ -15,12 +15,11 @@ export function validImage(v: unknown): string | undefined {
 }
 
 /**
- * Shrinks a picked image in the browser before upload: at most 1600 px on the long side, saved as WebP
- * (animated GIFs are kept as they are, if small enough).
+ * Shrinks a picked image in the browser before upload: at most 1600 px on the long side, saved as WebP.
+ * A GIF becomes a still of its first frame (that is the frame the server's content check sees).
  */
 export async function shrinkImage(file: File): Promise<Blob> {
   if (!file.type.startsWith('image/')) throw new Error('Pick an image file (JPG, PNG, WebP or GIF).');
-  if (file.type === 'image/gif' && file.size <= MAX_IMAGE_BYTES) return file;
   const bmp = await createImageBitmap(file).catch(() => { throw new Error("That image couldn't be read. Try a JPG or PNG."); });
   const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
   const canvas = document.createElement('canvas');
