@@ -41,6 +41,19 @@ checks the result (2–4 unique answers, a valid correct index) and the new quiz
 Each server instance allows 10 generations per visitor per hour. Without `ANTHROPIC_API_KEY` the button shows a
 "not set up" message and everything else works.
 
+## Brand, SEO and GEO
+
+- **Brand assets** live in `public/brand/` (logo, white logo, logo + mark lockup, the "b." mark; SVG and PNG) and are
+  built from the brand font by `pnpm brand` (`scripts/brand.mjs`), which also writes the favicon (`app/favicon.ico`,
+  `app/icon.svg`), the Apple touch icon and the web app icons in `public/icons/`. Fonts are in `assets/fonts/` (SIL OFL).
+- **Share images** (`opengraph-image.tsx` in `app/`, `app/host` and `app/join`) are drawn with `next/og` at build time.
+- **Metadata**: titles, descriptions, canonical links and Open Graph / X cards in each segment's `layout.tsx`;
+  `app/sitemap.ts`, `app/robots.ts` and `app/manifest.ts`. The in-game `/play` screen is `noindex`.
+- **GEO** (answer engines like ChatGPT, Claude, Perplexity and Google AI Overviews): the landing page has a visible FAQ plus
+  JSON-LD (`WebSite`, `WebApplication`, `FAQPage`), `/llms.txt` gives a plain-text summary, and `robots.txt` welcomes AI crawlers.
+  All of it comes from one source, `lib/site.ts`, so the facts stay in step.
+- Set `NEXT_PUBLIC_SITE_URL` if you add a custom domain; otherwise Vercel's production URL is used for canonical links.
+
 ## How it's built
 
 - **Next.js App Router**. Pages: `app/page.tsx` (landing), `app/join`, `app/play` (phone), `app/host` (quiz studio + stage).
@@ -55,7 +68,7 @@ Each server instance allows 10 generations per visitor per hour. Without `ANTHRO
   If your Supabase project is elsewhere, change it to the nearest Vercel region.
 - **Quizzes** are saved in the host browser's localStorage. Each quiz opens in **Preview** (questions and answers, with the right
   answer hidden); **Edit quiz** shows the answers and lets the host add, edit, duplicate, delete and reorder questions
-  (drag the handle or use the arrows). **Import spreadsheet** creates a quiz from a Kahoot-format `.xlsx`
+  (one question at a time, with a scrollable rail of all questions: drag in the rail or use the arrows). **Import spreadsheet** creates a quiz from a Kahoot-format `.xlsx`
   (header row Question, Answer 1–4, Time limit (seconds), Correct answer(s), with Kahoot's official template also accepted;
   read in the browser by `lib/spreadsheet.ts`). Rows it can't use are listed after the import.
   **Download spreadsheet template** under the button gives a ready `.xlsx` with those columns and four example questions

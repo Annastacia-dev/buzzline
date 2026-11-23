@@ -3,6 +3,7 @@ import { Shape } from '@/lib/client';
 import { Blob, Icon, Scallop, Squircle, Sticker, Tag, type IconName } from '@/lib/deco';
 import QuickJoin from './QuickJoin';
 import styles from './landing.module.css';
+import { FAQ, FEATURES, SITE, SITE_URL } from '@/lib/site';
 
 const steps = [
   { n: '01', title: 'Build your quiz', bg: 'var(--butter)', rows: ['Write questions', 'Set the timers', 'Pick double-points rounds'] },
@@ -16,7 +17,7 @@ const features: { title: string; body: string; bg: string; ink: string; icon: Ic
   { title: 'Double points', body: 'Flag the big questions for 2× so nobody gives up early.', bg: 'var(--mint)', ink: 'var(--mint-ink)', icon: 'sparkle' },
   { title: 'No app, no accounts', body: 'Players join from any phone browser with just a nickname.', bg: 'var(--coral)', ink: 'var(--coral-ink)', icon: 'smile' },
   { title: 'Live answer chart', body: 'See how the room split after every question, then reveal.', bg: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
-  { title: 'Reusable quizzes', body: 'Saved in your browser. Export as JSON to share or move them.', bg: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'star' },
+  { title: 'AI & Kahoot import', body: 'Type a topic and Claude writes the quiz, or import a Kahoot-style spreadsheet. Saved in your browser.', bg: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'star' },
 ];
 
 const scoring = [
@@ -26,14 +27,36 @@ const scoring = [
   { k: 'Players', v: '200' },
 ];
 
+// Structured data for search engines and AI answer engines: the app itself, the site, and the FAQ below.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, name: SITE.name, url: SITE_URL, description: SITE.description, inLanguage: 'en' },
+    {
+      '@type': 'WebApplication', '@id': `${SITE_URL}/#app`, name: SITE.name, url: SITE_URL, description: SITE.description,
+      applicationCategory: 'GameApplication', applicationSubCategory: 'Quiz game', operatingSystem: 'Any (web browser)',
+      browserRequirements: 'Requires a modern web browser with JavaScript', isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      featureList: FEATURES, image: `${SITE_URL}/opengraph-image`, screenshot: `${SITE_URL}/opengraph-image`,
+      audience: { '@type': 'Audience', audienceType: 'Teachers, event hosts, teams and friends running quiz nights' },
+    },
+    {
+      '@type': 'FAQPage', '@id': `${SITE_URL}/#faq`,
+      mainEntity: FAQ.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
+  ],
+};
+
 export default function Landing() {
   return (
     <div className={styles.page}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <nav className={styles.nav}>
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <div className={styles.navLinks}>
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
+          <a href="#faq">FAQ</a>
         </div>
         <div className={styles.navCta}>
           <Link href="/join" className="btn ghost small">Join a game</Link>
@@ -138,6 +161,21 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ---------- FAQ (also published as structured data above) ---------- */}
+      <section id="faq" className={styles.section}>
+        <div className={styles.sectionHead}>
+          <h2>Questions, <em>answered</em></h2>
+        </div>
+        <div className={styles.faq}>
+          {FAQ.map((f, i) => (
+            <details key={f.q} className={styles.faqItem} open={i === 0}>
+              <summary><h3>{f.q}</h3><span className={styles.faqIcon} aria-hidden>+</span></summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       {/* ---------- closing ---------- */}
       <section className={styles.closing}>
         <h2>Ask.<br />Buzz.<br />Repeat.</h2>
@@ -151,6 +189,11 @@ export default function Landing() {
 
       <footer className={styles.footer}>
         <span className="logo" style={{ fontSize: 20 }}>Buzzline<span className="dot" /></span>
+        <nav className={styles.footerLinks} aria-label="Footer">
+          <Link href="/host">Host a quiz</Link>
+          <Link href="/join">Join a game</Link>
+          <a href="#faq">FAQ</a>
+        </nav>
         <span>Made for classrooms, team socials and quiz nights.</span>
       </footer>
     </div>
