@@ -192,7 +192,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .countdown-overlay h1 { font-weight: 800; line-height: 1.05; }
 
 /* ---------- host: quiz studio ---------- */
-.studio { display: grid; grid-template-columns: 290px 1fr; min-height: 100vh; }
+.studio { display: grid; grid-template-columns: 290px minmax(0, 1fr); min-height: 100vh; }
 .side { padding: 24px 18px; display: flex; flex-direction: column; gap: 16px; border-right: 1.5px solid var(--line); background: var(--paper); }
 .side h3 { font-family: var(--font-main); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; }
 .qlist { display: grid; gap: 6px; }
@@ -205,13 +205,13 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .editor-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .editor-top .field { flex: 1; min-width: 220px; font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; background: transparent; border-color: transparent; padding-left: 4px; }
 .editor-top .field:focus { border-color: var(--line); background: var(--paper); }
-.qcard { display: grid; gap: 14px; }
+.qcard { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .qcard-head { display: flex; align-items: center; gap: 10px; font-weight: 600; flex-wrap: wrap; font-size: 14px; }
 .qcard-head .qnum { background: var(--ink); color: #fff; padding: 5px 12px; border-radius: 999px; }
 .qcard-head .spacer { flex: 1; }
 .qcard-head select { padding: 6px 8px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper); }
 .qcard-head input[type=checkbox] { accent-color: var(--ink); }
-.ans-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ans-edit { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .ans-edit label { display: flex; align-items: center; gap: 10px; padding: 7px 7px 7px 14px; border-radius: 20px; }
 .ans-edit input[type=text] { flex: 1; border: 0; border-radius: 14px; padding: 10px 12px; font-size: 15px; min-width: 0; background: rgba(255,255,255,.75); outline: none; }
 .ans-edit input[type=text]:focus { background: #fff; }
@@ -456,9 +456,13 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 
 /* ---------- studio: preview / edit tabs ---------- */
 .quiz-heading { flex: 1; min-width: 220px; margin: 0; font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; padding: 14px 4px; overflow-wrap: anywhere; }
-.editor-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+/* The tabs, Add question and Delete stay in reach while scrolling through questions. */
+.editor-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; top: 0; z-index: 20;
+  background: var(--bg); margin: 0 -12px; padding: 10px 12px; border-radius: 0 0 20px 20px; }
 .editor-bar .spacer { flex: 1; }
-.quiz-meta { font-size: 14px; font-weight: 600; }
+.quiz-meta { font-size: 14px; font-weight: 600; min-width: 0; flex: 0 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.editor-bar .btn, .editor-bar .tabs { white-space: nowrap; flex-shrink: 0; }
+@media (min-width: 960px) { .editor-bar { flex-wrap: nowrap; } }
 .tabs { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
 .tabs button { border: 0; background: transparent; font: inherit; font-weight: 700; font-size: 15px; color: var(--ink); padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
 .tabs button:hover:not(.on) { background: var(--cream, #fbf6ec); }
@@ -484,3 +488,9 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qcard.drop-before::before, .qcard.drop-after::after { content: ''; position: absolute; left: 12px; right: 12px; height: 5px; border-radius: 999px; background: var(--pink-ink); }
 .qcard.drop-before::before { top: -11px; }
 .qcard.drop-after::after { bottom: -11px; }
+
+/* Studio sidebar stays put while the quiz scrolls (side by side layouts only). */
+@media (min-width: 761px) {
+  .side { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; overscroll-behavior: contain; }
+}
+@media (max-width: 760px) { .editor-bar .quiz-meta { display: none; } }

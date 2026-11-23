@@ -54,6 +54,23 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   }
   const endDrag = () => { setDrag(null); setArmed(null); };
 
+  // "+ Add question" from the toolbar: add a blank question, switch to editing, then scroll to it and focus its text.
+  const focusQ = useRef<number | null>(null);
+  function addQuestion() {
+    if (!quiz) return;
+    focusQ.current = quiz.questions.length;
+    setTab('edit');
+    update(z => { z.questions.push(blankQuestion()); return z; });
+  }
+  useEffect(() => {
+    if (focusQ.current == null || tab !== 'edit') return;
+    const card = document.querySelectorAll<HTMLElement>('.qcard')[focusQ.current];
+    if (!card) return;
+    focusQ.current = null;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.querySelector<HTMLInputElement>('input.field')?.focus({ preventScroll: true });
+  });
+
   async function remove() {
     if (!quiz) return;
     const ok = await ask({ title: `Delete "${quiz.title}"?`, message: 'This removes the quiz from this browser and can’t be undone.', confirm: 'Delete quiz', danger: true });
@@ -131,6 +148,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
               {quiz.questions.length} question{quiz.questions.length === 1 ? '' : 's'} · about {Math.max(1, Math.round(quiz.questions.reduce((t, q) => t + q.time + 15, 0) / 60))} min
             </span>
             <span className="spacer" />
+            <button className="btn small" onClick={addQuestion}>+ Add question</button>
             <button className="btn ghost small" onClick={remove}>Delete quiz</button>
           </div>
           {error && <div className="card error" style={{ padding: 14 }}>{error}</div>}
@@ -206,7 +224,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                 </div>
                 );
               })}
-              <button className="btn ghost" onClick={() => update(z => { z.questions.push(blankQuestion()); return z; })}>+ Add question</button>
+              <button className="btn ghost" onClick={addQuestion}>+ Add question</button>
             </>
           )}
           </div>
