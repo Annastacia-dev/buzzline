@@ -27,8 +27,8 @@ const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: numbe
   classic: { q: 'Which planet is known as the Red Planet?', answers: ['Venus', 'Mars', 'Jupiter', 'Mercury'], right: 1, note: 'The default. Bright and loud, made for a TV across the room.' },
   doodlebug: { q: 'How many legs does a bee have?', answers: ['Four', 'Six', 'Eight', 'Ten'], right: 1, note: 'Feels like a notebook. Great for classrooms and family nights.' },
   inkblot: { q: 'Which element has the symbol Fe?', answers: ['Gold', 'Iron', 'Lead', 'Tin'], right: 1, note: 'Crisp and graphic. Suits offices, projectors and team socials.' },
-  toybox: { q: 'How many sides does a cube have?', answers: ['Four', 'Six', 'Eight', 'Twelve'], right: 1, note: 'Bouncy and tactile. Kids and party crowds love tapping it.' },
-  glass: { q: 'Which gas makes up most of the air?', answers: ['Oxygen', 'Nitrogen', 'Argon', 'Helium'], right: 1, note: 'Calm and premium, like clear acrylic. Looks great on big bright screens.' },
+  toybox: { q: 'How many sides does a cube have?', answers: ['Four', 'Six', 'Eight', 'Twelve'], right: 1, note: 'Soft and squishy, like modelling clay. Kids and party crowds love tapping it.' },
+  glass: { q: 'Which gas makes up most of the air?', answers: ['Oxygen', 'Nitrogen', 'Argon', 'Helium'], right: 1, note: 'Calm and premium, like a phone’s liquid glass. Looks great on big bright screens.' },
 };
 
 const scoring = [

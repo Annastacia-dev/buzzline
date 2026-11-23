@@ -53,11 +53,11 @@ all side by side.
   with doodle illustrations by a little bee mascot.
 - **Inkblot**: black and white line art, Space Grotesk with Space Mono labels, solid ink accents, hatched fills and
   flat grey circles behind the illustrations, with a buzzer mascot.
-- **Toybox**: chunky 3D blocks with glossy tops and deep coloured edges that press down when tapped, the rounded
-  Fredoka font, and Classic's shapes lifted off the page as 3D cut-outs.
-- **Glass**: thick clear acrylic slabs on a calm, light surface: bright rims, a domed highlight across the top, soft
-  coloured glows inside the edges (lavender, peach, mint, amber) and tinted shadows, with near-black text in the
-  device's own system font. Answer shapes and the timer are glass beads; grid reveal tiles are frosted panes.
+- **Toybox**: soft pastel clay: puffy matte shapes in lavender, pink, mint and butter, lit from the top-left with soft
+  tinted shadows, that squish when tapped. Rounded Fredoka font, with Classic's shapes as clay cut-outs.
+- **Glass**: clear, colourless liquid glass on a soft grey surface: frosted panes with bright specular rims and soft
+  neumorphic light and shade, smoked-glass main buttons and near-black text in the device's own system font. The
+  answers are told apart by their shapes; grid reveal tiles are frosted panes.
 
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.

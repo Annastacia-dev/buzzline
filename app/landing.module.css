@@ -153,4 +153,4 @@
 .theme figcaption p { margin: 0; line-height: 1.5; color: rgba(22, 22, 22, .7); }
 @media (max-width: 640px) { .themes { grid-template-columns: 1fr; } }
 .themeStage[data-theme=glass] { background: var(--glass-wash); }
-.themeStage[data-theme=toybox] { background: radial-gradient(120% 80% at 50% 0%, #f3f6ff 0, #dfe8ff 55%, #d6e0fb 100%); }
+.themeStage[data-theme=toybox] { background: var(--clay-wash); }

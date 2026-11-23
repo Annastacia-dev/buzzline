@@ -59,14 +59,14 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     tiles: [['#1f3fb9', '#fbf6ea'], ['#fbf6ea', '#1f3fb9'], ['#cdd6f5', '#1f3fb9'], ['#e9dcbd', '#1f3fb9']],
   },
   toybox: {
-    bg: '#e4ecff', paper: '#ffffff', ink: '#1e2a5a', muted: '#55608f', accent: '#3b6cf6',
-    blobs: ['#ffd6e3', '#c9f2df'], pills: ['#ffe9a8', '#cfe0ff', '#ffffff'], deck: ['#ffd6e3', '#cfe0ff'],
-    tiles: [['#7c5cff', '#ffffff'], ['#ff5c8a', '#ffffff'], ['#22c494', '#ffffff'], ['#ffb020', '#ffffff']],
+    bg: '#f6e6ec', paper: '#fdfaf5', ink: '#3a3d6b', muted: '#7b7fa6', accent: '#7d6ad8',
+    blobs: ['#f7bccb', '#a9e0cf'], pills: ['#f8dc8c', '#c9bff3', '#fdfaf5'], deck: ['#f8dc8c', '#c9bff3'],
+    tiles: [['#c9bff3', '#3a3d6b'], ['#f7bccb', '#3a3d6b'], ['#a9e0cf', '#3a3d6b'], ['#f8dc8c', '#3a3d6b']],
   },
   glass: {
-    bg: '#eceef1', paper: '#f8f9fb', ink: '#17171d', muted: '#6a6b78', accent: '#6b57e0',
-    blobs: ['#e3defb', '#dcefe7'], pills: ['#e8e3ff', '#dff3ec', '#f8f9fb'], deck: ['#e8e3ff', '#fbe6de'],
-    tiles: [['#e8e3ff', '#5b47d6'], ['#fde4da', '#c4573a'], ['#dcf3ea', '#1f8a6c'], ['#fbefcf', '#9a6c00']],
+    bg: '#e4e6ea', paper: '#f6f7f9', ink: '#1b1c21', muted: '#6b6e78', accent: '#1b1c21',
+    blobs: ['#ffffff', '#cfd2d9'], pills: ['#f6f7f9', '#dcdfe4', '#ffffff'], deck: ['#f0f1f4', '#d6d9df'],
+    tiles: [['#f6f7f9', '#1b1c21'], ['#eceef1', '#1b1c21'], ['#dfe1e6', '#1b1c21'], ['#d0d3d9', '#1b1c21']],
   },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
