@@ -215,6 +215,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
               {tab === 'preview'
                 ? <p className="muted preview-note">Answers are hidden here so the quiz stays a surprise. Open <b>Edit quiz</b> to see and change them.</p>
                 : <p className="muted preview-note">Drag questions in the list to reorder them. The filled circle marks the correct answer.</p>}
+              <div className={`flash-deck ${tab}`}>
               {tab === 'preview' ? (
                 <article className="card pcard flash" key={`p${ci}`}>
                   <header>
@@ -259,6 +260,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                   </div>
                 </div>
               )}
+              </div>
               <div className="qstage-nav">
                 <button className="btn light small" disabled={ci === 0} onClick={() => setCur(ci - 1)}><span aria-hidden>←</span> Previous</button>
                 <span className="muted" aria-live="polite">Question {ci + 1} of {quiz.questions.length}</span>
