@@ -3,6 +3,8 @@ import { Bricolage_Grotesque, Caveat_Brush, DM_Sans, Fredoka, Patrick_Hand, Spac
 import { SITE, SITE_URL } from '@/lib/site';
 import { shareImage } from '@/lib/og-cards';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 // Chunky grotesk for headlines, DM Sans (with italics for accent words) for everything else.
 const display = Bricolage_Grotesque({ variable: '--font-display', subsets: ['latin'], weight: ['500', '700', '800'] });
@@ -36,7 +38,11 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, maxi
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
