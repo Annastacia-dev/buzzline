@@ -135,3 +135,21 @@
 .footerLinks a { color: var(--ink); font-weight: 600; text-decoration: none; }
 .footerLinks a:hover { text-decoration: underline; }
 @media (max-width: 760px) { .faq { grid-template-columns: 1fr; } }
+
+/* ---------- themes ---------- */
+.sectionLede { margin: 14px 0 0; font-size: 19px; line-height: 1.5; max-width: 620px; color: #4a4538; }
+.themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.theme { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.themeStage {
+  position: relative; background: var(--bg); color: var(--ink); border-radius: 32px; padding: 68px 22px 26px;
+  box-shadow: inset 0 0 0 1.5px var(--line); overflow: hidden; display: grid; place-items: center; min-height: 340px;
+}
+.themeDeco { position: absolute; top: -18px; right: -14px; }
+.themeMascot { position: absolute; top: 8px; right: 16px; }
+.themeCard { position: relative; width: min(300px, 100%); padding: 16px; display: grid; gap: 12px; rotate: -1.5deg; background: var(--paper); }
+.theme:nth-child(2) .themeCard { rotate: 1.5deg; }
+.themeCard .liveQ { font-size: 20px; }
+.theme figcaption h3 { margin: 0 0 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; }
+.theme figcaption p { margin: 0; line-height: 1.5; color: rgba(22, 22, 22, .7); }
+@media (max-width: 980px) { .themes { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .themes { grid-template-columns: 1fr; } }

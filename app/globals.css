@@ -808,3 +808,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .reveal-answer { max-height: 250px; max-width: min(34vw, 520px); }
 .qimg-reveal { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .reveal-tile { transition: opacity .3s ease; } .reveal-tile.off { transform: none; } }
+
+/* ---------- join page in the game's theme ---------- */
+.join-page { background: var(--bg); transition: background-color .4s ease; }
+.join-page > :not(.doodle) { position: relative; z-index: 1; }

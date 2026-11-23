@@ -4,7 +4,7 @@ import type { Quiz } from '@/lib/types';
 
 export const POST = post(b => createGame(b.quiz as Quiz));
 
-/** GET /api/game?pin= → { title, started } so the join page can show the quiz's name. */
+/** GET /api/game?pin= → { title, theme, started } so the join page can show the quiz's name in its theme. */
 export async function GET(req: Request) {
   try {
     return Response.json(await gameTitle(new URL(req.url).searchParams.get('pin')), { headers: { 'Cache-Control': 'no-store' } });

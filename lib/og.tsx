@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { ReactNode } from 'react';
 import { SHAPE_PATHS } from './shapes';
+import type { ThemeId } from './themes';
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
@@ -40,33 +41,57 @@ export function ShapeIcon({ i, color, size = 30 }: { i: number; color: string; s
   return <img src={`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`} width={size} height={size} style={{ flexShrink: 0, width: size, height: size, minWidth: size, minHeight: size }} />;
 }
 
+/** Share-image colours for each quiz theme (the same values as the theme's CSS variables). */
+export type OgPalette = {
+  bg: string; paper: string; ink: string; muted: string; accent: string;
+  blobs: readonly [string, string]; pills: readonly [string, string, string]; deck: readonly [string, string];
+  /** answer-tile [fill, text] pairs, in answer order */
+  tiles: readonly (readonly [string, string])[];
+};
+export const PALETTES: Record<ThemeId, OgPalette> = {
+  classic: {
+    bg: C.bg, paper: C.paper, ink: C.ink, muted: C.muted, accent: C.pinkInk,
+    blobs: [C.pink, C.sage], pills: [C.butter, C.lilac, C.paper], deck: [C.butter, C.lilac], tiles: C.tiles.map(([fill]) => [fill, C.ink] as const),
+  },
+  doodlebug: {
+    bg: '#f2e9d6', paper: '#fbf6ea', ink: '#1f3fb9', muted: '#5a68a6', accent: '#1f3fb9',
+    blobs: ['#cdd6f5', '#e9dcbd'], pills: ['#e9dcbd', '#cdd6f5', '#fbf6ea'], deck: ['#e9dcbd', '#cdd6f5'],
+    tiles: [['#1f3fb9', '#fbf6ea'], ['#fbf6ea', '#1f3fb9'], ['#cdd6f5', '#1f3fb9'], ['#e9dcbd', '#1f3fb9']],
+  },
+  inkblot: {
+    bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
+    blobs: ['#e4e4e2', '#ececea'], pills: ['#ececea', '#e2e2e0', '#ffffff'], deck: ['#ececea', '#e2e2e0'],
+    tiles: [['#111111', '#ffffff'], ['#ffffff', '#111111'], ['#e2e2e0', '#111111'], ['#ececea', '#111111']],
+  },
+};
+
 /** Logo, headline and pills on the left; an illustration on the right. */
-export function OgFrame({ mark, title, accent, subtitle, pills, children }: {
-  mark: string; title: string; accent?: string; subtitle: string; pills: string[]; children: ReactNode;
+export function OgFrame({ mark, title, accent, subtitle, pills, children, p = PALETTES.classic }: {
+  mark: string; title: string; accent?: string; subtitle: string; pills: string[]; children: ReactNode; p?: OgPalette;
 }) {
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', background: C.bg, fontFamily: 'DM Sans', color: C.ink, padding: '56px 0 56px 72px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', background: p.bg, fontFamily: 'DM Sans', color: p.ink, padding: '56px 0 56px 72px', position: 'relative', overflow: 'hidden' }}>
       {/* soft blobs */}
-      <div style={{ position: 'absolute', right: -120, top: -140, width: 520, height: 520, borderRadius: 999, background: C.pink, opacity: 0.45 }} />
-      <div style={{ position: 'absolute', right: 300, bottom: -200, width: 380, height: 380, borderRadius: 999, background: C.sage, opacity: 0.45 }} />
+      <div style={{ position: 'absolute', right: -120, top: -140, width: 520, height: 520, borderRadius: 999, background: p.blobs[0], opacity: 0.45 }} />
+      <div style={{ position: 'absolute', right: 300, bottom: -200, width: 380, height: 380, borderRadius: 999, background: p.blobs[1], opacity: 0.45 }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', width: 600, justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
           <img src={mark} width={64} height={64} />
           <div style={{ display: 'flex', alignItems: 'flex-end', fontFamily: 'Bricolage', fontSize: 44, letterSpacing: -1.6 }}>
-            Buzzline<div style={{ width: 14, height: 14, borderRadius: 99, background: C.pinkInk, margin: '0 0 10px 4px' }} />
+            Buzzline<div style={{ width: 14, height: 14, borderRadius: 99, background: p.accent, margin: '0 0 10px 4px' }} />
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
           <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Bricolage', fontSize: 74, lineHeight: 1.02, letterSpacing: -2.6 }}>
-            <span>{title}</span>{accent && <span style={{ color: C.pinkInk }}>{accent}</span>}
+            <span>{title}</span>{accent && <span style={{ color: p.accent }}>{accent}</span>}
           </div>
-          <div style={{ fontSize: 28, lineHeight: 1.35, color: C.muted, fontWeight: 500 }}>{subtitle}</div>
+          <div style={{ fontSize: 28, lineHeight: 1.35, color: p.muted, fontWeight: 500 }}>{subtitle}</div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {pills.map((p, i) => (
-            <div key={p} style={{ display: 'flex', flexShrink: 0, padding: '9px 18px', borderRadius: 999, border: `2.5px solid ${C.ink}`, background: [C.butter, C.lilac, C.paper][i % 3], fontSize: 21, fontWeight: 700 }}>{p}</div>
+          {pills.map((label, i) => (
+            <div key={label} style={{ display: 'flex', flexShrink: 0, padding: '9px 18px', borderRadius: 999, border: `2.5px solid ${p.ink}`, background: p.pills[i % 3], fontSize: 21, fontWeight: 700 }}>{label}</div>
           ))}
         </div>
       </div>
@@ -77,13 +102,13 @@ export function OgFrame({ mark, title, accent, subtitle, pills, children }: {
 }
 
 /** A tilted flashcard with a little deck behind it, as in the quiz studio. */
-export function Deck({ children, width = 440, height = 400 }: { children: ReactNode; width?: number; height?: number }) {
-  const card = { position: 'absolute' as const, width, height, borderRadius: 34, border: `4px solid ${C.ink}` };
+export function Deck({ children, width = 440, height = 400, p = PALETTES.classic }: { children: ReactNode; width?: number; height?: number; p?: OgPalette }) {
+  const card = { position: 'absolute' as const, width, height, borderRadius: 34, border: `4px solid ${p.ink}` };
   return (
     <div style={{ display: 'flex', position: 'relative', width: width + 40, height: height + 40, alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ ...card, background: C.butter, transform: 'rotate(7deg) translate(14px, 8px)' }} />
-      <div style={{ ...card, background: C.lilac, transform: 'rotate(-4deg) translate(-10px, 10px)' }} />
-      <div style={{ ...card, display: 'flex', flexDirection: 'column', background: C.paper, transform: 'rotate(-2.5deg)', boxShadow: `10px 10px 0 ${C.ink}`, padding: 28, gap: 18 }}>
+      <div style={{ ...card, background: p.deck[0], transform: 'rotate(7deg) translate(14px, 8px)' }} />
+      <div style={{ ...card, background: p.deck[1], transform: 'rotate(-4deg) translate(-10px, 10px)' }} />
+      <div style={{ ...card, display: 'flex', flexDirection: 'column', background: p.paper, transform: 'rotate(-2.5deg)', boxShadow: `10px 10px 0 ${p.ink}`, padding: 28, gap: 18 }}>
         {children}
       </div>
     </div>

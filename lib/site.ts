@@ -27,6 +27,9 @@ export const FEATURES = [
   'AI quiz generator: type a topic and get up to 20 questions',
   'Import Kahoot-format spreadsheets (.xlsx) and download a ready-made template',
   'Auto mode that moves through the game on a timer',
+  'Three quiz themes (Classic, Doodlebug and Inkblot) that style the host screen, the join page and every player’s phone',
+  'Picture questions, including grid reveal: the picture starts hidden behind tiles that clear as the timer runs',
+  'Share a quiz with a link, and back up or restore all your quizzes as one file',
 ];
 
 export const FAQ: { q: string; a: string }[] = [
@@ -55,8 +58,16 @@ export const FAQ: { q: string; a: string }[] = [
     a: 'Yes. Buzzline imports Kahoot-format .xlsx spreadsheets with the columns Question, Answer 1–4, Time limit and Correct answer. You can download a ready-made template from the studio.',
   },
   {
+    q: 'Can I change how a quiz looks?',
+    a: 'Yes. Pick a theme in the studio: Classic (bright pastel blocks), Doodlebug (blue ink on beige paper with handwriting and doodles) or Inkblot (black and white line art). The host screen, the join page and every player’s phone use it.',
+  },
+  {
+    q: 'Can I add pictures to questions?',
+    a: 'Yes. Add an image to any question and it shows big on the host screen. Turn on grid reveal to hide the picture behind tiles that clear one by one while the timer runs, for “what’s in the picture?” rounds. Images are checked to make sure they suit all ages.',
+  },
+  {
     q: 'Where are my quizzes saved?',
-    a: 'Quizzes are saved in your browser on the device you made them on, so there is nothing to sign up for. Use the same browser to find them again.',
+    a: 'Quizzes are saved in your browser on the device you made them on, so there is nothing to sign up for. To use a quiz somewhere else, share it with a link or download a backup of all your quizzes and restore it in another browser.',
   },
   {
     q: 'Is Buzzline free?',

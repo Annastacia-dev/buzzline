@@ -4,6 +4,8 @@ import { Blob, Icon, Scallop, Squircle, Sticker, Tag, type IconName } from '@/li
 import QuickJoin from './QuickJoin';
 import styles from './landing.module.css';
 import { FAQ, FEATURES, SITE, SITE_URL } from '@/lib/site';
+import { Doodle } from '@/lib/doodles';
+import { THEMES, type ThemeId } from '@/lib/themes';
 
 const steps = [
   { n: '01', title: 'Build your quiz', bg: 'var(--butter)', rows: ['Write questions', 'Set the timers', 'Pick double-points rounds'] },
@@ -19,6 +21,13 @@ const features: { title: string; body: string; bg: string; ink: string; icon: Ic
   { title: 'Live answer chart', body: 'See how the room split after every question, then reveal.', bg: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
   { title: 'AI & Kahoot import', body: 'Type a topic and Claude writes the quiz, or import a Kahoot-style spreadsheet. Saved in your browser.', bg: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'star' },
 ];
+
+// One sample question per theme for the themes section, each shown in that theme's own styles.
+const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: number; note: string }> = {
+  classic: { q: 'Which planet is known as the Red Planet?', answers: ['Venus', 'Mars', 'Jupiter', 'Mercury'], right: 1, note: 'The default. Bright and loud, made for a TV across the room.' },
+  doodlebug: { q: 'How many legs does a bee have?', answers: ['Four', 'Six', 'Eight', 'Ten'], right: 1, note: 'Feels like a notebook. Great for classrooms and family nights.' },
+  inkblot: { q: 'Which element has the symbol Fe?', answers: ['Gold', 'Iron', 'Lead', 'Tin'], right: 1, note: 'Crisp and graphic. Suits offices, projectors and team socials.' },
+};
 
 const scoring = [
   { k: 'Max points', v: '1,000' },
@@ -56,6 +65,7 @@ export default function Landing() {
         <div className={styles.navLinks}>
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
+          <a href="#themes">Themes</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className={styles.navCta}>
@@ -158,6 +168,42 @@ export default function Landing() {
               <p>{f.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ---------- themes ---------- */}
+      <section id="themes" className={styles.section}>
+        <div className={styles.sectionHead}>
+          <h2>Pick a look <em>for the room</em></h2>
+          <p className={styles.sectionLede}>
+            Every quiz can wear a theme. Choose it in the studio and the host screen, the join page and every
+            player&apos;s phone all match.
+          </p>
+        </div>
+        <div className={styles.themes}>
+          {THEMES.map((t, i) => {
+            const ex = themeSamples[t.id];
+            return (
+              <figure key={t.id} className={styles.theme}>
+                <div className={styles.themeStage} data-theme={t.id} aria-hidden>
+                  {t.id === 'classic'
+                    ? <Scallop color="var(--pink)" size={120} rotate={-18} className={styles.themeDeco} />
+                    : <Doodle theme={t.id} name="mascot" size={66} className={`bob ${styles.themeMascot}`} />}
+                  <div className={`card ${styles.themeCard}`}>
+                    <div className={styles.liveTop}><span className="pill dark">Q {i + 2} / 10</span><span className={styles.liveTimer}>{[12, 9, 15][i]}</span></div>
+                    <div className={styles.liveQ}>{ex.q}</div>
+                    <div className={styles.liveTiles}>
+                      {ex.answers.map((a, j) => <div key={a} className={`tile c${j} ${j === ex.right ? 'right' : ''}`}><Shape i={j} />{a}</div>)}
+                    </div>
+                  </div>
+                </div>
+                <figcaption>
+                  <h3>{t.name}</h3>
+                  <p>{t.blurb}. {ex.note}</p>
+                </figcaption>
+              </figure>
+            );
+          })}
         </div>
       </section>
 
