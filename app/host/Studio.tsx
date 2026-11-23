@@ -153,9 +153,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
       {quiz && cq ? (
         <section className="editor">
           <div className="editor-top">
-            {tab === 'edit'
-              ? <input className="field" value={quiz.title} onChange={e => update(z => ({ ...z, title: e.target.value }))} placeholder="Quiz title" aria-label="Quiz title" />
-              : <h1 className="quiz-heading">{quiz.title || 'Untitled quiz'}</h1>}
+            <input className="field" value={quiz.title} onChange={e => update(z => ({ ...z, title: e.target.value }))} placeholder="Quiz title" aria-label="Quiz title" title="Click to rename" maxLength={120} />
             <button className="btn" onClick={() => onHost(quiz)}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div className="editor-bar">

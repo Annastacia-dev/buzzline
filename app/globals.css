@@ -204,7 +204,8 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .editor { padding: 30px clamp(16px, 4vw, 52px); display: flex; flex-direction: column; gap: 16px; max-width: 1000px; }
 .editor-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .editor-top .field { flex: 1; min-width: 220px; font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; background: transparent; border-color: transparent; padding-left: 4px; }
-.editor-top .field:focus { border-color: var(--line); background: var(--paper); }
+.editor-top .field:hover { border-color: var(--line); border-style: dashed; cursor: text; }
+.editor-top .field:focus { border-color: var(--line); border-style: solid; background: var(--paper); }
 .qcard { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .qcard-head { display: flex; align-items: center; gap: 10px; font-weight: 600; flex-wrap: wrap; font-size: 14px; }
 .qcard-head .qnum { background: var(--ink); color: #fff; padding: 5px 12px; border-radius: 999px; }
