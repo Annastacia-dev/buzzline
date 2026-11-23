@@ -21,9 +21,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   const [generating, setGenerating] = useState(false);
   // Preview shows a quiz without giving away the answers; "Edit quiz" shows answers and every control.
   const [tab, setTab] = useState<'preview' | 'edit'>('preview');
-  // Drag and drop: the card whose handle is held (only it is draggable), and where it would land.
-  const [armed, setArmed] = useState<number | null>(null);
+  // The question shown in the main card; the rail on the left lists them all.
+  const [cur, setCur] = useState(0);
+  // Drag and drop in the rail: which question is being dragged and where it would land.
   const [drag, setDrag] = useState<{ from: number; at: number } | null>(null);
+  const railRef = useRef<HTMLOListElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     const nq = { ...(q ?? { title: 'New quiz', questions: [blankQuestion()] }), id: uid() };
     save([nq, ...quizzes]);
     setSelId(nq.id);
+    setCur(0);
     setTab(q ? 'preview' : 'edit'); // a blank quiz opens ready to write
   }
 
@@ -51,25 +55,42 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     const to = at > from ? at - 1 : at;
     if (to === from) return;
     update(z => { const [item] = z.questions.splice(from, 1); z.questions.splice(to, 0, item); return z; });
+    // Keep showing the same question wherever it ends up.
+    setCur(c => c === from ? to : from < c && to >= c ? c - 1 : from > c && to <= c ? c + 1 : c);
   }
-  const endDrag = () => { setDrag(null); setArmed(null); };
+  const endDrag = () => setDrag(null);
 
-  // "+ Add question" from the toolbar: add a blank question, switch to editing, then scroll to it and focus its text.
-  const focusQ = useRef<number | null>(null);
+  // "+ Add question": add a blank question at the end, open it for editing and put the cursor in its text.
+  const focusNew = useRef(false);
   function addQuestion() {
     if (!quiz) return;
-    focusQ.current = quiz.questions.length;
+    focusNew.current = true;
     setTab('edit');
+    setCur(quiz.questions.length);
     update(z => { z.questions.push(blankQuestion()); return z; });
   }
+  const ci = quiz ? Math.min(cur, quiz.questions.length - 1) : 0;
+  const cq = quiz?.questions[ci];
   useEffect(() => {
-    if (focusQ.current == null || tab !== 'edit') return;
-    const card = document.querySelectorAll<HTMLElement>('.qcard')[focusQ.current];
-    if (!card) return;
-    focusQ.current = null;
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    card.querySelector<HTMLInputElement>('input.field')?.focus({ preventScroll: true });
-  });
+    // Keep the current question visible in the rail, and the card scrolled to its top.
+    railRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    stageRef.current?.scrollTo({ top: 0 });
+    if (focusNew.current && tab === 'edit') {
+      focusNew.current = false;
+      stageRef.current?.querySelector<HTMLInputElement>('input.field')?.focus();
+    }
+  }, [ci, selId, tab]);
+
+  /** ↑ ↓ (← → on phones) move between questions in the rail. */
+  function onRailKey(e: React.KeyboardEvent) {
+    if (!quiz) return;
+    const d = ['ArrowDown', 'ArrowRight'].includes(e.key) ? 1 : ['ArrowUp', 'ArrowLeft'].includes(e.key) ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const n = Math.min(quiz.questions.length - 1, Math.max(0, ci + d));
+    setCur(n);
+    railRef.current?.querySelectorAll<HTMLButtonElement>('.qthumb')[n]?.focus();
+  }
 
   async function remove() {
     if (!quiz) return;
@@ -118,7 +139,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         <h3>Your quizzes</h3>
         <div className="qlist">
           {quizzes.map(q => (
-            <button key={q.id} className={q.id === selId ? 'on' : ''} onClick={() => { setSelId(q.id!); setTab('preview'); }}>
+            <button key={q.id} className={q.id === selId ? 'on' : ''} onClick={() => { setSelId(q.id!); setCur(0); setTab('preview'); }}>
               {q.title || 'Untitled'}<small>{q.questions.length} question{q.questions.length === 1 ? '' : 's'}</small>
             </button>
           ))}
@@ -129,7 +150,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         </div>
       </aside>
 
-      {quiz ? (
+      {quiz && cq ? (
         <section className="editor">
           <div className="editor-top">
             {tab === 'edit'
@@ -153,80 +174,101 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
           </div>
           {error && <div className="card error" style={{ padding: 14 }}>{error}</div>}
 
-          <div id="quiz-panel" role="tabpanel" aria-labelledby={tab === 'edit' ? 'tab-edit' : 'tab-preview'} className="quiz-panel">
-          {tab === 'preview' ? (
-            <>
-              <p className="muted preview-note">Answers are hidden here so the quiz stays a surprise. Open <b>Edit quiz</b> to see and change them.</p>
-              {quiz.questions.map((q, i) => (
-                <article className="card pcard" key={i}>
+          <div className="qwork">
+            <nav className="qrail" aria-label="Questions">
+              <ol ref={railRef} onKeyDown={onRailKey}>
+                {quiz.questions.map((q, i) => {
+                  const dropBefore = !!drag && drag.at === i && drag.at !== drag.from && drag.at !== drag.from + 1;
+                  const dropAfter = !!drag && i === quiz.questions.length - 1 && drag.at === quiz.questions.length && drag.from !== i;
+                  return (
+                    <li key={i} className={`${drag?.from === i ? 'dragging' : ''} ${dropBefore ? 'drop-before' : ''} ${dropAfter ? 'drop-after' : ''}`}
+                      onDragOver={e => {
+                        if (!drag) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        const r = e.currentTarget.getBoundingClientRect();
+                        const row = getComputedStyle(e.currentTarget.parentElement!).flexDirection === 'row';
+                        const at = (row ? e.clientX < r.left + r.width / 2 : e.clientY < r.top + r.height / 2) ? i : i + 1;
+                        if (at !== drag.at) setDrag({ ...drag, at });
+                      }}
+                      onDrop={e => { e.preventDefault(); if (drag) moveQuestion(drag.from, drag.at); endDrag(); }}>
+                      <button type="button" className={`qthumb ${i === ci ? 'on' : ''}`} aria-current={i === ci ? 'true' : undefined}
+                        draggable={tab === 'edit'}
+                        onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); setDrag({ from: i, at: i }); }}
+                        onDragEnd={endDrag}
+                        onClick={() => setCur(i)}>
+                        <span className="qthumb-top">
+                          <span className="qthumb-n">{i + 1}</span>
+                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}</span>
+                        </span>
+                        <span className="qthumb-q">{q.q || <i>No question text yet</i>}</span>
+                        <span className={`qthumb-ans ${q.answers.length === 2 ? 'two' : ''}`} aria-hidden>
+                          {q.answers.map((_, j) => <span key={j} className={`c${j} ${tab === 'edit' && q.correct === j ? 'right' : ''}`} />)}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+              <button type="button" className="btn ghost small qrail-add" onClick={addQuestion}>+ Add question</button>
+            </nav>
+
+            <div id="quiz-panel" role="tabpanel" aria-labelledby={tab === 'edit' ? 'tab-edit' : 'tab-preview'} className="qstage" ref={stageRef}>
+              {tab === 'preview'
+                ? <p className="muted preview-note">Answers are hidden here so the quiz stays a surprise. Open <b>Edit quiz</b> to see and change them.</p>
+                : <p className="muted preview-note">Drag questions in the list to reorder them. The filled circle marks the correct answer.</p>}
+              {tab === 'preview' ? (
+                <article className="card pcard flash" key={`p${ci}`}>
                   <header>
-                    <span className="pill dark">Question {i + 1}</span>
-                    <span className="pill">⏱ {q.time}s</span>
-                    {q.double && <span className="pill">2× points</span>}
+                    <span className="pill dark">Question {ci + 1}</span>
+                    <span className="pill">⏱ {cq.time}s</span>
+                    {cq.double && <span className="pill">2× points</span>}
                   </header>
-                  <h2>{q.q || <span className="muted">No question text yet</span>}</h2>
-                  <div className={`pans ${q.answers.length === 2 ? 'two' : ''}`}>
-                    {q.answers.map((a, j) => (
+                  <h2>{cq.q || <span className="muted">No question text yet</span>}</h2>
+                  <div className={`pans ${cq.answers.length === 2 ? 'two' : ''}`}>
+                    {cq.answers.map((a, j) => (
                       <div key={j} className={`pans-tile c${j}`}><Shape i={j} /><span>{a || '—'}</span></div>
                     ))}
                   </div>
                 </article>
-              ))}
-            </>
-          ) : (
-            <>
-              <p className="muted preview-note">Drag a question by its <span aria-hidden>⠿</span> handle, or use the arrows, to change the order. The filled circle marks the correct answer.</p>
-              {quiz.questions.map((q, i) => {
-                const dropBefore = !!drag && drag.at === i && drag.at !== drag.from && drag.at !== drag.from + 1;
-                const dropAfter = !!drag && i === quiz.questions.length - 1 && drag.at === quiz.questions.length && drag.from !== i;
-                return (
-                <div className={`card qcard ${drag?.from === i ? 'dragging' : ''} ${dropBefore ? 'drop-before' : ''} ${dropAfter ? 'drop-after' : ''}`} key={i}
-                  draggable={armed === i}
-                  onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(i)); setDrag({ from: i, at: i }); }}
-                  onDragOver={e => {
-                    if (!drag) return;
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    const r = e.currentTarget.getBoundingClientRect();
-                    const at = e.clientY < r.top + r.height / 2 ? i : i + 1;
-                    if (at !== drag.at) setDrag({ ...drag, at });
-                  }}
-                  onDrop={e => { e.preventDefault(); if (drag) moveQuestion(drag.from, drag.at); endDrag(); }}
-                  onDragEnd={endDrag}>
+              ) : (
+                <div className="card qcard flash" key={`e${ci}`}>
                   <div className="qcard-head">
-                    <span className="drag-handle" title="Drag to reorder" aria-hidden
-                      onPointerDown={() => setArmed(i)} onPointerUp={() => setArmed(null)}>⠿</span>
-                    <span className="qnum">Question {i + 1}</span>
+                    <span className="qnum">Question {ci + 1}</span>
                     <span className="spacer" />
-                    <QuizSelect size="sm" icon="⏱" label={`Question ${i + 1} time limit`} value={q.time}
-                      onChange={t => setQ(i, x => { x.time = t; })}
-                      options={(TIMES.includes(q.time) ? TIMES : [...TIMES, q.time].sort((a, b) => a - b)).map(t => ({ value: t, label: `${t}s` }))} />
-                    <label><input type="checkbox" checked={!!q.double} onChange={e => setQ(i, x => { x.double = e.target.checked; })} /> 2× points</label>
-                    <button className="iconbtn" title="Toggle 2 / 4 answers" aria-label={`Question ${i + 1}: switch to ${q.answers.length === 4 ? 2 : 4} answers`} onClick={() => setQ(i, x => {
+                    <QuizSelect size="sm" icon="⏱" label={`Question ${ci + 1} time limit`} value={cq.time}
+                      onChange={t => setQ(ci, x => { x.time = t; })}
+                      options={(TIMES.includes(cq.time) ? TIMES : [...TIMES, cq.time].sort((a, b) => a - b)).map(t => ({ value: t, label: `${t}s` }))} />
+                    <label><input type="checkbox" checked={!!cq.double} onChange={e => setQ(ci, x => { x.double = e.target.checked; })} /> 2× points</label>
+                    <button className="iconbtn" title="Toggle 2 / 4 answers" aria-label={`Question ${ci + 1}: switch to ${cq.answers.length === 4 ? 2 : 4} answers`} onClick={() => setQ(ci, x => {
                       if (x.answers.length === 4) { x.answers = ['True', 'False']; x.correct = Math.min(x.correct, 1); }
                       else x.answers = [...x.answers, '', ''];
-                    })}>{q.answers.length === 4 ? '2' : '4'}</button>
-                    <button className="iconbtn" title="Move up" aria-label={`Move question ${i + 1} up`} disabled={i === 0} onClick={() => moveQuestion(i, i - 1)}>↑</button>
-                    <button className="iconbtn" title="Move down" aria-label={`Move question ${i + 1} down`} disabled={i === quiz.questions.length - 1} onClick={() => moveQuestion(i, i + 2)}>↓</button>
-                    <button className="iconbtn" title="Duplicate" aria-label={`Duplicate question ${i + 1}`} onClick={() => update(z => { z.questions.splice(i + 1, 0, structuredClone(z.questions[i])); return z; })}>⧉</button>
-                    <button className="iconbtn" title="Delete" aria-label={`Delete question ${i + 1}`} disabled={quiz.questions.length === 1} onClick={() => update(z => { z.questions.splice(i, 1); return z; })}>✕</button>
+                    })}>{cq.answers.length === 4 ? '2' : '4'}</button>
+                    <button className="iconbtn" title="Move up" aria-label={`Move question ${ci + 1} up`} disabled={ci === 0} onClick={() => moveQuestion(ci, ci - 1)}>↑</button>
+                    <button className="iconbtn" title="Move down" aria-label={`Move question ${ci + 1} down`} disabled={ci === quiz.questions.length - 1} onClick={() => moveQuestion(ci, ci + 2)}>↓</button>
+                    <button className="iconbtn" title="Duplicate" aria-label={`Duplicate question ${ci + 1}`} onClick={() => { update(z => { z.questions.splice(ci + 1, 0, structuredClone(z.questions[ci])); return z; }); setCur(ci + 1); }}>⧉</button>
+                    <button className="iconbtn" title="Delete" aria-label={`Delete question ${ci + 1}`} disabled={quiz.questions.length === 1} onClick={() => { update(z => { z.questions.splice(ci, 1); return z; }); setCur(Math.max(0, Math.min(ci, quiz.questions.length - 2))); }}>✕</button>
                   </div>
-                  <input className="field" value={q.q} placeholder="Type your question" aria-label={`Question ${i + 1} text`} style={{ fontSize: 20, fontWeight: 700 }}
-                    onChange={e => setQ(i, x => { x.q = e.target.value; })} />
+                  <input className="field" value={cq.q} placeholder="Type your question" aria-label={`Question ${ci + 1} text`} style={{ fontSize: 20, fontWeight: 700 }}
+                    onChange={e => setQ(ci, x => { x.q = e.target.value; })} />
                   <div className="ans-edit">
-                    {q.answers.map((a, j) => (
+                    {cq.answers.map((a, j) => (
                       <label key={j} className={`c${j}`} title="Select the correct answer">
-                        <input type="radio" name={`correct-${i}`} checked={q.correct === j} onChange={() => setQ(i, x => { x.correct = j; })} aria-label={`Answer ${j + 1} is correct`} />
-                        <input type="text" value={a} placeholder={`Answer ${j + 1}`} aria-label={`Question ${i + 1} answer ${j + 1}`} onChange={e => setQ(i, x => { x.answers[j] = e.target.value; })} />
+                        <input type="radio" name={`correct-${ci}`} checked={cq.correct === j} onChange={() => setQ(ci, x => { x.correct = j; })} aria-label={`Answer ${j + 1} is correct`} />
+                        <input type="text" value={a} placeholder={`Answer ${j + 1}`} aria-label={`Question ${ci + 1} answer ${j + 1}`} onChange={e => setQ(ci, x => { x.answers[j] = e.target.value; })} />
                       </label>
                     ))}
                   </div>
                 </div>
-                );
-              })}
-              <button className="btn ghost" onClick={addQuestion}>+ Add question</button>
-            </>
-          )}
+              )}
+              <div className="qstage-nav">
+                <button className="btn light small" disabled={ci === 0} onClick={() => setCur(ci - 1)}><span aria-hidden>←</span> Previous</button>
+                <span className="muted" aria-live="polite">Question {ci + 1} of {quiz.questions.length}</span>
+                {ci < quiz.questions.length - 1
+                  ? <button className="btn light small" onClick={() => setCur(ci + 1)}>Next <span aria-hidden>→</span></button>
+                  : <button className="btn small" onClick={addQuestion}>+ Add question</button>}
+              </div>
+            </div>
           </div>
         </section>
       ) : (

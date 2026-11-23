@@ -494,3 +494,61 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
   .side { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; overscroll-behavior: contain; }
 }
 @media (max-width: 760px) { .editor-bar .quiz-meta { display: none; } }
+
+/* ---------- Studio: question rail + one question at a time ---------- */
+.qwork { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; }
+.qrail { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.qrail ol { list-style: none; margin: 0; padding: 4px 6px 4px 2px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; overscroll-behavior: contain; }
+.qrail li { position: relative; }
+.qrail li.dragging { opacity: .4; }
+.qrail li.drop-before::before, .qrail li.drop-after::after { content: ''; position: absolute; left: 6px; right: 6px; height: 4px; border-radius: 999px; background: var(--pink-ink); }
+.qrail li.drop-before::before { top: -7px; }
+.qrail li.drop-after::after { bottom: -7px; }
+.qthumb { width: 100%; display: grid; gap: 8px; text-align: left; padding: 10px 12px; border: 0; border-radius: 16px; background: var(--paper);
+  box-shadow: inset 0 0 0 1.5px var(--line); font: inherit; color: var(--ink); cursor: pointer; transition: box-shadow .12s, transform .12s; }
+.qthumb:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.qthumb.on { box-shadow: inset 0 0 0 2.5px var(--ink), 0 4px 0 var(--ink); }
+.qthumb[draggable=true] { cursor: grab; }
+.qthumb-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.qthumb-n { min-width: 26px; height: 26px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 800; }
+.qthumb-time { font-size: 12px; font-weight: 600; color: var(--muted); }
+.qthumb-q { font-size: 13px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.qthumb-q i { font-weight: 500; color: var(--muted); }
+.qthumb-ans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.qthumb-ans.two { grid-template-columns: repeat(2, 1fr); }
+.qthumb-ans span { height: 8px; border-radius: 999px; }
+.qthumb-ans span.right { box-shadow: 0 0 0 2px var(--ink); }
+.qrail-add { flex: none; }
+.qstage { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.qstage-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; font-weight: 600; }
+.flash { animation: flash-in .22s ease-out; }
+@keyframes flash-in { from { opacity: 0; transform: translateY(8px) scale(.99); } }
+.pcard.flash h2 { font-size: 28px; }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+
+/* Side by side: the page itself doesn't scroll; the rail and the card scroll on their own. */
+@media (min-width: 761px) {
+  .studio:has(.qwork) .editor { height: 100vh; height: 100dvh; overflow: hidden; padding-bottom: 16px; }
+  .qwork { flex: 1; min-height: 0; align-items: stretch; }
+  .qrail, .qstage { min-height: 0; }
+  .qrail ol { flex: 1; }
+  .qstage { overflow-y: auto; overscroll-behavior: contain; padding: 4px 4px 12px; margin: -4px; }
+  .editor-bar { position: static; }
+}
+@media (min-width: 761px) and (max-width: 1100px) { .qwork { grid-template-columns: 170px minmax(0, 1fr); gap: 14px; } }
+
+/* Phones: the rail becomes a swipeable strip of question chips above the card. */
+@media (max-width: 760px) {
+  .qwork { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .qrail { flex-direction: row; align-items: center; }
+  .qrail ol { flex-direction: row; overflow-x: auto; overflow-y: hidden; flex: 1; padding: 4px 2px 8px; }
+  .qrail li { flex: none; }
+  .qthumb { width: auto; padding: 6px; border-radius: 999px; }
+  .qthumb.on { box-shadow: inset 0 0 0 2.5px var(--ink); }
+  .qthumb-time, .qthumb-q, .qthumb-ans { display: none; }
+  .qthumb-top { justify-content: center; }
+  .qrail li.drop-before::before, .qrail li.drop-after::after { top: 4px; bottom: 4px; left: auto; right: auto; width: 4px; height: auto; }
+  .qrail li.drop-before::before { left: -7px; }
+  .qrail li.drop-after::after { right: -7px; }
+  .editor-bar { position: static; }
+}
