@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/client';
 import { Blob, Scallop } from '@/lib/deco';
 import { Doodle } from '@/lib/doodles';
-import { DEFAULT_THEME, themeOf, type ThemeId } from '@/lib/themes';
+import { DEFAULT_THEME, hasDoodles, themeOf, type ThemeId } from '@/lib/themes';
 
 /** The join form. Once the PIN matches a game, the page takes on that quiz's theme. */
 export default function JoinForm() {
@@ -58,7 +58,7 @@ export default function JoinForm() {
 
   return (
     <div className="center join-page" data-theme={theme} style={{ position: 'relative', overflow: 'hidden' }}>
-      {theme === 'classic' ? <>
+      {!hasDoodles(theme) ? <>
         <Blob color="var(--olive)" size={220} style={{ position: 'absolute', top: -70, right: -50 }} />
         <Scallop color="var(--pink)" size={200} rotate={20} style={{ position: 'absolute', bottom: -60, left: -50 }} />
       </> : <>

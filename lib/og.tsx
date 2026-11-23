@@ -58,6 +58,11 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     blobs: ['#cdd6f5', '#e9dcbd'], pills: ['#e9dcbd', '#cdd6f5', '#fbf6ea'], deck: ['#e9dcbd', '#cdd6f5'],
     tiles: [['#1f3fb9', '#fbf6ea'], ['#fbf6ea', '#1f3fb9'], ['#cdd6f5', '#1f3fb9'], ['#e9dcbd', '#1f3fb9']],
   },
+  toybox: {
+    bg: '#e4ecff', paper: '#ffffff', ink: '#1e2a5a', muted: '#55608f', accent: '#3b6cf6',
+    blobs: ['#ffd6e3', '#c9f2df'], pills: ['#ffe9a8', '#cfe0ff', '#ffffff'], deck: ['#ffd6e3', '#cfe0ff'],
+    tiles: [['#7c5cff', '#ffffff'], ['#ff5c8a', '#ffffff'], ['#22c494', '#ffffff'], ['#ffb020', '#ffffff']],
+  },
   glass: {
     bg: '#eef0fb', paper: '#ffffff', ink: '#1d1b3a', muted: '#5d5b7a', accent: '#7c3aed',
     blobs: ['#ffc6e6', '#bfe6ff'], pills: ['#e4e0ff', '#d4f3ea', '#ffffff'], deck: ['#e4e0ff', '#ffe0f0'],

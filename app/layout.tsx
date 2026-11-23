@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque, Caveat_Brush, DM_Sans, Patrick_Hand, Space_Grotesk, Space_Mono } from 'next/font/google';
+import { Bricolage_Grotesque, Caveat_Brush, DM_Sans, Fredoka, Patrick_Hand, Space_Grotesk, Space_Mono } from 'next/font/google';
 import { SITE, SITE_URL } from '@/lib/site';
 import { shareImage } from '@/lib/og-cards';
 import './globals.css';
@@ -13,6 +13,8 @@ const hand = Patrick_Hand({ variable: '--font-hand', subsets: ['latin'], weight:
 // Inkblot: a chunky grotesk with mono labels.
 const inkSans = Space_Grotesk({ variable: '--font-ink', subsets: ['latin'], weight: ['400', '500', '700'], preload: false });
 const inkMono = Space_Mono({ variable: '--font-ink-mono', subsets: ['latin'], weight: ['400', '700'], preload: false });
+// Toybox: a round, bouncy sans for the 3D blocks.
+const toy = Fredoka({ variable: '--font-toy', subsets: ['latin'], weight: ['500', '600', '700'], preload: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -33,7 +35,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, maxi
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable}`}>
       <body>{children}</body>
     </html>
   );

@@ -780,7 +780,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -927,3 +927,111 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
   border: 0; background: rgba(255, 255, 255, .32); box-shadow: var(--glass-rim); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
 }
 [data-theme=glass] .pcard.flash .pans-tile { border: 0; box-shadow: var(--glass-rim), 0 8px 22px -10px rgba(45, 40, 110, .35); }
+
+/* ---------- Toybox: chunky 3D blocks with glossy tops and deep edges that press down when tapped ---------- */
+[data-theme=toybox] {
+  --bg: #e4ecff; --paper: #ffffff; --ink: #1e2a5a; --muted: #55608f; --line: #cfd8f2;
+  --butter: #ffe9a8; --butter-ink: #a15c00;
+  --sage:   #c9f2df; --sage-ink:   #137a57;
+  --olive:  #cfe0ff;
+  --lilac:  #e3dbff; --lilac-ink:  #5a3fd6;
+  --peri:   #cfe0ff; --peri-ink:   #2347c7;
+  --pink:   #ffd6e3; --pink-ink:   #c2255c;
+  --peach:  #ffdcc2; --peach-ink:  #b5501a;
+  --mint:   #c8f3ea; --mint-ink:   #137a6a;
+  --coral:  #ffd0cc; --coral-ink:  #c0322a;
+  --good: #16a34a; --bad: #e11d48;
+  --font-display: var(--font-toy), system-ui, sans-serif;
+  --font-main: var(--font-toy), system-ui, sans-serif;
+  --radius: 28px;
+  /* the extrusion: a solid edge under each block, then a soft shadow on the floor */
+  --edge: #c3cdec;
+  --depth: 7px;
+  --block: inset 0 2px 0 rgba(255, 255, 255, .95), inset 0 -3px 0 rgba(30, 42, 90, .06), 0 var(--depth) 0 var(--edge), 0 calc(var(--depth) + 8px) 22px -6px rgba(30, 42, 90, .28);
+  --gloss: linear-gradient(180deg, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 55%);
+  font-family: var(--font-main);
+  color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=toybox] { background: radial-gradient(120% 80% at 50% 0%, #f3f6ff 0, #dfe8ff 55%, #d6e0fb 100%); }
+.phone[data-theme=toybox][data-mood=lobby] { background: radial-gradient(120% 80% at 50% 0%, #fff6d6, #ffe39a); }
+.phone[data-theme=toybox][data-mood=ready] { background: radial-gradient(120% 80% at 50% 0%, #e3ecff, #bcd0ff); }
+.phone[data-theme=toybox][data-mood=locked] { background: radial-gradient(120% 80% at 50% 0%, #efe9ff, #d6caff); }
+.phone[data-theme=toybox][data-mood=good] { background: radial-gradient(120% 80% at 50% 0%, #e3fbef, #b4ecd2); }
+.phone[data-theme=toybox][data-mood=bad] { background: radial-gradient(120% 80% at 50% 0%, #ffe9ef, #ffc4d4); }
+.phone[data-theme=toybox]:is([data-mood=rank], [data-mood=end]) { background: radial-gradient(120% 80% at 50% 0%, #fff0e4, #ffd2b0); }
+[data-theme=toybox] .countdown-overlay { background: radial-gradient(120% 80% at 50% 0%, #e9f0ff, #c3d4ff); }
+[data-theme=toybox] .countdown-overlay.intro { background: radial-gradient(120% 80% at 50% 0%, #f1ecff, #d4c8ff); }
+.phone[data-theme=toybox] > :is(header, main, footer) { position: relative; z-index: 1; }
+
+/* type: round and bold, with a little extruded shadow on headings */
+[data-theme=toybox] :is(h1, h2, h3, .bignum, .stage-q, .logo) { font-weight: 700; letter-spacing: -0.01em; }
+[data-theme=toybox] :is(h1, .bignum) { text-shadow: 0 3px 0 rgba(30, 42, 90, .14); }
+[data-theme=toybox] em, [data-theme=toybox] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; color: #3b6cf6; text-shadow: 0 3px 0 #b9cbff; }
+
+/* white blocks: panels, cards and counters sit up off the floor */
+[data-theme=toybox] :is(.card, .stage-q, .stat, .pinbox, .ring, .row, .kpi, .qcard, .qthumb, .qr, .flash) {
+  background: var(--gloss), var(--paper); border: 0; box-shadow: var(--block);
+}
+[data-theme=toybox] .pinbox { background: var(--gloss), #fff4cf; --edge: #f0cf6a; }
+[data-theme=toybox] .pinbox .label { color: #a15c00; }
+[data-theme=toybox] .pill { background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line), 0 3px 0 var(--edge); font-weight: 600; }
+[data-theme=toybox] .pill.dark, [data-theme=toybox] .qthumb-n, [data-theme=toybox] .qcard-head .qnum { background: #2d3a78; color: #fff; box-shadow: 0 3px 0 #18224f; }
+[data-theme=toybox] .field { border: 0; background: #fff; box-shadow: inset 0 3px 0 rgba(30, 42, 90, .08), inset 0 0 0 2px var(--line); }
+[data-theme=toybox] .field:focus { box-shadow: inset 0 3px 0 rgba(30, 42, 90, .08), inset 0 0 0 2.5px #3b6cf6; }
+[data-theme=toybox] .tabs { background: #d6e0fb; box-shadow: inset 0 3px 0 rgba(30, 42, 90, .1); }
+[data-theme=toybox] .tabs button.on { background: var(--paper); color: var(--ink); box-shadow: 0 3px 0 var(--edge); }
+[data-theme=toybox] .qthumb.on { box-shadow: inset 0 0 0 2.5px #3b6cf6, 0 var(--depth) 0 #2347c7; }
+[data-theme=toybox] .chip { box-shadow: 0 5px 0 rgba(30, 42, 90, .18); rotate: 0deg !important; }
+[data-theme=toybox] .row .r { background: #e4ecff; box-shadow: inset 0 -3px 0 rgba(30, 42, 90, .12); }
+[data-theme=toybox] .row:nth-child(1) .r { background: #ffd24a; box-shadow: inset 0 -3px 0 #d69e00; }
+[data-theme=toybox] .row:nth-child(2) .r { background: #d9dfee; box-shadow: inset 0 -3px 0 #aab3c9; }
+[data-theme=toybox] .row:nth-child(3) .r { background: #f3b98a; box-shadow: inset 0 -3px 0 #c98450; }
+[data-theme=toybox] .podium .block { box-shadow: inset 0 3px 0 rgba(255, 255, 255, .6), inset 0 -8px 0 rgba(30, 42, 90, .12); }
+
+/* buttons: candy blue blocks that sink when pressed */
+[data-theme=toybox] .btn {
+  background: var(--gloss), #3b6cf6; color: #fff; font-weight: 700;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35), 0 5px 0 #2347c7, 0 12px 18px -8px rgba(35, 71, 199, .55);
+  transition: transform .08s, box-shadow .08s;
+}
+[data-theme=toybox] .btn.light { background: var(--gloss), #fff; color: var(--ink); box-shadow: inset 0 2px 0 #fff, 0 5px 0 var(--edge), 0 12px 18px -8px rgba(30, 42, 90, .3); }
+[data-theme=toybox] .btn.ghost { background: rgba(255, 255, 255, .55); color: var(--ink); box-shadow: inset 0 0 0 2px var(--line), 0 4px 0 var(--edge); }
+[data-theme=toybox] .btn.danger { background: #ffe1e7; box-shadow: 0 4px 0 #f3a9b9; }
+[data-theme=toybox] .btn:hover { transform: translateY(-1px); }
+[data-theme=toybox] .btn:active:not(:disabled) { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3), 0 1px 0 #2347c7; }
+[data-theme=toybox] .btn.light:active:not(:disabled), [data-theme=toybox] .btn.ghost:active:not(:disabled) { box-shadow: 0 1px 0 var(--edge); }
+
+/* answers: saturated candy blocks with white text and a darker edge of the same colour */
+[data-theme=toybox] .c0 { background: var(--gloss), #7c5cff; --edge: #5a3fd6; color: #fff; --deep: #fff; }
+[data-theme=toybox] .c1 { background: var(--gloss), #ff5c8a; --edge: #d63a68; color: #fff; --deep: #fff; }
+[data-theme=toybox] .c2 { background: var(--gloss), #22c494; --edge: #169a73; color: #fff; --deep: #fff; }
+[data-theme=toybox] .c3 { background: var(--gloss), #ffb020; --edge: #d68a00; color: #fff; --deep: #fff; }
+[data-theme=toybox] :is(.tile, .pans-tile) {
+  border: 0; text-shadow: 0 2px 0 rgba(0, 0, 0, .14);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35), 0 var(--depth) 0 var(--edge), 0 calc(var(--depth) + 8px) 20px -8px rgba(30, 42, 90, .35);
+}
+[data-theme=toybox] .pcard.flash .pans-tile { border: 0; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35), 0 5px 0 var(--edge); }
+[data-theme=toybox] .tile .shape { background: rgba(255, 255, 255, .24); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .1); }
+[data-theme=toybox] .phone .tile { margin-bottom: var(--depth); }
+[data-theme=toybox] .phone .tile:active { transform: translateY(var(--depth)); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .3), 0 0 0 var(--edge); }
+[data-theme=toybox] .tile.right { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35), 0 0 0 4px #fff, 0 var(--depth) 0 4px var(--edge), 0 calc(var(--depth) + 10px) 24px -6px rgba(30, 42, 90, .45); }
+[data-theme=toybox] .tile .tick { background: #fff; color: var(--ink); box-shadow: 0 2px 0 rgba(0, 0, 0, .15); }
+[data-theme=toybox] .stage .answers { padding-bottom: var(--depth); }
+[data-theme=toybox] .bars .col { box-shadow: inset 0 3px 0 rgba(255, 255, 255, .35), inset 0 -6px 0 var(--edge); color: #fff; }
+[data-theme=toybox] .bars > div:nth-child(1) .shape { fill: #5a3fd6; } [data-theme=toybox] .bars > div:nth-child(2) .shape { fill: #d63a68; }
+[data-theme=toybox] .bars > div:nth-child(3) .shape { fill: #169a73; } [data-theme=toybox] .bars > div:nth-child(4) .shape { fill: #d68a00; }
+
+/* Classic's shapes stay, lifted off the page as 3D cut-outs */
+[data-theme=toybox] :is(.shapebox, .sticker) { filter: drop-shadow(0 8px 0 rgba(30, 42, 90, .14)) drop-shadow(0 18px 18px rgba(30, 42, 90, .12)); }
+
+/* pictures and grid reveal: the tiles are little candy blocks that pop off */
+[data-theme=toybox] :is(.stage-img, .reveal) { box-shadow: 0 0 0 4px #fff, 0 var(--depth) 0 4px var(--edge), 0 calc(var(--depth) + 12px) 26px -6px rgba(30, 42, 90, .3); }
+[data-theme=toybox] .reveal-tile { box-shadow: inset 0 3px 0 rgba(255, 255, 255, .35), inset 0 -4px 0 var(--edge); }
+[data-theme=toybox] .reveal-tile span { color: #fff; opacity: .8; }
+
+/* studio preview */
+.qstage[data-theme=toybox] { border-radius: 28px; padding: 14px 18px 18px; overflow-x: hidden; }
+.qstage[data-theme=toybox] .flash-deck::before, .qstage[data-theme=toybox] .flash-deck::after { border: 0; box-shadow: 0 6px 0 var(--edge); }
+.qstage[data-theme=toybox] .flash-deck::before { background: #ffe9a8; }
+.qstage[data-theme=toybox] .flash-deck::after { background: #e3dbff; }
+.phone[data-theme=toybox] footer { background: #2d3a78; color: #fff; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .15), 0 4px 0 #18224f; }

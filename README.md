@@ -53,6 +53,8 @@ all side by side.
   with doodle illustrations by a little bee mascot.
 - **Inkblot**: black and white line art, Space Grotesk with Space Mono labels, solid ink accents, hatched fills and
   flat grey circles behind the illustrations, with a buzzer mascot.
+- **Toybox**: chunky 3D blocks with glossy tops and deep coloured edges that press down when tapped, the rounded
+  Fredoka font, and Classic's shapes lifted off the page as 3D cut-outs.
 - **Glass**: frosted, translucent panels (`backdrop-filter`) floating over a slowly drifting pastel wash, tinted-glass
   answer tiles and the device's own system font. Each phone screen gets its own wash colour.
 
