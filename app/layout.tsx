@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Bricolage_Grotesque, Caveat_Brush, DM_Sans, Patrick_Hand, Space_Grotesk, Space_Mono } from 'next/font/google';
 import { SITE, SITE_URL } from '@/lib/site';
+import { shareImage } from '@/lib/og-cards';
 import './globals.css';
 
 // Chunky grotesk for headlines, DM Sans (with italics for accent words) for everything else.
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
   keywords: SITE.keywords,
   category: 'games',
   alternates: { canonical: '/' },
-  openGraph: { type: 'website', siteName: SITE.name, locale: 'en_US', url: '/', title: SITE.title, description: SITE.description },
-  twitter: { card: 'summary_large_image', title: SITE.title, description: SITE.description },
+  openGraph: { type: 'website', siteName: SITE.name, locale: 'en_US', url: '/', title: SITE.title, description: SITE.description, images: [shareImage('home')] },
+  twitter: { card: 'summary_large_image', title: SITE.title, description: SITE.description, images: [shareImage('home')] },
   // Game PINs are six digits: stop iOS turning them into phone-number links.
   formatDetection: { telephone: false },
   appleWebApp: { title: SITE.name, statusBarStyle: 'default' },

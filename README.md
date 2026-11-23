@@ -84,9 +84,11 @@ Both API routes are rate-limited per IP (30 shares and 120 images an hour). The 
 - **Brand assets** live in `public/brand/` (logo, white logo, logo + mark lockup, the "b." mark; SVG and PNG) and are
   built from the brand font by `pnpm brand` (`scripts/brand.mjs`), which also writes the favicon (`app/favicon.ico`,
   `app/icon.svg`), the Apple touch icon and the web app icons in `public/icons/`. Fonts are in `assets/fonts/` (SIL OFL).
-- **Share images** (`opengraph-image.tsx` in `app/` and `app/host`) are drawn with `next/og` at build time. Join links
-  are drawn on request by `app/join/card/route.ts` (`lib/og-join.tsx`): plain `/join` gets the general invite, and a game
-  link (`/join?pin=…`) gets the quiz's name and PIN in its theme's colours, with a matching title (and `noindex`).
+- **Share images** are plain JPEG files in `public/share/` (`home`, `host`, `join`), since chat apps such as WhatsApp
+  show those most reliably. They're drawn with `next/og` in `lib/og-cards.tsx` (served as PNG drafts at `/og/<name>`);
+  after changing a drawing, run the app and `pnpm og` (or `pnpm og http://localhost:3030`) to save new JPEGs. Game
+  links (`/join?pin=…`) are drawn on request by `app/join/card/route.ts` (`lib/og-join.tsx`) with the quiz's name and
+  PIN in its theme's colours, with a matching title (and `noindex`).
 - **Metadata**: titles, descriptions, canonical links and Open Graph / X cards in each segment's `layout.tsx`;
   `app/sitemap.ts`, `app/robots.ts` and `app/manifest.ts`. The in-game `/play` screen is `noindex`.
 - **GEO** (answer engines like ChatGPT, Claude, Perplexity and Google AI Overviews): the landing page has a visible FAQ plus

@@ -46,7 +46,7 @@ const jsonLd = {
       applicationCategory: 'GameApplication', applicationSubCategory: 'Quiz game', operatingSystem: 'Any (web browser)',
       browserRequirements: 'Requires a modern web browser with JavaScript', isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      featureList: FEATURES, image: `${SITE_URL}/opengraph-image`, screenshot: `${SITE_URL}/opengraph-image`,
+      featureList: FEATURES, image: `${SITE_URL}/share/home.jpg`, screenshot: `${SITE_URL}/share/home.jpg`,
       audience: { '@type': 'Audience', audienceType: 'Teachers, event hosts, teams and friends running quiz nights' },
     },
     {

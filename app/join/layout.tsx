@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { SITE } from '@/lib/site';
-import { JOIN_CARD_ALT } from '@/lib/og-join';
+import { shareImage } from '@/lib/og-cards';
 
-const JOIN_IMAGE = { url: '/join/card', width: 1200, height: 630, alt: JOIN_CARD_ALT };
+const JOIN_IMAGE = shareImage('join');
 
 const description = 'Join a live Buzzline quiz from your phone: enter the 6-digit game PIN and a nickname. No app or account needed.';
 
