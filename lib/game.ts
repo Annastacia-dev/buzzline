@@ -6,6 +6,7 @@ import { db, notify } from './supabase-server';
 import { READY_MS, INTRO_MS, type Quiz, type Question, type HostView, type PlayerView, type State, type GameAnalytics } from './types';
 import { avatarCount, validAvatar } from './avatars';
 import { themeOf } from './themes';
+import { validImage } from './images';
 
 interface GameRow {
   pin: string; host_token: string; quiz: Quiz; state: State; q_index: number; q_start: string | null; updated_at: string;
@@ -107,20 +108,29 @@ export async function gameTitle(pinIn: unknown) {
 }
 
 
-export async function createGame(quiz: Quiz) {
+/** A validated copy of a quiz with only known fields, trimmed to size. Throws if the quiz can't be played. */
+export function cleanQuiz(quiz: Quiz): Quiz {
   const err = validateQuiz(quiz);
   if (err) throw new GameError(err, 400);
-  const clean: Quiz = {
+  return {
     title: String(quiz.title || 'Untitled quiz').slice(0, 80),
     theme: themeOf(quiz.theme),
-    questions: quiz.questions.map((q): Question => ({
-      q: String(q.q).slice(0, 240),
-      answers: q.answers.map(a => String(a).slice(0, 90)),
-      correct: q.correct,
-      time: Math.min(120, Math.max(5, Number(q.time) || 20)),
-      double: !!q.double,
-    })),
+    questions: quiz.questions.map((q): Question => {
+      const image = validImage(q.image);
+      return {
+        q: String(q.q).slice(0, 240),
+        answers: q.answers.map(a => String(a).slice(0, 90)),
+        correct: q.correct,
+        time: Math.min(120, Math.max(5, Number(q.time) || 20)),
+        double: !!q.double,
+        ...(image ? { image } : {}),
+      };
+    }),
   };
+}
+
+export async function createGame(quiz: Quiz) {
+  const clean = cleanQuiz(quiz);
 
   // Housekeeping: drop games idle for 6 hours (their players go with them).
   await db().from('buzz_games').delete().lt('updated_at', new Date(Date.now() - 6 * 3600e3).toISOString());
@@ -243,7 +253,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   };
   if (g.state === 'question' || g.state === 'reveal') {
     const q = currentQ(g);
-    v.question = { q: q.q, answers: q.answers, time: q.time, double: q.double };
+    v.question = { q: q.q, answers: q.answers, time: q.time, double: q.double, image: q.image };
     v.answered = ps.filter(p => answeredNow(g, p)).length;
   }
   if (g.state === 'question') {

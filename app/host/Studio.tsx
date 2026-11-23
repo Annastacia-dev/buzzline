@@ -8,7 +8,8 @@ import GenerateDialog from './GenerateDialog';
 import { importSpreadsheet, TIMES } from '@/lib/spreadsheet';
 import { downloadTemplate } from '@/lib/template';
 import { QuizSelect } from '@/lib/select';
-import { Shape } from '@/lib/client';
+import { api, Shape } from '@/lib/client';
+import { shrinkImage } from '@/lib/images';
 import { Doodle } from '@/lib/doodles';
 import { THEMES, themeOf, DEFAULT_THEME, type ThemeId } from '@/lib/themes';
 
@@ -42,9 +43,17 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     if (!list.length) list = [sampleQuiz()];
     setQuizzes(list);
     setSelId(list[0].id!);
+    openSharedLink(list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const save = (list: Quiz[]) => { setQuizzes(list); localStorage.setItem(KEY, JSON.stringify(list)); };
+  /** Changes the library from its latest state (safe after an await) and saves it. */
+  const commit = (fn: (list: Quiz[]) => Quiz[]) => setQuizzes(prev => {
+    const next = fn(prev);
+    localStorage.setItem(KEY, JSON.stringify(next));
+    return next;
+  });
+  const save = (list: Quiz[]) => commit(() => list);
   const quiz = quizzes.find(q => q.id === selId);
   const update = (fn: (q: Quiz) => Quiz) => save(quizzes.map(q => (q.id === selId ? fn(structuredClone(q)) : q)));
   const setQ = (i: number, fn: (q: Question) => void) => update(z => { fn(z.questions[i]); return z; });
@@ -55,6 +64,101 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     setSelId(nq.id);
     setCur(0);
     setTab(q ? 'preview' : 'edit'); // a blank quiz opens ready to write
+  }
+
+  // ---------- share links ----------
+  const [sharing, setSharing] = useState(false);
+
+  /** Saves a copy of this quiz on the server and copies a link that opens it in any browser's studio. */
+  async function share() {
+    if (!quiz || sharing) return;
+    setSharing(true);
+    try {
+      const { id } = await api<{ id: string }>('/api/share', { quiz: { ...quiz, theme } });
+      const url = `${location.origin}/host?quiz=${id}`;
+      const copied = await navigator.clipboard?.writeText(url).then(() => true, () => false);
+      ask({
+        title: copied ? 'Link copied' : 'Share link ready',
+        message: `${url}\n\nAnyone with this link can open a copy of “${quiz.title}” in their own studio. Changes you make later aren't in the copy: share again to send them.`,
+        confirm: 'Done', cancel: null,
+      });
+    } catch (e) {
+      ask({ title: "Couldn't share this quiz", message: (e as Error).message, confirm: 'OK', cancel: null });
+    } finally { setSharing(false); }
+  }
+
+  /** /host?quiz=<id>: add the shared quiz to this browser's library (once) and open it. */
+  async function openSharedLink(list: Quiz[]) {
+    const id = new URLSearchParams(location.search).get('quiz');
+    if (!id) return;
+    history.replaceState(null, '', location.pathname);
+    const had = list.find(q => q.from === id);
+    if (had) { setSelId(had.id!); setCur(0); setTab('preview'); return; }
+    try {
+      const shared = await fetch(`/api/share?id=${encodeURIComponent(id)}`).then(async r => {
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error || 'Something went wrong');
+        return d as Quiz;
+      });
+      const nq: Quiz = { title: shared.title, questions: shared.questions, id: uid(), from: id };
+      commit(l => [nq, ...l]);
+      setSelId(nq.id!); setCur(0); setTab('preview');
+      ask({ title: `Added “${nq.title}”`, message: 'This shared quiz is now in your quizzes, saved in this browser. Edit it, or host it as it is.', confirm: 'OK', cancel: null });
+    } catch (e) {
+      ask({ title: "Couldn't open that quiz link", message: (e as Error).message, confirm: 'OK', cancel: null });
+    }
+  }
+
+  // ---------- backup ----------
+  /** Downloads every quiz in this browser as one file, which Import can restore anywhere. */
+  function backup() {
+    const data = JSON.stringify({ app: 'buzzline', version: 1, saved: new Date().toISOString(), quizzes }, null, 2);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+    a.download = `buzzline-quizzes-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  /** Adds the quizzes from a backup file, skipping ones this browser already has. */
+  function restore(list: unknown[]) {
+    const have = new Set(quizzes.map(q => q.id));
+    const add = list.filter((q): q is Quiz => !!q && typeof q === 'object' && Array.isArray((q as Quiz).questions) && (q as Quiz).questions.length > 0)
+      .filter(q => !q.id || !have.has(q.id))
+      .map(q => ({ ...q, id: q.id || uid(), title: String(q.title || 'Untitled quiz') }));
+    if (add.length) { commit(l => [...add, ...l]); setSelId(add[0].id!); setCur(0); setTab('preview'); }
+    const skipped = list.length - add.length;
+    ask({
+      title: add.length ? `Restored ${add.length} quiz${add.length === 1 ? '' : 'zes'}` : 'Nothing new to restore',
+      message: skipped ? `${skipped} ${skipped === 1 ? 'was' : 'were'} already here or empty, so ${skipped === 1 ? 'it was' : 'they were'} skipped.` : 'They are saved in this browser.',
+      confirm: 'OK', cancel: null,
+    });
+  }
+
+  // ---------- question images ----------
+  const imgRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState<{ quiz: string; q: number } | null>(null);
+
+  /** Shrinks the picked image, uploads it and puts it on question `qi` of the quiz it was picked for. */
+  async function addImage(f: File | undefined, qi: number) {
+    if (!f || !quiz) return;
+    const quizId = quiz.id!;
+    setUploading({ quiz: quizId, q: qi });
+    try {
+      const body = new FormData();
+      body.append('file', await shrinkImage(f), 'image');
+      const res = await fetch('/api/image', { method: 'POST', body });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Upload failed');
+      commit(l => l.map(z => {
+        if (z.id !== quizId || !z.questions[qi]) return z;
+        const c = structuredClone(z);
+        c.questions[qi].image = d.url;
+        return c;
+      }));
+    } catch (e) {
+      ask({ title: "Couldn't add that image", message: (e as Error).message, confirm: 'OK', cancel: null });
+    } finally { setUploading(null); }
   }
 
   /** Moves question `from` so it lands before position `at` (0…length). */
@@ -116,7 +220,8 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     try {
       if (/\.json$/i.test(f.name)) {
         const q = JSON.parse(await f.text());
-        if (!Array.isArray(q.questions)) throw new Error('Pick a Kahoot-style .xlsx spreadsheet.');
+        if (Array.isArray(q.quizzes) || Array.isArray(q)) { restore(Array.isArray(q) ? q : q.quizzes); return; }
+        if (!Array.isArray(q.questions)) throw new Error('Pick a Kahoot-style .xlsx spreadsheet or a Buzzline backup.');
         addQuiz({ title: q.title || title, questions: q.questions });
         return;
       }
@@ -153,6 +258,8 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         </div>
         <div style={{ marginTop: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button className="btn ghost small" onClick={() => addQuiz(sampleQuiz())}>Add sample</button>
+          <button className="btn ghost small" onClick={backup} title="Download all your quizzes as one file. Import restores it in any browser.">⤓ Back up</button>
+          <button type="button" className="linkbtn side-restore" onClick={() => fileRef.current?.click()}>Restore a backup</button>
           <input ref={fileRef} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.json,application/json" hidden onChange={e => { importQuiz(e.target.files?.[0]); e.target.value = ''; }} />
         </div>
       </aside>
@@ -180,6 +287,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
             </span>
             <span className="spacer" />
             <button className="btn small" onClick={addQuestion}>+ Add question</button>
+            <button className="btn ghost small" onClick={share} aria-busy={sharing} title="Copy a link that opens a copy of this quiz in anyone's studio">🔗 Share</button>
             <button className="btn ghost small" onClick={remove}>Delete quiz</button>
           </div>
           {error && <div className="card error" style={{ padding: 14 }}>{error}</div>}
@@ -209,7 +317,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                         onClick={() => setCur(i)}>
                         <span className="qthumb-top">
                           <span className="qthumb-n">{i + 1}</span>
-                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}</span>
+                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}{q.image ? ' · 🖼' : ''}</span>
                         </span>
                         <span className="qthumb-q">{q.q || <i>No question text yet</i>}</span>
                         <span className={`qthumb-ans ${q.answers.length === 2 ? 'two' : ''}`} aria-hidden>
@@ -237,6 +345,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                     {cq.double && <span className="pill">2× points</span>}
                   </header>
                   <h2>{cq.q || <span className="muted">No question text yet</span>}</h2>
+                  {cq.image && <img className="q-img" src={cq.image} alt={`Picture for question ${ci + 1}`} />}
                   <div className={`pans ${cq.answers.length === 2 ? 'two' : ''}`}>
                     {cq.answers.map((a, j) => (
                       <div key={j} className={`pans-tile c${j}`}><Shape i={j} /><span>{a || '—'}</span></div>
@@ -263,6 +372,25 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                   </div>
                   <input className="field" value={cq.q} placeholder="Type your question" aria-label={`Question ${ci + 1} text`} style={{ fontSize: 20, fontWeight: 700 }}
                     onChange={e => setQ(ci, x => { x.q = e.target.value; })} />
+                  {(() => {
+                    const busy = !!uploading && uploading.quiz === quiz.id && uploading.q === ci;
+                    return (
+                      <div className={`qimg-edit ${cq.image ? 'has' : ''}`}
+                        onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }}
+                        onDrop={e => { const f = e.dataTransfer.files?.[0]; if (f) { e.preventDefault(); addImage(f, ci); } }}>
+                        {cq.image && <img src={cq.image} alt={`Picture for question ${ci + 1}`} />}
+                        <div className="qimg-actions">
+                          <button type="button" className="btn light small" onClick={() => imgRef.current?.click()} aria-busy={busy} disabled={busy}>
+                            {busy ? 'Uploading…' : cq.image ? 'Replace image' : '🖼 Add an image'}
+                          </button>
+                          {cq.image && !busy && <button type="button" className="btn ghost small" onClick={() => setQ(ci, x => { delete x.image; })}>Remove</button>}
+                          {!cq.image && !busy && <span className="muted">or drop one here. Shown big on the host screen.</span>}
+                        </div>
+                        <input ref={imgRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden
+                          onChange={e => { addImage(e.target.files?.[0], ci); e.target.value = ''; }} />
+                      </div>
+                    );
+                  })()}
                   <div className="ans-edit">
                     {cq.answers.map((a, j) => (
                       <label key={j} className={`c${j}`} title="Select the correct answer">

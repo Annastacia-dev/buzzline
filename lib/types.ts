@@ -7,13 +7,15 @@ export const READY_MS = 3000;
 /** The first question also waits INTRO_MS before that, behind a "get ready" countdown after Start game. */
 export const INTRO_MS = 10000;
 
-export interface Question { q: string; answers: string[]; correct: number; time: number; double?: boolean }
-export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId }
+/** `image`: optional picture shown with the question, a URL in Buzzline's image bucket (see lib/images.ts). */
+export interface Question { q: string; answers: string[]; correct: number; time: number; double?: boolean; image?: string }
+/** `from`: the share id this quiz was opened from, so opening the same link twice doesn't add it twice. */
+export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId; from?: string }
 
 export interface HostView {
   role: 'host'; state: State; pin: string; title: string; theme: ThemeId; qIndex: number; total: number;
   players: { id: string; name: string; avatar: number; score: number }[];
-  question?: { q: string; answers: string[]; time: number; double?: boolean };
+  question?: { q: string; answers: string[]; time: number; double?: boolean; image?: string };
   answered?: number; remaining?: number; startsIn?: number;
   correct?: number; distribution?: number[];
   leaderboard?: { name: string; avatar: number; score: number; streak: number; gained: number; up: number }[];

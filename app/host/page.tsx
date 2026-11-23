@@ -310,7 +310,9 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
       <div className="stage-q">{q.q}</div>
       <div className="stage-mid">
         <Ring left={left} total={q.time * 1000} />
-        {h.theme !== 'classic' && <Doodle theme={h.theme} name="mascot" size={190} className="bob" />}
+        {q.image
+          ? <img className="stage-img" src={q.image} alt="" />
+          : <Doodle theme={h.theme} name="mascot" size={190} className="bob" />}
         {q.double && <span className="pill dark">2× points</span>}
         <div className="stat"><b>{h.answered}</b><span>of {h.players.length} answered</span></div>
       </div>

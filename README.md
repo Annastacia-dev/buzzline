@@ -55,6 +55,23 @@ stays as you switch quizzes; the preview, the host screen and every player's pho
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.
 
+## Sharing, backups and images
+
+Quizzes are saved in the browser, so the studio has three ways to move them around:
+
+- **🔗 Share** saves a copy of the quiz on the server (`buzz_shared_quizzes`) and gives a link,
+  `/host?quiz=<id>`. Opening it adds the quiz to that browser's studio once; opening it again just selects it.
+  Later edits aren't in the copy, so share again to send them.
+- **⤓ Back up** downloads every quiz as one JSON file. **Restore a backup** (or Import) adds the quizzes from it,
+  skipping ones that are already there.
+- **Question images**: add a picture under any question (click or drop). The browser shrinks it to at most 1600 px
+  WebP, then `/api/image` checks the file's real type and size (1.2 MB) and stores it in the public `buzz-images`
+  Supabase Storage bucket. The host screen shows it in place of the mascot. Quizzes only keep image URLs from that
+  bucket, so a shared quiz can't pull in pictures from other sites.
+
+Both API routes are rate-limited per IP (30 shares and 120 images an hour). The table and bucket are created by
+`supabase/migrations/20261123000000_shared_quizzes_and_images.sql`.
+
 ## Brand, SEO and GEO
 
 - **Brand assets** live in `public/brand/` (logo, white logo, logo + mark lockup, the "b." mark; SVG and PNG) and are
