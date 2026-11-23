@@ -1,3 +1,5 @@
+import type { ThemeId } from './themes';
+
 export type State = 'lobby' | 'question' | 'reveal' | 'leaderboard' | 'end';
 
 /** Every question shows for READY_MS (with a 3-2-1) before answers open. */
@@ -6,10 +8,10 @@ export const READY_MS = 3000;
 export const INTRO_MS = 10000;
 
 export interface Question { q: string; answers: string[]; correct: number; time: number; double?: boolean }
-export interface Quiz { id?: string; title: string; questions: Question[] }
+export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId }
 
 export interface HostView {
-  role: 'host'; state: State; pin: string; title: string; qIndex: number; total: number;
+  role: 'host'; state: State; pin: string; title: string; theme: ThemeId; qIndex: number; total: number;
   players: { id: string; name: string; avatar: number; score: number }[];
   question?: { q: string; answers: string[]; time: number; double?: boolean };
   answered?: number; remaining?: number; startsIn?: number;
@@ -18,7 +20,7 @@ export interface HostView {
 }
 
 export interface PlayerView {
-  role: 'player'; state: State; pin: string; title: string; name: string; avatar: number;
+  role: 'player'; state: State; pin: string; title: string; theme: ThemeId; name: string; avatar: number;
   score: number; rank: number; playerCount: number; qIndex: number; total: number;
   question?: { q: string; answers: string[]; double?: boolean };
   remaining?: number; startsIn?: number; myAnswer?: number | null;

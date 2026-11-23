@@ -8,6 +8,10 @@ import { AVATARS, Avatar } from '@/lib/avatars';
 import { revealAtFor } from '@/lib/podium';
 import { READY_MS, type PlayerView, type EndView } from '@/lib/types';
 import { Scallop, Icon } from '@/lib/deco';
+import { Doodle, type DoodleName } from '@/lib/doodles';
+
+/** Doodlebug theme: the illustration in the corner of each phone screen. */
+const MOOD_DOODLE: Record<string, DoodleName> = { lobby: 'bee', ready: 'stopwatch', locked: 'sparkles', good: 'star', bad: 'cloud', rank: 'trophy', end: 'trophy' };
 
 type Session = { id: string; token: string; pin: string };
 
@@ -242,7 +246,10 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
   }
 
   return (
-    <div className="phone" data-mood={mood}>
+    <div className="phone" data-mood={mood} data-theme={v.theme}>
+      {v.theme === 'doodlebug' && MOOD_DOODLE[mood] && (
+        <Doodle key={mood} name={MOOD_DOODLE[mood]} size={mood === 'lobby' ? 110 : 92} className="float wiggle" style={{ right: 12, top: 58 }} />
+      )}
       <header>
         <span className="logo" style={{ fontSize: 20 }}>Buzzline<span className="dot" /></span>
         <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

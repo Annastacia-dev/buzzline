@@ -203,7 +203,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qlist button.on small { color: var(--butter-ink); }
 .editor { padding: 30px clamp(16px, 4vw, 52px); display: flex; flex-direction: column; gap: 16px; max-width: 1000px; }
 .editor-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.editor-top .field { flex: 1; min-width: 220px; font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; background: transparent; border-color: transparent; padding-left: 4px; }
+.editor-top .field { flex: 1; min-width: 280px; font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.03em; background: transparent; border-color: transparent; padding-left: 4px; }
 .editor-top .field:hover { border-color: var(--line); border-style: dashed; cursor: text; }
 .editor-top .field:focus { border-color: var(--line); border-style: solid; background: var(--paper); }
 .qcard { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
@@ -582,3 +582,111 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
   .flash-deck.preview .flash { --tilt: -0.8deg; }
   .pcard.flash .pans-tile { min-height: 60px; font-size: 16px; }
 }
+
+/* ============================================================================================
+   Quiz themes (lib/themes.ts). The host stage, players' phones and the studio preview carry
+   data-theme; Classic is the look above. Doodlebug: blue ink on beige paper, handwriting,
+   wobbly hand-drawn outlines and doodle illustrations (lib/doodles.tsx).
+   ============================================================================================ */
+[data-theme=doodlebug] {
+  --bg: #f2e9d6; --paper: #fbf6ea; --ink: #1f3fb9; --muted: #5a68a6; --line: #d6c9ab;
+  --butter: #e9dcbd; --butter-ink: #1f3fb9;
+  --sage: #cdd6f5;   --sage-ink: #1f3fb9;
+  --olive: #e3d5b4;
+  --lilac: #dde3f8;  --lilac-ink: #1f3fb9;
+  --peri: #1f3fb9;   --peri-ink: #1f3fb9;
+  --pink: #f6efe0;   --pink-ink: #1f3fb9;
+  --peach: #ece0c4;  --peach-ink: #1f3fb9;
+  --mint: #d5dcf6;   --mint-ink: #1f3fb9;
+  --coral: #f1d8c8;  --coral-ink: #1f3fb9;
+  --good: #1f7a4a; --bad: #c2412d;
+  --font-display: var(--font-hand-display), var(--font-hand), cursive;
+  --font-main: var(--font-hand), cursive;
+  /* the classic hand-drawn box: four uneven elliptical corners */
+  --wob: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  font-family: var(--font-main);
+  color: var(--ink);
+  font-synthesis: none;          /* handwriting has one weight: never fake bold or italic */
+  font-size-adjust: ex-height .5; /* hand fonts run small; match the x-height of the usual fonts */
+}
+[data-theme=doodlebug] h1, [data-theme=doodlebug] h2, [data-theme=doodlebug] h3 { letter-spacing: 0; }
+[data-theme=doodlebug] em, [data-theme=doodlebug] .it {
+  font-style: normal; text-decoration: underline wavy; text-decoration-thickness: 2px; text-underline-offset: .18em;
+}
+[data-theme=doodlebug] .logo, [data-theme=doodlebug] .bignum, [data-theme=doodlebug] .stage-q { letter-spacing: 0; }
+
+/* outlines: chunky pen lines on uneven corners */
+[data-theme=doodlebug] :is(.btn, .pill, .tile, .stage-q, .stat, .pinbox, .qr, .chip, .row, .card, .kpi, .tabs, .pans-tile, .qthumb) {
+  border-radius: var(--wob);
+}
+[data-theme=doodlebug] :is(.tile, .stage-q, .stat, .pinbox, .chip, .row, .card, .kpi, .pans-tile) { border: 2.5px solid var(--ink); }
+[data-theme=doodlebug] .pill { box-shadow: inset 0 0 0 1.5px var(--ink); }
+[data-theme=doodlebug] .qr { box-shadow: 0 0 0 2.5px var(--ink); }
+[data-theme=doodlebug] .ring { box-shadow: 0 0 0 2.5px var(--ink); }
+[data-theme=doodlebug] .stage-q, [data-theme=doodlebug] .pinbox { box-shadow: 6px 6px 0 var(--ink); }
+[data-theme=doodlebug] .podium .block { border: 2.5px solid var(--ink); border-bottom: 0; border-radius: 120px 30px 0 0 / 30px 60px 0 0; }
+
+/* text on ink-filled things uses the paper colour (Classic hard-codes white) */
+[data-theme=doodlebug] .btn, [data-theme=doodlebug] .pill.dark, [data-theme=doodlebug] .tile .tick,
+[data-theme=doodlebug] .tabs button.on, [data-theme=doodlebug] .qcard-head .qnum { color: var(--paper); }
+[data-theme=doodlebug] .phone footer, [data-theme=doodlebug].phone footer { color: var(--paper); border-radius: var(--wob); }
+[data-theme=doodlebug] .btn.light { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+[data-theme=doodlebug] .btn.ghost { color: var(--ink); box-shadow: inset 0 0 0 2px currentColor; }
+
+/* answers: solid ink, plain paper, pale blue, sand (the shapes tell them apart too) */
+[data-theme=doodlebug] .c0 { background: var(--ink); color: var(--paper); --deep: var(--paper); }
+[data-theme=doodlebug] .tile.c0 .shape { background: transparent; box-shadow: 0 0 0 2px var(--paper); }
+[data-theme=doodlebug] .c1 { background: var(--paper); --deep: var(--ink); }
+[data-theme=doodlebug] .c2 { background: #cdd6f5; --deep: var(--ink); }
+[data-theme=doodlebug] .c3 { background: #e9dcbd; --deep: var(--ink); }
+[data-theme=doodlebug] .tile.right { box-shadow: 5px 5px 0 var(--ink); }
+[data-theme=doodlebug] .tile .shape { box-shadow: 0 0 0 2px var(--ink); }
+[data-theme=doodlebug] .bars > div .shape { fill: var(--ink); }
+[data-theme=doodlebug] .bars .col { border: 2.5px solid var(--ink); border-radius: 60px 20px 6px 6px / 20px 40px 6px 6px; }
+
+/* blue screens: the colours flip, like the splash of a sketchbook app */
+[data-theme=doodlebug] .countdown-overlay,
+.phone[data-theme=doodlebug]:is([data-mood=ready], [data-mood=lobby]) {
+  --ink: #fbf6ea; --paper: #2e4fcf; --muted: #cfd8f6; --line: rgba(251, 246, 234, .35); --bg: #1f3fb9;
+  background: #1f3fb9; color: var(--ink);
+}
+.phone[data-theme=doodlebug][data-mood=lobby] .avatar-pick > div { background: rgba(251, 246, 234, .12); }
+.phone[data-theme=doodlebug][data-mood=lobby] .avatar-pick button.on { box-shadow: 0 0 0 3px #fbf6ea; }
+.phone[data-theme=doodlebug] .avatar { box-shadow: 0 0 0 2px var(--ink); }
+.phone[data-theme=doodlebug][data-mood=locked] { background: #dde3f8; }
+.phone[data-theme=doodlebug][data-mood=good] { background: #cdd6f5; }
+.phone[data-theme=doodlebug][data-mood=bad] { background: #ece0c4; }
+.phone[data-theme=doodlebug][data-mood=rank], .phone[data-theme=doodlebug][data-mood=end] { background: var(--bg); }
+
+/* Classic's blobs and round stickers make way for the doodles */
+:is(.stage[data-theme=doodlebug], [data-theme=doodlebug] .countdown-overlay, [data-theme=doodlebug] .pinbox) > :is(.shapebox, .sticker) { display: none; }
+.doodle { flex: none; color: var(--ink); pointer-events: none; }
+.doodle.float { position: absolute; z-index: 0; }
+.doodle.bob { animation: bob 2.8s ease-in-out infinite; }
+@keyframes doodle-wiggle { 0%, 100% { rotate: -4deg; } 50% { rotate: 4deg; } }
+.doodle.wiggle { animation: doodle-wiggle 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .doodle.bob, .doodle.wiggle { animation: none; } }
+@media (max-width: 1100px) { .stage .doodle.float { display: none; } }
+
+/* studio: the preview area shows the quiz's theme */
+.qstage[data-theme=doodlebug] { background: var(--bg); border-radius: 28px; padding: 14px 18px 18px; overflow-x: hidden; }
+.qstage[data-theme=doodlebug] .flash { box-shadow: 7px 7px 0 var(--ink); }
+.qstage[data-theme=doodlebug] .flash-deck::before, .qstage[data-theme=doodlebug] .flash-deck::after { border-radius: var(--wob); }
+.qstage[data-theme=doodlebug] .flash { border-radius: var(--wob); }
+.qstage[data-theme=doodlebug] .preview-note, .qstage[data-theme=doodlebug] .qstage-nav { font-size: 17px; }
+.qstage .deck-doodle { position: absolute; z-index: 2; right: -8px; top: -34px; }
+@media (max-width: 760px) { .qstage .deck-doodle { width: 74px; right: -6px; top: -26px; } }
+.qstage[data-theme=doodlebug] .field, .qstage[data-theme=doodlebug] .ans-edit input[type=text] { font-family: var(--font-main); }
+
+/* theme picker in the studio toolbar */
+.theme-pick { display: inline-flex; gap: 6px; padding: 4px; border-radius: 999px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); flex-shrink: 0; }
+.theme-pick button { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; font-weight: 700; font-size: 14px; white-space: nowrap; }
+.theme-pick button:hover:not(.on) { background: var(--bg); }
+.theme-pick button.on { background: var(--ink); color: #fff; }
+.theme-pick .sw { display: inline-grid; grid-template-columns: 1fr 1fr; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px var(--ink); flex: none; }
+.theme-pick button.on .sw { box-shadow: 0 0 0 1.5px #fff; }
+.theme-pick .sw.doodlebug + span { font-family: var(--font-hand-display); font-size: 17px; font-weight: 400; letter-spacing: .01em; }
+.phone[data-theme=doodlebug] { position: relative; }
+.phone[data-theme=doodlebug] > :is(header, main, footer) { position: relative; z-index: 1; }
+.theme-pick .sw i { display: block; }
+[data-theme=doodlebug] .ans-edit input[type=text] { color: var(--ink); }

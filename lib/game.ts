@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { db, notify } from './supabase-server';
 import { READY_MS, INTRO_MS, type Quiz, type Question, type HostView, type PlayerView, type State, type GameAnalytics } from './types';
 import { avatarCount, validAvatar } from './avatars';
+import { themeOf } from './themes';
 
 interface GameRow {
   pin: string; host_token: string; quiz: Quiz; state: State; q_index: number; q_start: string | null; updated_at: string;
@@ -111,6 +112,7 @@ export async function createGame(quiz: Quiz) {
   if (err) throw new GameError(err, 400);
   const clean: Quiz = {
     title: String(quiz.title || 'Untitled quiz').slice(0, 80),
+    theme: themeOf(quiz.theme),
     questions: quiz.questions.map((q): Question => ({
       q: String(q.q).slice(0, 240),
       answers: q.answers.map(a => String(a).slice(0, 90)),
@@ -235,7 +237,7 @@ export async function hostAction(pin: unknown, tok: unknown, action: unknown, pl
 
 function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   const v: HostView = {
-    role: 'host', state: g.state, pin: g.pin, title: g.quiz.title,
+    role: 'host', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme),
     qIndex: g.q_index, total: g.quiz.questions.length,
     players: ps.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score })),
   };
@@ -264,7 +266,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
 
 function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
   const v: PlayerView = {
-    role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, name: p.name, avatar: p.avatar,
+    role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), name: p.name, avatar: p.avatar,
     score: p.score, rank: p.rank, playerCount: ps.length,
     qIndex: g.q_index, total: g.quiz.questions.length,
   };

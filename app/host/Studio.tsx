@@ -9,6 +9,8 @@ import { importSpreadsheet, TIMES } from '@/lib/spreadsheet';
 import { downloadTemplate } from '@/lib/template';
 import { QuizSelect } from '@/lib/select';
 import { Shape } from '@/lib/client';
+import { Doodle } from '@/lib/doodles';
+import { THEMES, themeOf } from '@/lib/themes';
 
 const KEY = 'bz.quizzes';
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -71,6 +73,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   }
   const ci = quiz ? Math.min(cur, quiz.questions.length - 1) : 0;
   const cq = quiz?.questions[ci];
+  const theme = themeOf(quiz?.theme);
   useEffect(() => {
     // Keep the current question visible in the rail, and the card scrolled to its top.
     railRef.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -154,6 +157,15 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         <section className="editor">
           <div className="editor-top">
             <input className="field" value={quiz.title} onChange={e => update(z => ({ ...z, title: e.target.value }))} placeholder="Quiz title" aria-label="Quiz title" title="Click to rename" maxLength={120} />
+            <div className="theme-pick" role="radiogroup" aria-label="Quiz theme">
+              {THEMES.map(t => (
+                <button key={t.id} type="button" role="radio" aria-checked={theme === t.id} className={theme === t.id ? 'on' : ''}
+                  title={`${t.name}: ${t.blurb}`} onClick={() => update(z => ({ ...z, theme: t.id }))}>
+                  <span className={`sw ${t.id}`} aria-hidden>{t.swatch.map(c => <i key={c} style={{ background: c }} />)}</span>
+                  <span>{t.name}</span>
+                </button>
+              ))}
+            </div>
             <button className="btn" onClick={() => onHost(quiz)}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div className="editor-bar">
@@ -211,11 +223,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
               <button type="button" className="btn ghost small qrail-add" onClick={addQuestion}>+ Add question</button>
             </nav>
 
-            <div id="quiz-panel" role="tabpanel" aria-labelledby={tab === 'edit' ? 'tab-edit' : 'tab-preview'} className="qstage" ref={stageRef}>
+            <div id="quiz-panel" role="tabpanel" aria-labelledby={tab === 'edit' ? 'tab-edit' : 'tab-preview'} className="qstage" ref={stageRef} data-theme={theme}>
               {tab === 'preview'
                 ? <p className="muted preview-note">Answers are hidden here so the quiz stays a surprise. Open <b>Edit quiz</b> to see and change them.</p>
                 : <p className="muted preview-note">Drag questions in the list to reorder them. The filled circle marks the correct answer.</p>}
               <div className={`flash-deck ${tab}`}>
+                {theme === 'doodlebug' && <Doodle name="bee" size={120} className="deck-doodle bob" />}
               {tab === 'preview' ? (
                 <article className="card pcard flash" key={`p${ci}`}>
                   <header>

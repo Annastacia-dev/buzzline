@@ -41,6 +41,18 @@ checks the result (2–4 unique answers, a valid correct index) and the new quiz
 Each server instance allows 10 generations per visitor per hour. Without `ANTHROPIC_API_KEY` the button shows a
 "not set up" message and everything else works.
 
+## Quiz themes
+
+Each quiz has a theme, picked next to **Host this quiz** in the studio. The preview, the host screen and every
+player's phone use it.
+
+- **Classic** (default): cream paper, pastel blocks, black pills and stickers.
+- **Doodlebug**: blue ink on beige paper, handwriting (Caveat Brush and Patrick Hand) and wobbly hand-drawn outlines,
+  with doodle illustrations by a little bee mascot (`lib/doodles.tsx`).
+
+Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
+`app/globals.css`, so a new theme is a new entry there plus its CSS.
+
 ## Brand, SEO and GEO
 
 - **Brand assets** live in `public/brand/` (logo, white logo, logo + mark lockup, the "b." mark; SVG and PNG) and are

@@ -12,6 +12,8 @@ import { READY_MS, type HostView, type EndView, type Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
 import { Blob, Icon, Scallop, Sticker } from '@/lib/deco';
 import Studio from './Studio';
+import { Doodle } from '@/lib/doodles';
+import { themeInk } from '@/lib/themes';
 
 type HostSession = { pin: string; token: string };
 
@@ -82,7 +84,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   };
 
   return (
-    <div className="stage">
+    <div className="stage" data-theme={h.theme}>
       <div className="stage-top">
         <div className="logo">Buzzline<span className="dot" /></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -169,15 +171,21 @@ function Lobby({ h, act, busy }: ScreenProps) {
   // QR opens the join page with the PIN filled in. Waits for the address so it never encodes the wrong one.
   useEffect(() => {
     if (!urls) return;
-    QRCode.toString(`${joinUrl}/join?pin=${h.pin}`, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#161616', light: '#ffffff' } })
+    QRCode.toString(`${joinUrl}/join?pin=${h.pin}`, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: themeInk(h.theme), light: '#ffffff' } })
       .then(setQr).catch(() => setQr(''));
-  }, [urls, joinUrl, h.pin]);
+  }, [urls, joinUrl, h.pin, h.theme]);
 
   return (
     <>
       <Blob color="var(--olive)" size={260} style={{ position: 'absolute', top: 90, left: -90 }} />
       <Scallop color="var(--pink)" size={240} rotate={18} style={{ position: 'absolute', bottom: -70, right: -60 }} />
+      {h.theme === 'doodlebug' && <>
+        <Doodle name="bee" size={220} className="float bob" style={{ top: 96, left: 24 }} />
+        <Doodle name="arrow" size={150} rotate={-6} className="float" style={{ top: 150, right: '6%' }} />
+        <Doodle name="bulb" size={100} rotate={12} className="float" style={{ bottom: 36, right: 48 }} />
+      </>}
       <div className="pinbox" style={{ alignSelf: 'center' }}>
+        {h.theme === 'doodlebug' && <Doodle name="sparkles" size={84} className="float" style={{ top: -42, left: -46 }} />}
         <Sticker text="fastest finger first · buzz in · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={120} rotate={-14}
           style={{ position: 'absolute', top: -44, left: -56 }} />
         <div className="qr">
@@ -256,6 +264,11 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
         <Scallop color="var(--butter)" size={280} rotate={14} style={{ position: 'absolute', bottom: -70, right: -50 }} />
         <Sticker text="get ready · get ready · get ready · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-10}
           className="intro-sticker" style={{ position: 'absolute', top: '5%', right: '4%' }} />
+        {h.theme === 'doodlebug' && <>
+          <Doodle name="stopwatch" size={170} rotate={10} className="float wiggle" style={{ top: '7%', right: '6%' }} />
+          <Doodle name="bee" size={240} className="float bob" style={{ bottom: '6%', left: '4%' }} />
+          <Doodle name="sparkles" size={90} className="float" style={{ top: '10%', left: '9%' }} />
+        </>}
         <div style={{ display: 'grid', gap: 18, justifyItems: 'center', padding: 24, position: 'relative' }}>
           <span className="pill">{h.total} question{h.total === 1 ? '' : 's'} · {h.players.length} player{h.players.length === 1 ? '' : 's'}</span>
           <h1 style={{ fontSize: 'clamp(36px, 6vw, 84px)', maxWidth: 1100 }}>{h.title}</h1>
@@ -276,6 +289,10 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
       <div className="countdown-overlay">
         <Blob color="var(--butter)" size={300} style={{ position: 'absolute', top: -80, right: -60 }} />
         <Scallop color="var(--lilac)" size={260} rotate={-12} style={{ position: 'absolute', bottom: -60, left: -40 }} />
+        {h.theme === 'doodlebug' && <>
+          <Doodle name="question" size={170} rotate={-8} className="float wiggle" style={{ top: '8%', left: '7%' }} />
+          <Doodle name="bulb" size={110} rotate={10} className="float" style={{ bottom: '8%', right: '8%' }} />
+        </>}
         <div style={{ display: 'grid', gap: 22, justifyItems: 'center', padding: 24, position: 'relative' }}>
           <span className="pill">Question {h.qIndex + 1} of {h.total}</span>
           {q.double && <span className="pill dark">2× double points</span>}
@@ -293,6 +310,7 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
       <div className="stage-q">{q.q}</div>
       <div className="stage-mid">
         <Ring left={left} total={q.time * 1000} />
+        {h.theme === 'doodlebug' && <Doodle name="bee" size={190} className="bob" />}
         {q.double && <span className="pill dark">2× points</span>}
         <div className="stat"><b>{h.answered}</b><span>of {h.players.length} answered</span></div>
       </div>
@@ -350,7 +368,11 @@ function Leaderboard({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: Scree
   }, []);
   return (
     <>
-      <h1 style={{ textAlign: 'center', fontSize: 64 }}>Score<em>board</em></h1>
+      {h.theme === 'doodlebug' && <>
+        <Doodle name="trophy" size={130} rotate={-8} className="float" style={{ top: 90, left: '9%' }} />
+        <Doodle name="star" size={100} rotate={10} className="float wiggle" style={{ top: 110, right: '10%' }} />
+      </>}
+      <h1 style={{ textAlign: 'center', fontSize: 64, position: 'relative' }}>Score<em>board</em></h1>
       <div className="board" style={{ flex: 1, alignContent: 'start' }}>
         {h.leaderboard!.map((p, i) => (
           <div key={p.name} className="row rise" style={{ animationDelay: `${i * 80}ms` }}>
@@ -460,6 +482,10 @@ function Podium({ h, onLeave, onReport }: { h: Stamped<HostView>; onLeave: () =>
     <>
       <Confetti fire={boom} />
       {light !== 'off' && <div ref={spot} className={`spot ${light}`} aria-hidden />}
+      {finished && h.theme === 'doodlebug' && <>
+        <Doodle name="trophy" size={150} rotate={-10} className="float pop" style={{ top: 100, left: '7%' }} />
+        <Doodle name="bee" size={190} className="float bob" style={{ top: 110, right: '6%' }} />
+      </>}
       {finished && <>
         <Sticker text="good game · well played · " icon="trophy" bg="var(--sage)" ink="var(--sage-ink)" size={150} rotate={-12}
           className="pop" style={{ position: 'absolute', top: 90, left: '8%' }} />
