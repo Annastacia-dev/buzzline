@@ -678,15 +678,14 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 @media (max-width: 760px) { .qstage .deck-doodle { width: 74px; right: -6px; top: -26px; } }
 .qstage[data-theme=doodlebug] .field, .qstage[data-theme=doodlebug] .ans-edit input[type=text] { font-family: var(--font-main); }
 
-/* theme picker in the studio toolbar */
-.theme-pick { display: inline-flex; gap: 6px; padding: 4px; border-radius: 999px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); flex-shrink: 0; }
-.theme-pick button { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; font-weight: 700; font-size: 14px; white-space: nowrap; }
-.theme-pick button:hover:not(.on) { background: var(--bg); }
-.theme-pick button.on { background: var(--ink); color: #fff; }
-.theme-pick .sw { display: inline-grid; grid-template-columns: 1fr 1fr; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px var(--ink); flex: none; }
-.theme-pick button.on .sw { box-shadow: 0 0 0 1.5px #fff; }
-.theme-pick .sw.inkblot + span { font-family: var(--font-ink-mono); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-.theme-pick .sw.doodlebug + span { font-family: var(--font-hand-display); font-size: 17px; font-weight: 400; letter-spacing: .01em; }
+/* theme picker in the studio toolbar: a dropdown with a swatch per theme */
+.theme-pick { flex-shrink: 0; }
+.theme-pick .qsel-btn { min-width: 170px; }
+.theme-pick .qsel-list { left: auto; right: 0; min-width: 300px; transform-origin: top right; }
+.theme-pick .sw { display: grid; grid-template-columns: 1fr 1fr; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px var(--ink); }
+.qsel-opt .qsel-icon { margin-right: 2px; }
+.qsel-text { flex: 1; display: grid; gap: 1px; }
+.qsel-text small { font-size: 12.5px; font-weight: 500; color: var(--muted); line-height: 1.3; white-space: normal; }
 .phone[data-theme=doodlebug] { position: relative; }
 .phone[data-theme=doodlebug] > :is(header, main, footer) { position: relative; z-index: 1; }
 .theme-pick .sw i { display: block; }
@@ -782,3 +781,5 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
 .stage[data-theme]:not([data-theme=classic]) { background: var(--bg); }
+/* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
+.qstage { overflow-x: hidden; }

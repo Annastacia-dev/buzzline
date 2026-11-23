@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 
-export interface Option<T extends string | number> { value: T; label: string }
+/** An option; `icon` is drawn before its label (in the list and on the button), `hint` as a second line in the list. */
+export interface Option<T extends string | number> { value: T; label: string; icon?: ReactNode; hint?: string }
 
 /**
  * A chunky, quiz-styled dropdown (replaces native <select>). Accessible as a listbox:
@@ -77,7 +78,7 @@ export function QuizSelect<T extends string | number>({ value, options, onChange
         aria-labelledby={!label && labelledBy ? `${labelledBy} ${id}-val` : undefined}
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={e => { if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) { e.preventDefault(); show(); } }}>
-        {icon && <span className="qsel-icon" aria-hidden>{icon}</span>}
+        {(current?.icon ?? icon) && <span className="qsel-icon" aria-hidden>{current?.icon ?? icon}</span>}
         <span id={`${id}-val`} className="qsel-val">{current?.label}</span>
         <svg className="qsel-chev" viewBox="0 0 20 20" width="14" height="14" aria-hidden><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
@@ -89,7 +90,9 @@ export function QuizSelect<T extends string | number>({ value, options, onChange
             <li key={String(o.value)} id={`${id}-o${i}`} data-i={i} role="option" aria-selected={i === selected}
               className={`qsel-opt s${i % 4} ${i === active ? 'active' : ''}`}
               onPointerMove={() => setActive(i)} onClick={() => pick(i)}>
-              <span>{o.label}</span>{i === selected && <span className="qsel-tick" aria-hidden>✓</span>}
+              {o.icon && <span className="qsel-icon" aria-hidden>{o.icon}</span>}
+              <span className="qsel-text">{o.label}{o.hint && <small>{o.hint}</small>}</span>
+              {i === selected && <span className="qsel-tick" aria-hidden>✓</span>}
             </li>
           ))}
         </ul>

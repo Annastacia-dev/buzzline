@@ -43,8 +43,8 @@ Each server instance allows 10 generations per visitor per hour. Without `ANTHRO
 
 ## Quiz themes
 
-Each quiz has a theme, picked next to **Host this quiz** in the studio. The preview, the host screen and every
-player's phone use it.
+Pick a theme from the dropdown next to **Host this quiz** in the studio. The choice is remembered in the browser and
+stays as you switch quizzes; the preview, the host screen and every player's phone use it.
 
 - **Classic** (default): cream paper, pastel blocks, black pills and stickers.
 - **Doodlebug**: blue ink on beige paper, handwriting (Caveat Brush and Patrick Hand) and wobbly hand-drawn outlines,
