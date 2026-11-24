@@ -24,7 +24,7 @@ export const clearedAt = (progress: number) => Math.min(N, 1 + Math.floor(Math.m
 export const revealSeed = (key: string, qIndex: number) => [...key].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261 + qIndex * 7919);
 
 export function GridReveal({ src, cleared, seed, size, alt = '' }: {
-  src: string; cleared: number; seed: number; size: 'stage' | 'preview'; alt?: string;
+  src: string; cleared: number; seed: number; size: 'stage' | 'preview' | 'phone'; alt?: string;
 }) {
   const order = clearOrder(seed);
   const open = new Set(order.slice(0, cleared));

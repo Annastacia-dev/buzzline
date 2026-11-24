@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { api, useNow } from '@/lib/client';
+import { api, useNow, usePreload } from '@/lib/client';
 import { Avatar } from '@/lib/avatars';
 import { Scallop, Icon } from '@/lib/deco';
 import { Sound, SoundToggle } from '@/lib/sound';
@@ -32,6 +32,7 @@ export default function ChallengePlay({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [picked, setPicked] = useState<{ q: number; label: string } | null>(null);
 
+  usePreload(v?.question?.image, v?.nextImage);
   const show = useCallback((view: RunView) => setV({ ...view, at: performance.now() }), []);
   const call = useCallback(async (action: string, extra: object = {}, r = run) => {
     if (!r) return;
@@ -208,7 +209,7 @@ function QuestionView({ v, answered, err, onSubmit, onTimeUp }: {
     <>
       <div className="bar"><div style={{ width: `${Math.max(0, left / total) * 100}%` }} /></div>
       <div className="qtext">{q.q}</div>
-      {q.image && <img className="challenge-img" src={q.image} alt="" />}
+      {q.image && <img className="challenge-img" src={q.image} alt="" decoding="async" fetchPriority="high" />}
       {q.kind === 'poll' && <div style={{ textAlign: 'center' }}><span className="pill">📊 Poll · no wrong answers</span></div>}
       {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
       <AnswerPad key={v.qIndex} q={q} disabled={left <= 0} onSubmit={onSubmit} />

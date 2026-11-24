@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api, refreshGame, Shape, useGameStream, useNow } from '@/lib/client';
+import { api, refreshGame, Shape, useGameStream, useNow, usePreload } from '@/lib/client';
+import { GridReveal, clearedAt, revealSeed } from '@/lib/reveal';
 import { Sound, SoundToggle } from '@/lib/sound';
 import { AVATARS, Avatar } from '@/lib/avatars';
 import { revealAtFor } from '@/lib/podium';
@@ -122,6 +123,8 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
   const [avatar, setAvatar] = useState<number | null>(null);
   const now = useNow(v.state === 'question');
   const myAvatar = avatar ?? v.avatar;
+  // This question's picture during its 3-2-1, and the next one's while this one runs.
+  usePreload(v.question?.image, v.nextImage);
 
   // Game over: hold the result until the big screen's podium reveal gets to this player's place.
   const [revealed, setRevealed] = useState(false);
@@ -253,6 +256,10 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           <>
             <div className="bar"><div style={{ width: `${Math.max(0, left / total) * 100}%` }} /></div>
             <div className="qtext">{q.q}</div>
+            {q.image && (q.reveal
+              // The same tiles, clearing in the same order and at the same pace as on the big screen.
+              ? <GridReveal src={q.image} size="phone" seed={revealSeed(v.pin, v.qIndex)} cleared={clearedAt(1 - left / total)} />
+              : <img className="phone-img" src={q.image} alt="" decoding="async" fetchPriority="high" />)}
             {q.kind === 'poll' && <div style={{ textAlign: 'center' }}><span className="pill">📊 Poll · no wrong answers</span></div>}
             {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
             <AnswerPad key={v.qIndex} q={q} disabled={left <= 0} onSubmit={submit} />

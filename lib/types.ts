@@ -32,6 +32,8 @@ export interface HostView {
   players: { id: string; name: string; avatar: number; score: number }[];
   question?: { q: string; answers: string[]; time: number; double?: boolean; image?: string; reveal?: boolean; kind?: QuestionKind };
   answered?: number; remaining?: number; startsIn?: number;
+  /** The next question's picture, so the screen can download it before it is needed. */
+  nextImage?: string;
   /** At the reveal. For type and order questions `distribution` is [right, wrong] and `solution` the accepted answers or the right order. */
   correct?: number; distribution?: number[]; solution?: string[];
   /** Team mode only: the number of teams, each player's team, and the standings. */
@@ -42,8 +44,10 @@ export interface HostView {
 export interface PlayerView {
   role: 'player'; state: State; pin: string; title: string; theme: ThemeId; effect?: EffectId; fall?: FallId; name: string; avatar: number;
   score: number; rank: number; playerCount: number; qIndex: number; total: number;
-  question?: { q: string; answers: string[]; double?: boolean; kind?: QuestionKind };
+  question?: { q: string; answers: string[]; double?: boolean; kind?: QuestionKind; image?: string; reveal?: boolean };
   remaining?: number; startsIn?: number; myAnswer?: number | null;
+  /** The next question's picture, so the phone can download it before it is needed. */
+  nextImage?: string;
   last?: { correct: boolean; points: number; bonus: number; missed?: boolean; poll?: boolean } | null;
   streak?: number; correct?: number; answers?: string[]; kind?: QuestionKind; solution?: string[];
   /** Team mode only: this player's team and where it stands. */

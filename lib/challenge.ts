@@ -32,6 +32,8 @@ export interface RunView {
   startsIn?: number; remaining?: number;
   result?: RunResult & { answers: string[]; correctIndex: number; solution?: string[]; kind?: QuestionKind };
   rank?: number; players?: number;
+  /** The next question's picture, to download ahead of time. */
+  nextImage?: string;
 }
 
 /** The public part: title, theme and the top of the leaderboard. */
@@ -133,7 +135,8 @@ async function rankOf(c: ChallengeRow, r: RunRow) {
 
 function view(c: ChallengeRow, r: RunRow): RunView {
   const total = c.quiz.questions.length;
-  const base = { title: c.quiz.title || 'Untitled quiz', theme: themeOf(c.quiz.theme), ...effectsOf(c.quiz), total, qIndex: r.q_index, name: r.name, avatar: r.avatar, score: r.score, streak: r.streak };
+  const nextImage = r.finished_at ? undefined : c.quiz.questions[r.q_index + 1]?.image;
+  const base = { nextImage, title: c.quiz.title || 'Untitled quiz', theme: themeOf(c.quiz.theme), ...effectsOf(c.quiz), total, qIndex: r.q_index, name: r.name, avatar: r.avatar, score: r.score, streak: r.streak };
   if (r.finished_at) return { ...base, phase: 'finished' };
   const q = c.quiz.questions[r.q_index];
   const kind = kindOf(q);

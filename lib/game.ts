@@ -62,6 +62,9 @@ async function loadPlayers(pin: string): Promise<PlayerRow[]> {
 }
 
 const currentQ = (g: GameRow): Question => g.quiz.questions[g.q_index];
+/** The picture of the question after this one (the first, in the lobby), to download ahead of time. */
+const nextImage = (g: GameRow): string | undefined =>
+  g.state === 'end' ? undefined : g.quiz.questions[g.state === 'lobby' ? 0 : g.q_index + 1]?.image;
 const openAt = (g: GameRow) => (g.q_start ? Date.parse(g.q_start) : 0);
 const deadline = (g: GameRow) => openAt(g) + currentQ(g).time * 1000;
 const answeredNow = (g: GameRow, p: PlayerRow) => !!p.answer && p.answer.q === g.q_index;
@@ -280,6 +283,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
     role: 'host', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), ...effectsOf(g.quiz),
     qIndex: g.q_index, total: g.quiz.questions.length,
     players: ps.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score })),
+    nextImage: nextImage(g),
   };
   if (g.teams) {
     v.teams = g.teams;
@@ -316,7 +320,7 @@ function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
   const v: PlayerView = {
     role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), ...effectsOf(g.quiz), name: p.name, avatar: p.avatar,
     score: p.score, rank: p.rank, playerCount: ps.length,
-    qIndex: g.q_index, total: g.quiz.questions.length,
+    qIndex: g.q_index, total: g.quiz.questions.length, nextImage: nextImage(g),
   };
   if (g.teams && p.team != null) {
     const board = teamBoard(g.teams, ps);
@@ -326,7 +330,10 @@ function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
   if (g.state === 'question') {
     const q = currentQ(g);
     const kind = kindOf(q);
-    v.question = { q: q.q, answers: answersShown(q, shuffleSeed(g.pin, g.q_index)), double: q.double, ...(kind !== 'choice' ? { kind } : {}) };
+    v.question = {
+      q: q.q, answers: answersShown(q, shuffleSeed(g.pin, g.q_index)), double: q.double, ...(kind !== 'choice' ? { kind } : {}),
+      ...(q.image ? { image: q.image, ...(q.reveal ? { reveal: true } : {}) } : {}),
+    };
     v.remaining = Math.max(0, deadline(g) - Date.now());
     v.startsIn = Math.max(0, openAt(g) - Date.now());
     // Typed answers and orders are already marked right or wrong: keep that for the reveal.

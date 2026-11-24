@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { api, refreshGame, Shape, useGameStream, useNow, type Stamped } from '@/lib/client';
+import { api, refreshGame, Shape, useGameStream, useNow, usePreload, type Stamped } from '@/lib/client';
 import { Music, Sound, SoundToggle } from '@/lib/sound';
 import { Avatar } from '@/lib/avatars';
 import { Confetti } from '@/lib/confetti';
@@ -74,6 +74,9 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   useEffect(() => { if (v?.state === 'closed') onLeave(); }, [v?.state, onLeave]);
   useEffect(() => { setBusy(''); }, [step]);
   useEffect(() => () => Music.stop(), []);
+  // This question's picture, and the next one's ahead of time, so pictures show the moment a question opens.
+  const hv = v && 'players' in v ? (v as HostView) : null;
+  usePreload(hv?.question?.image, hv?.nextImage);
   if (!v || v.state === 'closed' || v.state === 'kicked') return <div className="center"><div className="spinner" /></div>;
   const h = v as Stamped<HostView>;
 
@@ -339,7 +342,7 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
         {q.image && q.reveal
           ? <GridReveal src={q.image} size="stage" seed={revealSeed(h.pin, h.qIndex)} cleared={clearedAt(1 - left / (q.time * 1000))} />
           : q.image
-          ? <img className="stage-img" src={q.image} alt="" />
+          ? <img className="stage-img" src={q.image} alt="" decoding="async" fetchPriority="high" />
           : <Doodle theme={h.theme} name="mascot" size={190} className="bob" />}
         {q.double && <span className="pill dark">2× points</span>}
         {q.kind === 'poll' && <span className="pill dark">📊 Poll</span>}

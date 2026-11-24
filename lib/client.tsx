@@ -100,3 +100,24 @@ export function useNow(active: boolean, ms = 100) {
   }, [active, ms]);
   return active ? now : performance.now();
 }
+
+// Pictures already asked for, kept so the browser doesn't drop a download before it is used.
+const preloaded = new Map<string, HTMLImageElement>();
+
+/**
+ * Starts downloading pictures before they are shown (the next question's, during this one), so a question's
+ * picture appears with the question instead of loading in after it.
+ */
+export function usePreload(...urls: (string | null | undefined)[]) {
+  const key = urls.filter(Boolean).join('\n');
+  useEffect(() => {
+    for (const url of key ? key.split('\n') : []) {
+      if (preloaded.has(url)) continue;
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = url;
+      preloaded.set(url, img);
+      if (preloaded.size > 40) preloaded.delete(preloaded.keys().next().value!);
+    }
+  }, [key]);
+}
