@@ -39,6 +39,10 @@ async function ResultView({ params }: { params: PageProps<'/r/[code]'>['params']
         </Scallop>
         <h1>{podium ? <>Came <em>{ordinal(r.rank)}</em></> : <>Finished <em>{ordinal(r.rank)}</em></>}</h1>
         <p className="muted">{r.score.toLocaleString('en')} points · {r.players} player{r.players === 1 ? '' : 's'}</p>
+        {/* A plain link: the card route sends the picture as a file to save. */}
+        <a className="btn light result-download" href={`/r/${code}/card?download`} download>
+          <span aria-hidden>⬇</span> Download card
+        </a>
       </div>
       <div className="result-cta">
         <h2>Think you can <em>beat that?</em></h2>

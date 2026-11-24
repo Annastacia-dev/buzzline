@@ -30,13 +30,36 @@ function TeamPill({ t, final }: { t: NonNullable<PlayerView['team']>; final?: bo
 
 const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`;
 
-/** Game over on a phone: share your result (a link with its own preview card), play again, or host your own. */
+/**
+ * Game over on a phone: share your result (a link with its own preview card), save the card as a picture,
+ * play again, or host your own.
+ */
 function EndActions({ v, session }: { v: PlayerView; session: Session }) {
   const [status, setStatus] = useState<'idle' | 'busy' | 'copied' | 'error'>('idle');
+  const [saving, setSaving] = useState(false);
+  // The result link (/r/<code>), made once and reused by Share and Download.
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const getUrl = async () => {
+    if (resultUrl) return resultUrl;
+    const { url } = await api<{ url: string }>('/api/result', session);
+    setResultUrl(url);
+    return url;
+  };
+  async function download() {
+    setSaving(true);
+    try {
+      // The card route sends the picture as an attachment, so following it saves the file.
+      const a = document.createElement('a');
+      a.href = `${await getUrl()}/card?download`;
+      a.download = '';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch { setStatus('error'); }
+    finally { setSaving(false); }
+  }
   async function share() {
     setStatus('busy');
     try {
-      const { url } = await api<{ url: string }>('/api/result', session);
+      const url = await getUrl();
       const link = `${location.origin}${url}`;
       const text = v.rank === 1 ? `I won “${v.title}” on Buzzline 🏆` : `I came ${ordinal(v.rank)} of ${v.playerCount} in “${v.title}” on Buzzline`;
       if (navigator.share) {
@@ -56,9 +79,12 @@ function EndActions({ v, session }: { v: PlayerView; session: Session }) {
         <button className="btn" onClick={share} disabled={status === 'busy'}>
           {status === 'busy' ? 'Getting your link…' : status === 'copied' ? 'Link copied ✓' : v.rank === 1 ? '🏆 Share your win' : 'Share my result'}
         </button>
+        <button className="btn light" onClick={download} disabled={saving} aria-busy={saving}>
+          <span aria-hidden>⬇</span> {saving ? 'Making your card…' : 'Download card'}
+        </button>
         <Link className="btn light" href="/join">Play again <span aria-hidden>→</span></Link>
       </div>
-      {status === 'error' && <p className="error" role="alert">Couldn&apos;t make a link, try again.</p>}
+      {status === 'error' && <p className="error" role="alert">Couldn&apos;t make your card, try again.</p>}
       <p className="end-host">Loved it? <Link href="/host?ai">Host your own quiz, free →</Link></p>
     </>
   );
