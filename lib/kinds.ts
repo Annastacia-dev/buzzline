@@ -9,6 +9,17 @@ export const KINDS: { id: QuestionKind; name: string; icon: string; hint: string
   { id: 'poll', name: 'Poll', icon: '📊', hint: 'No right answer and no points: see what the room thinks' },
 ];
 
+/** What "Generate with AI" can be asked for: the scored kinds above, with true/false as its own choice. */
+export const AI_KINDS = [
+  { id: 'choice', name: 'Multiple choice', icon: '🔘' },
+  { id: 'truefalse', name: 'True or false', icon: '✅' },
+  { id: 'type', name: 'Type answer', icon: '⌨️' },
+  { id: 'order', name: 'Put in order', icon: '↕️' },
+] as const;
+export type AiKind = (typeof AI_KINDS)[number]['id'];
+/** Kinds that can be asked about a picture. */
+export const PICTURE_KINDS: AiKind[] = ['choice', 'truefalse', 'type'];
+
 export const kindOf = (q: Pick<Question, 'kind'>): QuestionKind => q.kind ?? 'choice';
 /** Kinds the server marks right (0) or wrong (1) itself, from typed text or an order. */
 export const checkedKinds: QuestionKind[] = ['type', 'order'];

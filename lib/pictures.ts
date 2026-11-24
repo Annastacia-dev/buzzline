@@ -25,21 +25,52 @@ const match = (title: string, key: string[]) => {
   return key.filter(w => t.has(w)).length / key.length;
 };
 
+// Wikimedia throttles bursts, and a quiz looks up a dozen or more pictures: run a few at a time and retry refusals.
+const AT_ONCE = 4, TRIES = 3;
+let running = 0;
+const waiting: (() => void)[] = [];
+async function get(url: string, signal?: AbortSignal): Promise<Response | null> {
+  if (running >= AT_ONCE) await new Promise<void>(go => waiting.push(go)); // the slot is handed over, so `running` stays
+  else running++;
+  try {
+    for (let i = 1; ; i++) {
+      let why: string, wait = i * 800;
+      try {
+        const res = await fetch(url, { headers: HEADERS, signal: signal ?? AbortSignal.timeout(15000), cache: 'no-store' });
+        if (res.ok) return res;
+        why = String(res.status);
+        if (res.status !== 429 && res.status < 500) return null;
+        const after = Number(res.headers.get('retry-after'));
+        if (after > 0) wait = Math.min(after * 1000, 5000);
+      } catch (e) {
+        if (signal?.aborted) throw e;
+        why = e instanceof Error ? e.message : String(e);
+      }
+      console.warn(`Wikimedia lookup failed (${why}), try ${i} of ${TRIES}`);
+      if (i >= TRIES) return null;
+      await new Promise(r => setTimeout(r, wait));
+    }
+  } finally {
+    const next = waiting.shift();
+    if (next) next(); else running--;
+  }
+}
+
 async function query(params: Record<string, string>, signal?: AbortSignal): Promise<Page[]> {
   const url = `${API}?${new URLSearchParams({
     action: 'query', format: 'json', formatversion: '2', origin: '*',
     prop: 'imageinfo', iiprop: 'url|mime|thumbmime', iiurlwidth: String(WIDTH), ...params,
   })}`;
-  const res = await fetch(url, { headers: HEADERS, signal, cache: 'no-store' });
-  if (!res.ok) return [];
+  const res = await get(url, signal);
+  if (!res) return [];
   return ((await res.json()) as { query?: { pages?: Page[] } }).query?.pages ?? [];
 }
 
 async function download(p: Page, signal?: AbortSignal) {
   const info = p.imageinfo?.[0];
   if (p.missing || !info?.thumburl || !OK_TYPES.includes(info.thumbmime ?? typeFromUrl(info.thumburl))) return null;
-  const img = await fetch(info.thumburl, { headers: HEADERS, signal, cache: 'no-store' });
-  if (!img.ok) return null;
+  const img = await get(info.thumburl, signal);
+  if (!img) return null;
   const bytes = new Uint8Array(await img.arrayBuffer());
   return bytes.byteLength > 0 && bytes.byteLength <= MAX_IMAGE_BYTES ? bytes : null;
 }
