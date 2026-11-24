@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Shape } from '@/lib/client';
-import { Blob, Icon, Scallop, Squircle, Sticker, Tag, type IconName } from '@/lib/deco';
+import { Icon, Scallop, type IconName } from '@/lib/deco';
+import { Avatar } from '@/lib/avatars';
 import QuickJoin from './QuickJoin';
 import styles from './landing.module.css';
 import { FAQ, FEATURES, SITE, SITE_URL } from '@/lib/site';
@@ -8,18 +9,18 @@ import { Doodle } from '@/lib/doodles';
 import { THEMES, hasDoodles, type ThemeId } from '@/lib/themes';
 
 const steps = [
-  { n: '01', title: 'Build your quiz', bg: 'var(--butter)', rows: ['Write questions', 'Set the timers', 'Pick double-points rounds'] },
-  { n: '02', title: 'Share the PIN', bg: 'var(--olive)', rows: ['Host screen on the TV', 'Players open the link', 'Type the 6-digit PIN'] },
-  { n: '03', title: 'Play it live', bg: 'var(--pink)', rows: ['Everyone answers at once', 'Fastest right answers win', 'Podium at the end'] },
+  { n: '1', title: 'Type a topic', body: 'AI writes the questions in seconds. Edit anything, or write your own.' },
+  { n: '2', title: 'Pick a theme', body: 'The big screen, the join page and every phone take on the same look.' },
+  { n: '3', title: 'Share the PIN', body: 'Players join from any phone browser with a nickname. No app, no accounts.' },
 ];
 
-const features: { title: string; body: string; bg: string; ink: string; icon: IconName }[] = [
-  { title: 'Speed scoring', body: '500 to 1,000 points per right answer. The quicker the tap, the bigger the score.', bg: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'bolt' },
-  { title: 'Streak bonuses', body: '+100 for every answer in a row, up to +500. Hot streaks flip the scoreboard.', bg: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'flame' },
-  { title: 'Double points', body: 'Flag the big questions for 2× so nobody gives up early.', bg: 'var(--mint)', ink: 'var(--mint-ink)', icon: 'sparkle' },
-  { title: 'No app, no accounts', body: 'Players join from any phone browser with just a nickname.', bg: 'var(--coral)', ink: 'var(--coral-ink)', icon: 'smile' },
-  { title: 'Live answer chart', body: 'See how the room split after every question, then reveal.', bg: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
-  { title: 'AI & Kahoot import', body: 'Type a topic and Claude writes the quiz, or import a Kahoot-style spreadsheet. Saved in your browser.', bg: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'star' },
+const features: { title: string; body: string; tint: string; ink: string; icon: IconName }[] = [
+  { title: 'AI writes your quiz', body: 'Pick a topic, how many questions and how hard. Claude drafts it; you tweak what you like.', tint: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'sparkle' },
+  { title: 'Free, no sign-up', body: 'Hosting and playing are free. No accounts, no app, no ads between rounds.', tint: 'var(--sage)', ink: 'var(--sage-ink)', icon: 'smile' },
+  { title: 'Five themes', body: 'Classic, Doodlebug, Inkblot, Toybox or Glass, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
+  { title: 'Speed scoring', body: '500 to 1,000 points per right answer, streak bonuses and double-points rounds.', tint: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'bolt' },
+  { title: 'Pictures & grid reveal', body: 'Add a picture to any question, and reveal it tile by tile as the clock runs.', tint: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
+  { title: 'Kahoot import', body: 'Bring a Kahoot-style spreadsheet, or share a quiz with a link.', tint: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'flame' },
 ];
 
 // One sample question per theme for the themes section, each shown in that theme's own styles.
@@ -30,13 +31,6 @@ const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: numbe
   toybox: { q: 'How many sides does a cube have?', answers: ['Four', 'Six', 'Eight', 'Twelve'], right: 1, note: 'Soft and squishy, like modelling clay. Kids and party crowds love tapping it.' },
   glass: { q: 'Which gas makes up most of the air?', answers: ['Oxygen', 'Nitrogen', 'Argon', 'Helium'], right: 1, note: 'Glowing and dreamy. Looks stunning on a big screen in a dim room.' },
 };
-
-const scoring = [
-  { k: 'Max points', v: '1,000' },
-  { k: 'Streak bonus', v: '+500' },
-  { k: 'Double round', v: '2×' },
-  { k: 'Players', v: '200' },
-];
 
 // Structured data for search engines and AI answer engines: the app itself, the site, and the FAQ below.
 const jsonLd = {
@@ -58,6 +52,76 @@ const jsonLd = {
   ],
 };
 
+/** The hero's moving column: real game screens, each in a different theme. Rendered twice so the loop is seamless. */
+function Screens({ copy = false }: { copy?: boolean }) {
+  const board = [
+    { name: 'Maya', avatar: 3, score: 4820, gained: 940 },
+    { name: 'Theo', avatar: 9, score: 4310, gained: 720 },
+    { name: 'Priya', avatar: 13, score: 3975, gained: 610 },
+  ];
+  return (
+    <div className={styles.screens} aria-hidden={copy || undefined}>
+      <figure className={styles.screen}>
+        <div className={`${styles.screenStage} ${styles.flashScreen}`} data-theme="classic">
+          <div className="flash-deck preview">
+            <article className="card pcard flash">
+              <header><span className="pill dark">Question 3</span><span className="pill">⏱ 20s</span></header>
+              <h2>Which planet is known as the Red Planet?</h2>
+              <div className="pans">
+                {['Venus', 'Mars', 'Jupiter', 'Mercury'].map((a, i) => <div key={a} className={`pans-tile c${i}`}><Shape i={i} /><span>{a}</span></div>)}
+              </div>
+            </article>
+          </div>
+        </div>
+        <figcaption>The question · Classic</figcaption>
+      </figure>
+
+      <figure className={styles.screen}>
+        <div className={`${styles.screenStage} ${styles.joinScreen}`} data-theme="glass">
+          <span className="pill">Join at buzzline.click</span>
+          <div className={styles.joinPin}><span>Game PIN</span><b>482 913</b></div>
+          <div className={`ring ${styles.count}`}><span>5</span></div>
+          <div className={styles.joinWho}>
+            {[0, 5, 14, 20, 2, 11].map(a => <Avatar key={a} i={a} size={34} />)}
+            <span className="pill">12 players</span>
+          </div>
+        </div>
+        <figcaption>Countdown to start · Glass</figcaption>
+      </figure>
+
+      <figure className={styles.screen}>
+        <div className={styles.screenStage} data-theme="toybox">
+          <div className={styles.miniTitle}>Score<em>board</em></div>
+          <div className={`board ${styles.miniBoard}`}>
+            {board.map((p, i) => (
+              <div key={p.name} className="row">
+                <span className="r">{i + 1}</span><Avatar i={p.avatar} size={30} /><span className="n">{p.name}</span>
+                <span className="g">+{p.gained}</span><b>{p.score.toLocaleString()}</b>
+              </div>
+            ))}
+          </div>
+        </div>
+        <figcaption>Scoreboard · Toybox</figcaption>
+      </figure>
+
+      <figure className={styles.screen}>
+        <div className={styles.screenStage} data-theme="doodlebug">
+          <div className={styles.miniTitle}>And the winner <em>is…</em></div>
+          <div className={`podium ${styles.miniPodium}`}>
+            {[{ r: 2, h: 70, c: 'var(--lilac)', p: board[1] }, { r: 1, h: 100, c: 'var(--butter)', p: board[0] }, { r: 3, h: 50, c: 'var(--pink)', p: board[2] }].map(s => (
+              <div key={s.r} className="in">
+                <div className="who"><Avatar i={s.p.avatar} size={s.r === 1 ? 46 : 36} /><div className="name">{s.p.name}</div></div>
+                <div className="block" style={{ height: s.h, background: s.c }}><span className="m">{s.r}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <figcaption>The podium · Doodlebug</figcaption>
+      </figure>
+    </div>
+  );
+}
+
 export default function Landing() {
   return (
     <div className={styles.page}>
@@ -66,7 +130,6 @@ export default function Landing() {
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <div className={styles.navLinks}>
           <a href="#how">How it works</a>
-          <a href="#features">Features</a>
           <a href="#themes">Themes</a>
           <a href="#faq">FAQ</a>
         </div>
@@ -76,97 +139,61 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* ---------- hero ---------- */}
+      {/* ---------- hero: one message, one main button, the game moving beside it ---------- */}
       <header className={styles.hero}>
         <div className={styles.heroText}>
-          <Tag icon="sparkle" bg="var(--lilac)" ink="var(--lilac-ink)" rotate={-3}>Live multiplayer quizzes</Tag>
-          <h1>Quiz night,<br /><em>just for your</em><br />crowd.</h1>
-          <p>Questions on the big screen, answers on every phone, and the quickest right answers climb the board.</p>
+          <span className={styles.freeTag}>100% free · no sign-up · no app</span>
+          <h1>Type a topic.<br /><em>Play in a minute.</em></h1>
+          <p>AI writes the questions, you pick a theme, and everyone plays live from their phones.</p>
           <div className={styles.ctaRow}>
-            <Link href="/host" className="btn">Host a quiz <span aria-hidden>→</span></Link>
-            <QuickJoin />
+            <Link href="/host?ai" className={`btn ${styles.mainCta}`}>✨ Create a free quiz with AI</Link>
+            <Link href="/host" className={styles.textLink}>or write your own →</Link>
           </div>
+          <ul className={styles.points}>
+            <li><Icon name="smile" size={18} stroke={7} />Free for everyone</li>
+            <li><Icon name="sparkle" size={18} stroke={7} />AI quiz maker</li>
+            <li>
+              <span className={styles.swatches} aria-hidden>{THEMES.map(t => <i key={t.id} style={{ background: t.swatch[1] }} />)}</span>
+              <a href="#themes">{THEMES.length} themes</a>
+            </li>
+          </ul>
+          <div className={styles.joinRow}><span>Got a game PIN?</span><QuickJoin /></div>
         </div>
 
-        <div className={styles.collage} aria-hidden>
-          <Blob color="var(--olive)" size={150} className={styles.cBlob} />
-          <Squircle color="var(--butter)" size={230} rotate={-14} className={styles.cSquare}>
-            <div className={styles.shapeLabel}><b>Pop quiz</b><span>21/11</span></div>
-          </Squircle>
-          <Scallop color="var(--pink)" size={190} rotate={-28} className={styles.cScallop}>
-            <div className={styles.shapeLabel}><b>Trivia night</b><span>05/12</span></div>
-          </Scallop>
-          <div className={styles.cCircle}>
-            <div className={styles.shapeLabel} style={{ rotate: '24deg' }}><b>Team social</b><span>every Friday</span></div>
+        <div className={styles.reel}>
+          <div className={styles.reelTrack}>
+            <Screens />
+            <Screens copy />
           </div>
-
-          <div className={styles.liveCard}>
-            <div className={styles.liveTop}><span className="pill dark">Q 3 / 10</span><span className={styles.liveTimer}>12</span></div>
-            <div className={styles.liveQ}>Which planet is known as the Red Planet?</div>
-            <div className={styles.liveTiles}>
-              {['Venus', 'Mars', 'Jupiter', 'Mercury'].map((a, i) => (
-                <div key={a} className={`tile c${i} ${i === 1 ? 'right' : ''}`}><Shape i={i} />{a}</div>
-              ))}
-            </div>
-          </div>
-
-          <Sticker text="fastest finger first · buzz in · " icon="bolt" bg="var(--sage)" ink="var(--sage-ink)" size={136} rotate={12} className={styles.cSticker} />
-          <div className={styles.cBubble}>+940 <Icon name="flame" size={18} /></div>
         </div>
       </header>
-
-      {/* ---------- tag strip ---------- */}
-      <div className={styles.tagStrip} aria-hidden>
-        <Tag icon="smile" bg="var(--peri)" ink="var(--peri-ink)" rotate={-4}>Fearless</Tag>
-        <Tag icon="bolt" bg="var(--lilac)" ink="var(--lilac-ink)" rotate={3}>Quick-fire</Tag>
-        <Sticker text="doing my best · doing my best · " icon="star" bg="var(--butter)" ink="var(--butter-ink)" size={110} rotate={-8} />
-        <Tag icon="sparkle" bg="var(--pink)" ink="var(--pink-ink)" rotate={-2}>Brainy</Tag>
-        <Tag icon="flame" bg="var(--sage)" ink="var(--sage-ink)" rotate={4}>On a streak</Tag>
-        <Tag icon="cursor" bg="var(--butter)" ink="var(--butter-ink)" rotate={-3}>Tap fast</Tag>
-      </div>
 
       {/* ---------- how it works ---------- */}
       <section id="how" className={styles.section}>
         <div className={styles.sectionHead}>
-          <h2>Three steps to <em>a loud room</em></h2>
+          <h2>From idea to <em>a loud room</em></h2>
         </div>
-        <div className={styles.steps}>
+        <ol className={styles.steps}>
           {steps.map(s => (
-            <div key={s.n} className={styles.step} style={{ background: s.bg }}>
-              <div className={styles.stepTop}><h3>{s.title}</h3><span className={styles.stepN}>{s.n}</span></div>
-              <div className={styles.stepRows}>
-                {s.rows.map((r, i) => (
-                  <div key={r} className={`${styles.stepRow} ${i === 0 ? styles.stepRowOn : ''}`}>{r}<span aria-hidden>›</span></div>
-                ))}
-              </div>
-            </div>
+            <li key={s.n} className={styles.step}>
+              <span className={styles.stepN}>{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </li>
           ))}
-        </div>
-      </section>
-
-      {/* ---------- scoring card ---------- */}
-      <section className={styles.scoreCard}>
-        <div className={styles.scoreHead}>
-          <span className={styles.scoreIcon}><Icon name="trophy" size={22} stroke={7} /></span>
-          <div><b>How scoring works</b><span>Speed + accuracy + streaks</span></div>
-        </div>
-        <div className={styles.scoreGrid}>
-          {scoring.map(s => <div key={s.k}><span>{s.k}</span><b>{s.v}</b></div>)}
-        </div>
+        </ol>
       </section>
 
       {/* ---------- features ---------- */}
       <section id="features" className={styles.section}>
         <div className={styles.sectionHead}>
-          <h2>Built for <em>game-show</em> energy</h2>
+          <h2>Everything a quiz night <em>needs</em></h2>
         </div>
         <div className={styles.features}>
           {features.map(f => (
-            <div key={f.title} className={styles.feature} style={{ background: f.bg }}>
-              <div className={styles.featureTop}>
-                <h3>{f.title}</h3>
-                <span className={styles.featureIcon} style={{ color: f.ink }}><Icon name={f.icon} size={20} stroke={7} /></span>
-              </div>
+            <div key={f.title} className={styles.feature}>
+              <span className={styles.featureIcon} style={{ background: f.tint, color: f.ink }}><Icon name={f.icon} size={20} stroke={7} /></span>
+              <h3>{f.title}</h3>
               <p>{f.body}</p>
             </div>
           ))}
@@ -226,13 +253,9 @@ export default function Landing() {
 
       {/* ---------- closing ---------- */}
       <section className={styles.closing}>
-        <h2>Ask.<br />Buzz.<br />Repeat.</h2>
-        <div className={styles.closingSide}>
-          <Sticker text="create with purpose · " icon="bolt" bg="var(--lilac)" ink="var(--lilac-ink)" size={150} rotate={-10} />
-          <Sticker text="quiz is my superpower · " icon="flame" bg="var(--pink)" ink="var(--pink-ink)" size={130} rotate={14} />
-          <p>Your first quiz is already waiting in the studio. Hit host, share the PIN, and let the room do the rest.</p>
-          <Link href="/host" className="btn">Start hosting <span aria-hidden>→</span></Link>
-        </div>
+        <h2>Your next quiz night is <em>one topic away.</em></h2>
+        <p>Free, no sign-up. Pick a topic and you&apos;re hosting in about a minute.</p>
+        <Link href="/host?ai" className={`btn ${styles.mainCta}`}>✨ Create a free quiz with AI</Link>
       </section>
 
       <footer className={styles.footer}>

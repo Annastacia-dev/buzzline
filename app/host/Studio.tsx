@@ -45,6 +45,11 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     setQuizzes(list);
     setSelId(list[0].id!);
     openSharedLink(list);
+    // /host?ai (the landing page's main button) opens Generate with AI straight away.
+    if (new URLSearchParams(location.search).has('ai')) {
+      setGenerating(true);
+      history.replaceState(null, '', location.pathname);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
