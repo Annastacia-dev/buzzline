@@ -90,7 +90,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
 
   return (
     <div className="stage" data-theme={h.theme}>
-      <SeasonalEffect effect={h.effect} />
+      <SeasonalEffect effect={h.effect} fall={h.fall} />
       <div className="stage-top">
         <div className="logo">Buzzline<span className="dot" /></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

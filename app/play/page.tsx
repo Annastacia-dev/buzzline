@@ -312,7 +312,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
 
   return (
     <div className="phone" data-mood={mood} data-theme={v.theme}>
-      <SeasonalEffect effect={v.effect} />
+      <SeasonalEffect effect={v.effect} fall={v.fall} />
       {v.theme !== 'classic' && MOOD_DOODLE[mood] && (
         <Doodle theme={v.theme} key={mood} name={MOOD_DOODLE[mood]} size={mood === 'lobby' ? 110 : 92} className="float wiggle" style={{ right: 12, top: 58 }} />
       )}

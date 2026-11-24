@@ -18,12 +18,13 @@ import { TEAMS, validTeams } from '@/lib/teams';
 import type { QuestionKind } from '@/lib/types';
 import { mergeLibraries, newSyncSecret, validSyncSecret, type Library, type Tombstone } from '@/lib/sync';
 import SyncDialog from './SyncDialog';
-import { EFFECTS, SeasonalEffect, effectOf, type EffectId } from '@/lib/effects';
+import { EFFECTS, FALLS, SeasonalEffect, effectsOf, type EffectId, type FallId } from '@/lib/effects';
 
 const KEY = 'bz.quizzes';
 const THEME_KEY = 'bz.theme';
 const TEAMS_KEY = 'bz.teams';
 const EFFECT_KEY = 'bz.effect';
+const FALL_KEY = 'bz.fall';
 const SYNC_KEY = 'bz.sync';
 const DELETED_KEY = 'bz.deleted';
 /** A short fingerprint of a library: which quizzes, at which versions. Same fingerprint, nothing to sync. */
@@ -60,10 +61,16 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   useEffect(() => { setThemeState(themeOf(localStorage.getItem(THEME_KEY))); }, []);
   const setTheme = (t: ThemeId) => { setThemeState(t); localStorage.setItem(THEME_KEY, t); };
-  // A seasonal effect (snow, lights…) over every screen, remembered in this browser like the theme.
+  // Seasonal effects over every screen, remembered in this browser like the theme: a decoration (lights,
+  // fireworks) and something falling (snow, leaves…), which can be combined.
   const [effect, setEffectState] = useState<EffectId>('none');
-  useEffect(() => { setEffectState(effectOf(localStorage.getItem(EFFECT_KEY))); }, []);
+  const [fall, setFallState] = useState<FallId>('none');
+  useEffect(() => {
+    const saved = effectsOf({ effect: localStorage.getItem(EFFECT_KEY), fall: localStorage.getItem(FALL_KEY) });
+    setEffectState(saved.effect); setFallState(saved.fall);
+  }, []);
   const setEffect = (e: EffectId) => { setEffectState(e); localStorage.setItem(EFFECT_KEY, e); };
+  const setFall = (f: FallId) => { setFallState(f); localStorage.setItem(FALL_KEY, f); };
   // Solo or team mode (2–4 teams), remembered in this browser like the theme.
   const [teams, setTeamsState] = useState(0);
   useEffect(() => { setTeamsState(validTeams(Number(localStorage.getItem(TEAMS_KEY)))); }, []);
@@ -201,7 +208,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     if (!quiz || sharing) return;
     setSharing(true);
     try {
-      const { id } = await api<{ id: string }>('/api/share', { quiz: { ...quiz, theme, effect } });
+      const { id } = await api<{ id: string }>('/api/share', { quiz: { ...quiz, theme, effect, fall } });
       const url = `${location.origin}/host?quiz=${id}`;
       const copied = await navigator.clipboard?.writeText(url).then(() => true, () => false);
       ask({
@@ -252,6 +259,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     setSelId(nq.id!); setCur(0); setTab('preview');
     if (pack.theme) setTheme(pack.theme);
     setEffect(pack.effect ?? 'none');
+    setFall(pack.fall ?? 'none');
   }
 
   // ---------- challenge links ----------
@@ -261,7 +269,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     if (!quiz || challenging) return;
     setChallenging(true);
     try {
-      const { id } = await api<{ id: string }>('/api/challenge', { action: 'create', quiz: { ...quiz, theme, effect } });
+      const { id } = await api<{ id: string }>('/api/challenge', { action: 'create', quiz: { ...quiz, theme, effect, fall } });
       const url = `${location.origin}/c/${id}`;
       const copied = await navigator.clipboard?.writeText(url).then(() => true, () => false);
       ask({
@@ -443,14 +451,16 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
                 value: t.id, label: t.name, hint: t.blurb,
                 icon: <span className="sw">{t.swatch.map((c, k) => <i key={k} style={{ background: c }} />)}</span>,
               }))} />
-            <QuizSelect className="effect-pick" label="Seasonal effect" value={effect} onChange={setEffect}
-              options={EFFECTS.map(e => ({ value: e.id, label: e.id === 'none' ? 'No effect' : e.name, icon: e.icon, hint: e.hint }))} />
+            <QuizSelect className="effect-pick" label="Decoration" value={effect} onChange={setEffect}
+              options={EFFECTS.map(e => ({ value: e.id, label: e.name, icon: e.icon, hint: e.hint }))} />
+            <QuizSelect className="fall-pick" label="Falling effect" value={fall} onChange={setFall}
+              options={FALLS.map(e => ({ value: e.id, label: e.name, icon: e.icon, hint: e.hint }))} />
             <QuizSelect className="team-pick" label="Solo or teams" value={teams} onChange={setTeams}
               options={[
                 { value: 0, label: 'Solo', icon: '🙋', hint: 'Everyone for themselves' },
                 ...[2, 3, 4].map(n => ({ value: n, label: `${n} teams`, icon: TEAMS.slice(0, n).map(t => t.emoji).join(''), hint: 'Players are split into teams as they join. A team scores the average of its players.' })),
               ]} />
-            <button className="btn" onClick={() => onHost({ ...quiz, theme, effect }, teams)}>Host this quiz <span aria-hidden>→</span></button>
+            <button className="btn" onClick={() => onHost({ ...quiz, theme, effect, fall }, teams)}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div className="editor-bar">
             <div className="tabs" role="tablist" aria-label="Quiz view">
@@ -514,7 +524,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
                 ? <p className="muted preview-note">Answers are hidden here so the quiz stays a surprise. Open <b>Edit quiz</b> to see and change them.</p>
                 : <p className="muted preview-note">Drag questions in the list to reorder them. The filled circle marks the correct answer.</p>}
               <div className={`flash-deck ${tab}`}>
-                <SeasonalEffect effect={effect} contained />
+                <SeasonalEffect effect={effect} fall={fall} contained />
                 {theme !== 'classic' && <Doodle theme={theme} name="mascot" size={120} className="deck-doodle bob" />}
               {tab === 'preview' ? (
                 <article className="card pcard flash" key={`p${ci}`}>

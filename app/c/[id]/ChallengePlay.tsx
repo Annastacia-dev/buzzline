@@ -155,7 +155,7 @@ export default function ChallengePlay({ id }: { id: string }) {
 
   return (
     <div className="phone challenge" data-mood={mood} data-theme={info.theme}>
-      <SeasonalEffect effect={info.effect} />
+      <SeasonalEffect effect={info.effect} fall={info.fall} />
       <header>
         <Link href="/" className="logo" style={{ fontSize: 20 }}>Buzzline<span className="dot" /></Link>
         <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

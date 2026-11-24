@@ -6,7 +6,7 @@ import { api } from '@/lib/client';
 import { Blob, Scallop } from '@/lib/deco';
 import { Doodle } from '@/lib/doodles';
 import { DEFAULT_THEME, hasDoodles, themeOf, type ThemeId } from '@/lib/themes';
-import { SeasonalEffect, effectOf, type EffectId } from '@/lib/effects';
+import { SeasonalEffect, effectsOf, type EffectId, type FallId } from '@/lib/effects';
 
 /** The join form. Once the PIN matches a game, the page takes on that quiz's theme. */
 export default function JoinForm() {
@@ -16,7 +16,7 @@ export default function JoinForm() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   // The quiz behind a complete PIN, so players can see what they're joining.
-  const [game, setGame] = useState<{ pin: string; title?: string; theme?: ThemeId; effect?: EffectId; started?: boolean; missing?: boolean } | null>(null);
+  const [game, setGame] = useState<{ pin: string; title?: string; theme?: ThemeId; effect?: EffectId; fall?: FallId; started?: boolean; missing?: boolean } | null>(null);
 
   // A PIN from the link (/join?pin=…) is looked up at once, so the page takes on the game's theme quickly.
   const linkPin = useRef<string | null>(null);
@@ -35,7 +35,7 @@ export default function JoinForm() {
           if (r.status === 404) return setGame({ pin, missing: true });
           if (!r.ok) return setGame(null);
           const j = await r.json();
-          setGame({ pin, title: j.title, theme: themeOf(j.theme), effect: effectOf(j.effect), started: j.started });
+          setGame({ pin, title: j.title, theme: themeOf(j.theme), ...effectsOf(j), started: j.started });
         })
         .catch(() => {});
     }, pin === linkPin.current ? 0 : 250);
@@ -59,7 +59,7 @@ export default function JoinForm() {
 
   return (
     <div className="center join-page" data-theme={theme} style={{ position: 'relative', overflow: 'hidden' }}>
-      <SeasonalEffect effect={shown?.effect} />
+      <SeasonalEffect effect={shown?.effect} fall={shown?.fall} />
       {!hasDoodles(theme) ? <>
         <Blob color="var(--olive)" size={220} style={{ position: 'absolute', top: -70, right: -50 }} />
         <Scallop color="var(--pink)" size={200} rotate={20} style={{ position: 'absolute', bottom: -60, left: -50 }} />

@@ -119,13 +119,19 @@ all side by side.
 
 ### Seasonal effects
 
-The **Seasonal effect** dropdown next to the theme adds an animated layer over any theme: **Snow**, **Christmas
-lights** (a string of twinkling bulbs along the top), **Fireworks**, **Autumn leaves** or **Hearts**. It is saved
-with the quiz (`quiz.effect`), so the host screen, the join page, every phone and challenge links show it, and the
-studio preview shows it over the card. Like the theme, the choice is remembered in the browser; the Christmas and New
-Year packs suggest one. The effect is one canvas (`lib/effects.tsx`) that never takes taps, sizes itself to the
-screen, pauses while the tab is hidden and, with "reduce motion" on, shows only the lights, held still. Effect ids
-are in `lib/effect-ids.ts`.
+Two dropdowns next to the theme add an animated layer over any theme, and they can be combined (lights *and*
+snow, say):
+
+- **Decoration**: **Christmas lights** (a string of twinkling bulbs along the top) or **Fireworks**.
+- **Falling effect**: **Falling snow**, **Autumn leaves**, **Confetti**, **Falling stars** or **Floating hearts**
+  (which rise).
+
+Both are saved with the quiz (`quiz.effect` and `quiz.fall`), so the host screen, the join page, every phone and
+challenge links show them, and the studio preview shows them over the card. Like the theme, the choices are
+remembered in the browser; the Christmas and New Year packs suggest some. Quizzes saved before the split kept snow,
+leaves or hearts in `effect`; `effectsOf()` reads those as the falling effect. Everything is drawn on one canvas
+(`lib/effects.tsx`) that never takes taps, sizes itself to the screen, pauses while the tab is hidden and, with
+"reduce motion" on, shows only the lights, held still. Effect ids are in `lib/effect-ids.ts`.
 
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.

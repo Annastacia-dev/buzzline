@@ -6,7 +6,7 @@ import { db, notify } from './supabase-server';
 import { READY_MS, INTRO_MS, type Quiz, type Question, type HostView, type PlayerView, type State, type GameAnalytics } from './types';
 import { avatarCount, validAvatar } from './avatars';
 import { themeOf } from './themes';
-import { effectOf } from './effect-ids';
+import { effectsOf } from './effect-ids';
 import { validImage } from './images';
 import { answersShown, checkedKinds, choiceFor, kindError, kindOf, shuffleSeed, type Submission } from './kinds';
 import { smallestTeam, teamBoard, validTeams } from './teams';
@@ -102,11 +102,11 @@ async function expireIfDue(g: GameRow) {
 export async function gameTitle(pinIn: unknown) {
   const pin = String(pinIn ?? '').trim();
   if (!/^\d{6}$/.test(pin)) throw new GameError('Enter the 6-digit PIN', 400);
-  const { data, error } = await db().from('buzz_games').select('quiz->>title, quiz->>theme, quiz->>effect, state').eq('pin', pin).maybeSingle();
+  const { data, error } = await db().from('buzz_games').select('quiz->>title, quiz->>theme, quiz->>effect, quiz->>fall, state').eq('pin', pin).maybeSingle();
   fail(error);
-  const g = data as { title: string | null; theme: string | null; effect: string | null; state: State } | null;
+  const g = data as { title: string | null; theme: string | null; effect: string | null; fall: string | null; state: State } | null;
   if (!g) throw new GameError('No game with that PIN', 404);
-  return { title: g.title || 'Untitled quiz', theme: themeOf(g.theme), effect: effectOf(g.effect), started: g.state !== 'lobby' };
+  return { title: g.title || 'Untitled quiz', theme: themeOf(g.theme), ...effectsOf(g), started: g.state !== 'lobby' };
 }
 
 /** A player's own final result, for a share link. Only that player (by token), and only once the game is over. */
@@ -128,7 +128,7 @@ export function cleanQuiz(quiz: Quiz): Quiz {
   return {
     title: String(quiz.title || 'Untitled quiz').slice(0, 80),
     theme: themeOf(quiz.theme),
-    ...(effectOf(quiz.effect) !== 'none' ? { effect: effectOf(quiz.effect) } : {}),
+    ...(({ effect, fall }) => ({ ...(effect !== 'none' ? { effect } : {}), ...(fall !== 'none' ? { fall } : {}) }))(effectsOf(quiz)),
     questions: quiz.questions.map((q): Question => {
       const image = validImage(q.image);
       const kind = kindOf(q);
@@ -277,7 +277,7 @@ export async function hostAction(pin: unknown, tok: unknown, action: unknown, pl
 
 function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   const v: HostView = {
-    role: 'host', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), effect: effectOf(g.quiz.effect),
+    role: 'host', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), ...effectsOf(g.quiz),
     qIndex: g.q_index, total: g.quiz.questions.length,
     players: ps.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score })),
   };
@@ -314,7 +314,7 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
 
 function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
   const v: PlayerView = {
-    role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), effect: effectOf(g.quiz.effect), name: p.name, avatar: p.avatar,
+    role: 'player', state: g.state, pin: g.pin, title: g.quiz.title, theme: themeOf(g.quiz.theme), ...effectsOf(g.quiz), name: p.name, avatar: p.avatar,
     score: p.score, rank: p.rank, playerCount: ps.length,
     qIndex: g.q_index, total: g.quiz.questions.length,
   };

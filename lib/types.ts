@@ -1,5 +1,5 @@
 import type { ThemeId } from './themes';
-import type { EffectId } from './effect-ids';
+import type { EffectId, FallId } from './effect-ids';
 
 export type State = 'lobby' | 'question' | 'reveal' | 'leaderboard' | 'end';
 
@@ -22,13 +22,13 @@ export interface Question { q: string; answers: string[]; correct: number; time:
  * `from`: the share id or pack this quiz was opened from, so opening the same link twice doesn't add it twice.
  * `updated`: when it was last changed in the studio (ms), so sync links keep the newest copy.
  */
-export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId; effect?: EffectId; from?: string; updated?: number }
+export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId; effect?: EffectId; fall?: FallId; from?: string; updated?: number }
 
 /** A team in team mode: its number (0–3), name, and score, the average of its players' scores. */
 export interface TeamScore { team: number; name: string; emoji: string; score: number; players: number }
 
 export interface HostView {
-  role: 'host'; state: State; pin: string; title: string; theme: ThemeId; effect?: EffectId; qIndex: number; total: number;
+  role: 'host'; state: State; pin: string; title: string; theme: ThemeId; effect?: EffectId; fall?: FallId; qIndex: number; total: number;
   players: { id: string; name: string; avatar: number; score: number }[];
   question?: { q: string; answers: string[]; time: number; double?: boolean; image?: string; reveal?: boolean; kind?: QuestionKind };
   answered?: number; remaining?: number; startsIn?: number;
@@ -40,7 +40,7 @@ export interface HostView {
 }
 
 export interface PlayerView {
-  role: 'player'; state: State; pin: string; title: string; theme: ThemeId; effect?: EffectId; name: string; avatar: number;
+  role: 'player'; state: State; pin: string; title: string; theme: ThemeId; effect?: EffectId; fall?: FallId; name: string; avatar: number;
   score: number; rank: number; playerCount: number; qIndex: number; total: number;
   question?: { q: string; answers: string[]; double?: boolean; kind?: QuestionKind };
   remaining?: number; startsIn?: number; myAnswer?: number | null;

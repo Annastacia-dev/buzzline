@@ -8,7 +8,7 @@ import { READY_MS, type Quiz, type QuestionKind } from './types';
 import { answersShown, checkedKinds, choiceFor, kindOf, points, shuffleSeed, type Submission } from './kinds';
 import { avatarCount } from './avatars';
 import { themeOf, type ThemeId } from './themes';
-import { effectOf, type EffectId } from './effect-ids';
+import { effectsOf, type EffectId, type FallId } from './effect-ids';
 
 const GRACE_MS = 300;
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
@@ -25,7 +25,7 @@ export interface RunResult { q: number; correct: boolean; points: number; bonus:
 
 /** What a challenge player's phone shows. */
 export interface RunView {
-  title: string; theme: ThemeId; effect: EffectId; total: number; qIndex: number; name: string; avatar: number; score: number; streak: number;
+  title: string; theme: ThemeId; effect: EffectId; fall: FallId; total: number; qIndex: number; name: string; avatar: number; score: number; streak: number;
   /** question: answering (startsIn / remaining in ms). result: this question is done. finished: all done. */
   phase: 'question' | 'result' | 'finished';
   question?: { q: string; answers: string[]; double?: boolean; kind?: QuestionKind; image?: string; time: number };
@@ -36,7 +36,7 @@ export interface RunView {
 
 /** The public part: title, theme and the top of the leaderboard. */
 export interface ChallengeInfo {
-  id: string; title: string; theme: ThemeId; effect: EffectId; total: number; players: number;
+  id: string; title: string; theme: ThemeId; effect: EffectId; fall: FallId; total: number; players: number;
   board: { name: string; avatar: number; score: number; finished: boolean }[];
 }
 
@@ -80,7 +80,7 @@ export async function challengeInfo(idIn: unknown): Promise<ChallengeInfo> {
   ]);
   fail(error);
   return {
-    id: c.id, title: c.quiz.title || 'Untitled quiz', theme: themeOf(c.quiz.theme), effect: effectOf(c.quiz.effect), total: c.quiz.questions.length, players: count ?? 0,
+    id: c.id, title: c.quiz.title || 'Untitled quiz', theme: themeOf(c.quiz.theme), ...effectsOf(c.quiz), total: c.quiz.questions.length, players: count ?? 0,
     board: (data ?? []).map(r => ({ name: r.name, avatar: r.avatar, score: r.score, finished: !!r.finished_at })),
   };
 }
@@ -133,7 +133,7 @@ async function rankOf(c: ChallengeRow, r: RunRow) {
 
 function view(c: ChallengeRow, r: RunRow): RunView {
   const total = c.quiz.questions.length;
-  const base = { title: c.quiz.title || 'Untitled quiz', theme: themeOf(c.quiz.theme), effect: effectOf(c.quiz.effect), total, qIndex: r.q_index, name: r.name, avatar: r.avatar, score: r.score, streak: r.streak };
+  const base = { title: c.quiz.title || 'Untitled quiz', theme: themeOf(c.quiz.theme), ...effectsOf(c.quiz), total, qIndex: r.q_index, name: r.name, avatar: r.avatar, score: r.score, streak: r.streak };
   if (r.finished_at) return { ...base, phase: 'finished' };
   const q = c.quiz.questions[r.q_index];
   const kind = kindOf(q);
