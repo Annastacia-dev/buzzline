@@ -55,12 +55,17 @@ export async function uploadImage(file: unknown, ip: string) {
   rateLimit(`image:${ip}`, 120, 'image uploads');
   if (!(file instanceof Blob)) throw new GameError('No image received', 400);
   if (file.size > MAX_IMAGE_BYTES) throw new GameError('That image is too large (1.2 MB at most)', 413);
-  const bytes = new Uint8Array(await file.arrayBuffer());
+  return { url: await storeImage(new Uint8Array(await file.arrayBuffer())) };
+}
+
+/** Checks image bytes (real type, size, suitable for all ages), stores them in the bucket and returns the public URL. */
+export async function storeImage(bytes: Uint8Array) {
+  if (bytes.byteLength > MAX_IMAGE_BYTES) throw new GameError('That image is too large (1.2 MB at most)', 413);
   const kind = sniff(bytes);
   if (!kind) throw new GameError('Pick a JPG, PNG or WebP image', 415);
   await checkImage(bytes, kind.type);
   const path = `q/${shortId(16)}.${kind.ext}`;
   const { error } = await db().storage.from(IMAGE_BUCKET).upload(path, bytes, { contentType: kind.type, cacheControl: '31536000', upsert: false });
   fail(error);
-  return { url: db().storage.from(IMAGE_BUCKET).getPublicUrl(path).data.publicUrl };
+  return db().storage.from(IMAGE_BUCKET).getPublicUrl(path).data.publicUrl;
 }

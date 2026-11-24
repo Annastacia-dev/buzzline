@@ -378,6 +378,10 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .gen-ideas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px; }
 .gen-ideas .pill { cursor: pointer; border: 0; font: inherit; font-size: 13px; }
 .gen-ideas .pill:disabled { opacity: .5; cursor: default; }
+.gen-pictures { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 18px; background: var(--bg); cursor: pointer; }
+.gen-pictures input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); flex: none; }
+.gen-pictures span { display: grid; gap: 2px; }
+.gen-pictures small { font-size: 13px; color: var(--muted); line-height: 1.4; }
 .gen-wait { display: flex; align-items: center; gap: 10px; color: var(--muted); }
 .spinner.small { width: 20px; height: 20px; border-width: 3px; flex: none; }
 .gen-dialog .error { margin: 0; color: var(--bad); }

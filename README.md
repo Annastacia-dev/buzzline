@@ -38,6 +38,13 @@ plus a streak bonus of +100 for each answer in a row (up to +500). A round ends 
 In the quiz studio, **✨ Generate with AI** asks for a topic, number of questions (up to 20), seconds per question
 and difficulty. `app/api/generate` sends that to Claude (`claude-opus-5-5`, structured JSON output) in `lib/generate.ts`,
 checks the result (2–4 unique answers, a valid correct index) and the new quiz opens in the editor for changes.
+
+**🖼 Add a picture to every question** (or a 🖼 topic idea such as *Flags of the world*) makes it a picture round: Claude
+writes each question about the picture ("Which country's flag is this?") without naming the answer, plus the words of a
+Wikimedia Commons file name for it. `lib/pictures.ts` looks that up on Commons (exact file name first, then titles that
+contain every key word, then a close match; a wrong picture is worse than none), and each picture goes through the same
+all-ages check as an upload before it is stored in the `buzz-images` bucket. Questions without a usable picture are
+dropped, so Claude writes a few spares. Commons files are free to use, but many photos ask for credit to their author.
 Each server instance allows 10 generations per visitor per hour. Without `ANTHROPIC_API_KEY` the button shows a
 "not set up" message and everything else works.
 

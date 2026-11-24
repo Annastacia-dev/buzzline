@@ -3,7 +3,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { z } from 'zod';
 import { GameError, validateQuiz } from './game';
-import type { Quiz } from './types';
+import { storeImage } from './library';
+import { findPicture } from './pictures';
+import type { Question, Quiz } from './types';
 
 export const TIMES = [5, 10, 15, 20, 30, 45, 60, 90];
 export const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'] as const;
@@ -18,6 +20,26 @@ const QuizSchema = z.object({
     correct: z.number().int().describe('Index of the correct answer in answers'),
   })),
 });
+
+// With pictures, each question also names the one picture to show with it.
+const PictureQuizSchema = z.object({
+  title: z.string().describe('Short, catchy quiz title'),
+  questions: z.array(z.object({
+    q: z.string().describe('The question, at most 120 characters, referring to the picture without naming the answer'),
+    picture: z.string().describe('A precise Wikimedia Commons search for the one picture to show, e.g. "Flag of Japan"'),
+    answers: z.array(z.string()).describe('2 to 4 answer options, each at most 60 characters'),
+    correct: z.number().int().describe('Index of the correct answer in answers'),
+  })),
+});
+
+const PICTURES = `Every question is shown with a picture, and players answer by looking at it.
+Write each question about the picture, for example "Which country's flag is this?", "Which landmark is this?" or "Who painted this?".
+Never name, spell out or describe the answer in the question text: the picture gives the clue.
+For each question, give "picture": the words a Wikimedia Commons file name for that one picture would contain, in English.
+Keep it to the subject's common name, plus at most one disambiguating word. Flags are always "Flag of <country>" (for example "Flag of Japan");
+otherwise for example "Eiffel Tower", "Mona Lisa", "Red panda", "Taj Mahal". Pick subjects with clear, well-known pictures there.`;
+// Extra questions to ask for, so a few with no usable picture can be dropped.
+const PICTURE_SPARES = 4;
 
 const SYSTEM = `You write questions for Buzzline, a live multiplayer quiz game played on a big screen with players answering on their phones.
 Write questions that are factually accurate and unambiguous, with exactly one correct answer.
@@ -45,6 +67,8 @@ export async function generateQuiz(body: Record<string, unknown>, ip: string): P
   const count = Number(body.count);
   const time = Number(body.time);
   const difficulty = DIFFICULTIES.includes(body.difficulty as never) ? (body.difficulty as string) : 'mixed';
+  const pictures = body.pictures === true;
+  const ask = pictures ? count + PICTURE_SPARES : count;
   if (topic.length < 2) throw new GameError('Enter a topic', 400);
   if (topic.length > MAX_TOPIC) throw new GameError(`Keep the topic under ${MAX_TOPIC} characters`, 400);
   if (!Number.isInteger(count) || count < 1 || count > MAX_QUESTIONS) throw new GameError(`Choose 1–${MAX_QUESTIONS} questions`, 400);
@@ -57,14 +81,14 @@ export async function generateQuiz(body: Record<string, unknown>, ip: string): P
     res = await client.beta.messages.parse({
       model: 'claude-opus-5-5',
       max_tokens: 16000,
-      output_config: { effort: 'low', format: betaZodOutputFormat(QuizSchema) },
+      output_config: { effort: 'low', format: betaZodOutputFormat(pictures ? PictureQuizSchema : QuizSchema) },
       // If the main model declines, the API retries on a fallback model in the same call.
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      system: SYSTEM,
+      system: pictures ? `${SYSTEM}\n\n${PICTURES}` : SYSTEM,
       messages: [{
         role: 'user',
-        content: `Write exactly ${count} ${difficulty === 'mixed' ? 'questions of mixed difficulty (easy to hard)' : `${difficulty} questions`} about this topic:\n<topic>${topic}</topic>\nPlayers get ${time} seconds per question, so make them answerable in that time.`,
+        content: `Write exactly ${ask} ${difficulty === 'mixed' ? 'questions of mixed difficulty (easy to hard)' : `${difficulty} questions`} about this topic:\n<topic>${topic}</topic>\nPlayers get ${time} seconds per question, so make them answerable in that time.`,
       }],
     });
   } catch (e) {
@@ -79,12 +103,30 @@ export async function generateQuiz(body: Record<string, unknown>, ip: string): P
 
   // Clean up: trim, clip lengths, keep 2–4 unique answers with a valid correct index.
   const clip = (s: string, n: number) => s.replace(/\s+/g, ' ').trim().slice(0, n);
-  const questions = out.questions.flatMap(q => {
+  const candidates = (out.questions as { q: string; answers: string[]; correct: number; picture?: string }[]).flatMap(q => {
     const answers = q.answers.map(a => clip(a, 80)).slice(0, 4);
     if (!clip(q.q, 200) || answers.length < 2 || answers.some(a => !a) || new Set(answers).size !== answers.length) return [];
     if (!Number.isInteger(q.correct) || q.correct < 0 || q.correct >= answers.length) return [];
-    return [{ q: clip(q.q, 200), answers, correct: q.correct, time }];
-  }).slice(0, count);
+    return [{ q: clip(q.q, 200), answers, correct: q.correct, time, picture: clip(q.picture ?? '', 120) }];
+  });
+
+  let questions: Question[];
+  if (pictures) {
+    // Find, check and store every picture at once; questions whose picture can't be found or isn't suitable are dropped.
+    const found = await Promise.all(candidates.map(async ({ picture, ...q }) => {
+      try {
+        const bytes = picture ? await findPicture(picture) : null;
+        return bytes ? { ...q, image: await storeImage(bytes) } : null;
+      } catch (e) {
+        console.error('generate picture', picture, e instanceof Error ? e.message : e);
+        return null;
+      }
+    }));
+    questions = found.filter(q => q !== null).slice(0, count);
+    if (!questions.length) throw new GameError('Could not find pictures for that topic — try a more visual one, or turn pictures off', 502);
+  } else {
+    questions = candidates.map(({ q, answers, correct }) => ({ q, answers, correct, time })).slice(0, count);
+  }
 
   const quiz: Quiz = { title: clip(out.title, 80) || topic.slice(0, 80), questions };
   const err = validateQuiz(quiz);

@@ -7,7 +7,9 @@ import { QuizSelect } from '@/lib/select';
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90];
 const COUNTS = [5, 8, 10, 12, 15, 20];
 const DIFFICULTIES = [['mixed', 'Mixed'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']] as const;
-const IDEAS = ['90s pop music', 'The solar system', 'World capitals', 'Famous paintings', 'Football World Cup', 'Ancient Egypt'];
+const IDEAS = ['90s pop music', 'The solar system', 'World capitals', 'Football World Cup', 'Ancient Egypt'];
+// Ideas that work best with a picture on every question: picking one turns pictures on.
+const PICTURE_IDEAS = ['Flags of the world', 'Famous landmarks', 'Famous paintings', 'Animals'];
 
 /** "Generate with AI": topic, number of questions, seconds per question → a quiz written by Claude. */
 export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) => void; onClose: () => void }) {
@@ -16,6 +18,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
   const [count, setCount] = useState(10);
   const [time, setTime] = useState(10);
   const [difficulty, setDifficulty] = useState('mixed');
+  const [pictures, setPictures] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const abort = useRef<AbortController | null>(null);
@@ -34,7 +37,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
     try {
       const r = await fetch('/api/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: abort.current.signal,
-        body: JSON.stringify({ topic, count, time, difficulty }),
+        body: JSON.stringify({ topic, count, time, difficulty, pictures }),
       });
       const j = await r.json().catch(() => ({ error: 'The server returned an unexpected reply' }));
       if (!r.ok) throw new Error(j.error || 'Could not generate the quiz');
@@ -62,6 +65,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
         </label>
         <div className="gen-ideas" aria-label="Topic ideas">
           {IDEAS.map(t => <button key={t} type="button" className="pill" disabled={busy} onClick={() => setTopic(t)}>{t}</button>)}
+          {PICTURE_IDEAS.map(t => <button key={t} type="button" className="pill" disabled={busy} onClick={() => { setTopic(t); setPictures(true); }}>🖼 {t}</button>)}
         </div>
 
         <div className="gen-row">
@@ -82,8 +86,13 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
           </div>
         </div>
 
+        <label className="gen-pictures">
+          <input type="checkbox" checked={pictures} onChange={e => setPictures(e.target.checked)} disabled={busy} />
+          <span><b>🖼 Add a picture to every question</b><small>Questions are asked about the picture, like &ldquo;Which country&rsquo;s flag is this?&rdquo;. Best for flags, landmarks, animals and paintings.</small></span>
+        </label>
+
         {error && <p className="error" role="alert">{error}</p>}
-        {busy && <GenLoader topic={topic.trim()} count={count} time={time} />}
+        {busy && <GenLoader topic={topic.trim()} count={count} time={time} pictures={pictures} />}
 
         <div className="alert-actions">
           <button type="button" className="btn light" onClick={close}>Cancel</button>
@@ -104,8 +113,9 @@ const STICKERS: { text: string; icon: IconName; bg: string; ink: string }[] = [
   { text: 'no peeking · no peeking · no peeking · ', icon: 'star', bg: 'var(--pink)', ink: 'var(--pink-ink)' },
 ];
 
-function lines(topic: string, count: number, time: number) {
+function lines(topic: string, count: number, time: number, pictures: boolean) {
   return [
+    ...(pictures ? ['Hunting down the perfect pictures…', 'Checking every picture is family-friendly…'] : []),
     `Brewing ${count} questions about ${topic}…`,
     'Bribing the trivia gods…',
     'Teaching the wrong answers to look convincing…',
@@ -121,13 +131,13 @@ function lines(topic: string, count: number, time: number) {
   ];
 }
 
-function GenLoader({ topic, count, time }: { topic: string; count: number; time: number }) {
+function GenLoader({ topic, count, time, pictures }: { topic: string; count: number; time: number; pictures: boolean }) {
   const [i, setI] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setI(n => n + 1), 2600);
     return () => clearInterval(t);
   }, []);
-  const all = lines(topic, count, time);
+  const all = lines(topic, count, time, pictures);
   const st = STICKERS[i % STICKERS.length];
   return (
     <div className="gen-loader">
@@ -137,7 +147,7 @@ function GenLoader({ topic, count, time }: { topic: string; count: number; time:
       </div>
       <div aria-hidden>
         <p className="gen-line" key={`l${i}`}>{all[i % all.length]}</p>
-        <p className="gen-note">Good quizzes take up to a minute.</p>
+        <p className="gen-note">{pictures ? 'With pictures this can take a minute or two.' : 'Good quizzes take up to a minute.'}</p>
       </div>
     </div>
   );
