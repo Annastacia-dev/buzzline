@@ -8,7 +8,7 @@ import GenerateDialog from './GenerateDialog';
 import { importSpreadsheet, TIMES } from '@/lib/spreadsheet';
 import { downloadTemplate } from '@/lib/template';
 import { QuizSelect } from '@/lib/select';
-import { api, Shape } from '@/lib/client';
+import { api, beacon, Shape } from '@/lib/client';
 import { shrinkImage } from '@/lib/images';
 import { GridReveal, clearedAt } from '@/lib/reveal';
 import { Doodle } from '@/lib/doodles';
@@ -193,7 +193,9 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
   const update = (fn: (q: Quiz) => Quiz) => save(quizzes.map(q => (q.id === selId ? fn(structuredClone(q)) : q)));
   const setQ = (i: number, fn: (q: Question) => void) => update(z => { fn(z.questions[i]); return z; });
 
-  function addQuiz(q?: Quiz) {
+  /** Adds a quiz and opens it. `source` is counted (anonymously) on the admin dashboard. */
+  function addQuiz(q: Quiz | undefined, source: 'blank' | 'ai' | 'import' | 'sample') {
+    beacon({ kind: 'quiz_created', source });
     const nq = { ...(q ?? { title: 'New quiz', questions: [blankQuestion()] }), id: uid() };
     save([nq, ...quizzes]);
     setSelId(nq.id);
@@ -237,6 +239,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
       });
       const nq: Quiz = { title: shared.title, questions: shared.questions, id: uid(), from: id };
       commit(l => [nq, ...l]);
+      beacon({ kind: 'quiz_created', source: 'shared' });
       setSelId(nq.id!); setCur(0); setTab('preview');
       ask({ title: `Added “${nq.title}”`, message: 'This shared quiz is now in your quizzes, saved in this browser. Edit it, or host it as it is.', confirm: 'OK', cancel: null });
     } catch (e) {
@@ -257,6 +260,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     if (!pack) { ask({ title: "Couldn't find that quiz", message: 'It may have been renamed. Pick another from the ready-made quizzes.', confirm: 'OK', cancel: null }); return; }
     const nq: Quiz = { title: pack.title, questions: structuredClone(pack.questions), id: uid(), from };
     commit(l => [nq, ...l]);
+    beacon({ kind: 'quiz_created', source: 'pack' });
     setSelId(nq.id!); setCur(0); setTab('preview');
     if (pack.theme) setTheme(pack.theme);
     setEffect(pack.effect ?? 'none');
@@ -396,12 +400,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
         const q = JSON.parse(await f.text());
         if (Array.isArray(q.quizzes) || Array.isArray(q)) { restore(Array.isArray(q) ? q : q.quizzes); return; }
         if (!Array.isArray(q.questions)) throw new Error('Pick a Kahoot-style .xlsx spreadsheet or a Buzzline backup.');
-        addQuiz({ title: q.title || title, questions: q.questions });
+        addQuiz({ title: q.title || title, questions: q.questions }, 'import');
         return;
       }
       const { questions, skipped } = await importSpreadsheet(f);
       if (!questions.length) throw new Error(skipped.length ? `No usable questions. ${skipped.slice(0, 3).join('; ')}` : 'The spreadsheet has no questions under the header row.');
-      addQuiz({ title: title ? title[0].toUpperCase() + title.slice(1) : 'Imported quiz', questions });
+      addQuiz({ title: title ? title[0].toUpperCase() + title.slice(1) : 'Imported quiz', questions }, 'import');
       if (skipped.length) ask({
         title: `Imported ${questions.length} question${questions.length === 1 ? '' : 's'}, skipped ${skipped.length}`,
         message: skipped.slice(0, 6).join('\n') + (skipped.length > 6 ? `\n…and ${skipped.length - 6} more` : ''),
@@ -416,10 +420,10 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     <div className="studio">
       {dialog}
       {syncOpen && <SyncDialog secret={syncSecret} status={syncStatus} onEnable={enableSync} onDisable={disableSync} onClose={() => setSyncOpen(false)} />}
-      {generating && <GenerateDialog onClose={() => setGenerating(false)} onDone={q => { setGenerating(false); addQuiz(q); }} />}
+      {generating && <GenerateDialog onClose={() => setGenerating(false)} onDone={q => { setGenerating(false); addQuiz(q, 'ai'); }} />}
       <aside className="side">
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
-        <button className="btn small" onClick={() => addQuiz()}>+ New quiz</button>
+        <button className="btn small" onClick={() => addQuiz(undefined, 'blank')}>+ New quiz</button>
         <button className="btn small ai" onClick={() => setGenerating(true)}>✨ Generate with AI</button>
         <button className="btn ghost small" onClick={() => fileRef.current?.click()} title="Kahoot-format .xlsx: Question, Answer 1–4, Time limit, Correct answer(s)">⇪ Import spreadsheet</button>
         <button type="button" className="linkbtn" onClick={downloadTemplate}>Download spreadsheet template</button>
@@ -432,7 +436,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
           ))}
         </div>
         <div style={{ marginTop: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button className="btn ghost small" onClick={() => addQuiz(sampleQuiz())}>Add sample</button>
+          <button className="btn ghost small" onClick={() => addQuiz(sampleQuiz(), 'sample')}>Add sample</button>
           <button className="btn ghost small" onClick={backup} title="Download all your quizzes as one file. Import restores it in any browser.">⤓ Back up</button>
           <button className={`btn ghost small sync-btn ${syncSecret ? 'on' : ''}`} onClick={() => setSyncOpen(true)}
             title={syncSecret ? 'Synced with your other devices' : 'Use these quizzes on other devices'}>

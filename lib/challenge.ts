@@ -3,6 +3,7 @@
 // scored here exactly like a live game, and phones never see the right answer before they've answered.
 import crypto from 'crypto';
 import { db } from './supabase-server';
+import { track } from './track';
 import { GameError, cleanQuiz } from './game';
 import { READY_MS, type Quiz, type QuestionKind } from './types';
 import { answersShown, checkedKinds, choiceFor, kindOf, points, shuffleSeed, type Submission } from './kinds';
@@ -67,7 +68,7 @@ export async function createChallenge(quiz: unknown, ip: string) {
   for (let attempt = 0; attempt < 5; attempt++) {
     const id = shortId(10);
     const { error } = await db().from('buzz_challenges').insert({ id, quiz: clean });
-    if (!error) return { id };
+    if (!error) { track('challenge_created', null, { meta: { id, questions: clean.questions.length } }); return { id }; }
     if (error.code !== '23505') throw new Error(error.message);
   }
   throw new GameError('Could not create a link, try again', 503);
@@ -107,6 +108,7 @@ export async function startRun(idIn: unknown, nameIn: unknown) {
   if (error?.code === '23505') throw new GameError('Someone already played with that nickname — pick another');
   fail(error);
   const run = data as RunRow;
+  track('challenge_run', null, { meta: { id: c.id } });
   return { run: run.id, token, view: view(c, run) };
 }
 
@@ -203,5 +205,6 @@ export async function runNext(idIn: unknown, runId: unknown, token: unknown) {
   const { data, error } = await db().from('buzz_challenge_runs').update(patch).eq('id', r.id).eq('q_index', r.q_index).is('finished_at', null).select('*');
   fail(error);
   const next = (data?.[0] as RunRow) ?? (await loadRun(c, runId, token));
+  if (last && data?.length) track('challenge_finished', null, { meta: { id: c.id } });
   return next.finished_at ? { ...view(c, next), ...(await rankOf(c, next)) } : view(c, next);
 }

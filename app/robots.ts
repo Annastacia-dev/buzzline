@@ -1,9 +1,9 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 
-// Everyone, AI answer engines included, may read the public pages; the API is off limits.
+// Everyone, AI answer engines included, may read the public pages; the API and the admin dashboard are off limits.
 export default function robots(): MetadataRoute.Robots {
-  const rule = { allow: '/', disallow: '/api/' };
+  const rule = { allow: '/', disallow: ['/api/', '/admin'] };
   return {
     rules: [
       { userAgent: '*', ...rule },

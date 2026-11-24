@@ -7,6 +7,7 @@ A live multiplayer quiz game. One big screen hosts; players join on their phones
 1. Create a Supabase project and run `supabase/migrations/*.sql` in its SQL editor (or `supabase db push`).
 2. Copy `.env.example` to `.env.local` and fill in the three values. On Vercel, add the same three env vars.
 3. Optional, for **Generate with AI**: add `ANTHROPIC_API_KEY` (a Claude API key) to `.env.local` and to Vercel.
+4. Optional, for the **admin dashboard** at `/admin`: see [Admin dashboard](#admin-dashboard).
 
 This project uses [pnpm](https://pnpm.io) (pinned in `package.json`). If you don't have it: `corepack enable`.
 
@@ -157,6 +158,35 @@ Quizzes are saved in the browser, so the studio has three ways to move them arou
 
 Both API routes are rate-limited per IP (30 shares and 120 images an hour). The table and bucket are created by
 `supabase/migrations/20261123000000_shared_quizzes_and_images.sql`.
+
+## Admin dashboard
+
+`/admin` shows how Buzzline is used: visits and unique visitors, quizzes created (and by how many people, and where
+they came from: written, AI, imported, ready-made, shared link, sample), games played, players, challenge-link plays,
+top pages and referring sites. Pick 7 days, 30 days, 90 days or 12 months. Each number shows the change on the
+period before it, and every chart can switch to a table.
+
+**Sign-in** is "Sign in with Google", checked on the server (`lib/admin.ts`): Google verifies the token, the address
+must be in `ADMIN_EMAILS`, and a signed httpOnly cookie keeps you in for 7 days. Removing an address from
+`ADMIN_EMAILS` signs it out. To set it up:
+
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an **OAuth client ID** of
+   type **Web application**. Under **Authorized JavaScript origins** add your site (e.g. `https://www.buzzline.click`)
+   and `http://localhost:3030` for local use. No redirect URIs are needed.
+2. Set these in `.env.local` and in Vercel:
+   - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: the client ID from step 1.
+   - `ADMIN_EMAILS`: the Google addresses allowed in, comma-separated.
+   - `ADMIN_SESSION_SECRET`: a long random string that signs the session cookie, e.g. `openssl rand -hex 32`.
+     Optional: without it, a key derived from `SUPABASE_SECRET_KEY` is used.
+3. Redeploy, open `/admin` and sign in.
+
+**Tracking** is Buzzline's own, in the `buzz_events` table (`supabase/migrations/20261125000000_usage_events.sql`,
+`lib/track.ts`). It uses no cookies and stores no IP addresses or names. A visitor is a hash of a server secret, the
+day, the IP and the browser, so unique visitors are counted per day and can't be followed from day to day. Pages
+report visits with a beacon (`app/VisitTracker.tsx` → `/api/track`). The studio reports new quizzes the same way,
+and the API routes record games, joins and challenges. Bots are skipped. Local dev shares the production database,
+so `pnpm dev` records nothing unless `BUZZ_TRACK_DEV=1`. The numbers start from when tracking went live: games
+before then are deleted after 6 hours, so they can't be counted after the fact.
 
 ## Brand, SEO and GEO
 

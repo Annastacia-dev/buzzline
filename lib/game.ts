@@ -3,6 +3,7 @@
 // can't apply the same step twice. Scoring runs in the buzz_end_question() database function.
 import crypto from 'crypto';
 import { db, notify } from './supabase-server';
+import { track } from './track';
 import { READY_MS, INTRO_MS, type Quiz, type Question, type HostView, type PlayerView, type State, type GameAnalytics } from './types';
 import { avatarCount, validAvatar } from './avatars';
 import { themeOf } from './themes';
@@ -246,7 +247,9 @@ export async function hostAction(pin: unknown, tok: unknown, action: unknown, pl
       if (g.state !== 'lobby') throw new GameError('Already started');
       const { count } = await db().from('buzz_players').select('id', { count: 'exact', head: true }).eq('pin', g.pin);
       if (!count) throw new GameError('Wait for at least one player');
-      return startQuestion(g, 'lobby');
+      const r = await startQuestion(g, 'lobby');
+      track('game_started', null, { meta: { pin: g.pin, players: count, questions: g.quiz.questions.length, teams: g.teams ?? 0 } });
+      return r;
     }
     case 'skip':
       if (g.state === 'question') await endQuestion(g.pin, g.q_index);
@@ -257,7 +260,10 @@ export async function hostAction(pin: unknown, tok: unknown, action: unknown, pl
         const { data, error } = await db().from('buzz_games').update({ state: next, updated_at: new Date().toISOString() })
           .eq('pin', g.pin).eq('state', 'reveal').eq('q_index', g.q_index).select('pin');
         fail(error);
-        if (data?.length) await notify(g.pin, { to: 'all' });
+        if (data?.length) {
+          if (next === 'end') track('game_finished', null, { meta: { pin: g.pin } });
+          await notify(g.pin, { to: 'all' });
+        }
       } else if (g.state === 'leaderboard') {
         await startQuestion(g, 'leaderboard');
       }

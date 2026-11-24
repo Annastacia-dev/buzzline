@@ -5,6 +5,8 @@ import { shareImage } from '@/lib/og-cards';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Suspense } from 'react';
+import VisitTracker from './VisitTracker';
 
 // Chunky grotesk for headlines, DM Sans (with italics for accent words) for everything else.
 const display = Bricolage_Grotesque({ variable: '--font-display', subsets: ['latin'], weight: ['500', '700', '800'] });
@@ -41,6 +43,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       <body>
         {children}
         <Analytics />
+        {/* The path is only known at request time on dynamic routes, so it streams in after the page. */}
+        <Suspense fallback={null}><VisitTracker /></Suspense>
         <SpeedInsights />
       </body>
     </html>

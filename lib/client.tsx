@@ -121,3 +121,12 @@ export function usePreload(...urls: (string | null | undefined)[]) {
     }
   }, [key]);
 }
+
+/** Fire-and-forget usage event (see app/api/track). Uses sendBeacon so it survives the page closing. */
+export function beacon(data: Record<string, unknown>) {
+  try {
+    const body = JSON.stringify(data);
+    if (navigator.sendBeacon?.('/api/track', new Blob([body], { type: 'application/json' }))) return;
+    void fetch('/api/track', { method: 'POST', body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+  } catch { /* counting is never worth an error */ }
+}
