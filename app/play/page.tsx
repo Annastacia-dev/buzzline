@@ -9,11 +9,23 @@ import { revealAtFor } from '@/lib/podium';
 import { READY_MS, type PlayerView, type EndView } from '@/lib/types';
 import { Scallop, Icon } from '@/lib/deco';
 import { Doodle, type DoodleName } from '@/lib/doodles';
+import { AnswerPad, Solution } from '@/lib/answer-pad';
+import type { Submission } from '@/lib/kinds';
+import { TEAMS } from '@/lib/teams';
 
 /** Doodlebug theme: the illustration in the corner of each phone screen. */
 const MOOD_DOODLE: Record<string, DoodleName> = { lobby: 'mascot', ready: 'stopwatch', locked: 'sparkles', good: 'star', bad: 'cloud', rank: 'trophy', end: 'trophy' };
 
 type Session = { id: string; token: string; pin: string };
+
+/** This player's team and where it stands (team mode). */
+function TeamPill({ t, final }: { t: NonNullable<PlayerView['team']>; final?: boolean }) {
+  return (
+    <span className="pill team-pill" style={{ background: TEAMS[t.team]?.color }}>
+      {t.emoji} Team {t.name} · {final && t.rank === 1 ? 'won!' : `${ordinal(t.rank)} of ${t.of}`}
+    </span>
+  );
+}
 
 const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`;
 
@@ -76,8 +88,8 @@ export default function PlayPage() {
 }
 
 function Player({ v, session }: { v: PlayerView & { at: number }; session: Session }) {
-  // The answer tapped for this question; `sent` once the server has accepted it.
-  const [picked, setPicked] = useState<{ q: number; choice: number; sent: boolean } | null>(null);
+  // The answer given for this question (a tile, typed text or an order); `sent` once the server has accepted it.
+  const [picked, setPicked] = useState<{ q: number; choice: number | null; label: string; sent: boolean } | null>(null);
   const [err, setErr] = useState('');
   // Avatar just tapped, shown straight away while the server catches up.
   const [avatar, setAvatar] = useState<number | null>(null);
@@ -106,16 +118,17 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [v.state, v.qIndex]);
 
-  async function choose(choice: number) {
+  async function submit({ label, ...sub }: Submission & { label: string }) {
     if (picked?.q === v.qIndex) return;
     const q = v.qIndex;
+    const choice = typeof sub.choice === 'number' ? sub.choice : null;
     setErr('');
-    setPicked({ q, choice, sent: false });
+    setPicked({ q, choice, label, sent: false });
     Sound.lock();
     navigator.vibrate?.(30);
     try {
-      await api('/api/answer', { ...session, choice });
-      setPicked({ q, choice, sent: true });
+      await api('/api/answer', { ...session, ...sub });
+      setPicked({ q, choice, label, sent: true });
     } catch (e) {
       // Not accepted (too early, too late...): back to the tiles with the reason, never a false "Locked in".
       setPicked(null);
@@ -140,7 +153,9 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           <Avatar i={myAvatar} size={104} className="pop bob" key={myAvatar} />
           <h1>You&apos;re <em>in!</em></h1>
           <p>Find yourself on the big screen.<br />The game starts any second.</p>
-          <span className="pill">{v.playerCount} player{v.playerCount === 1 ? '' : 's'} so far</span>
+          {v.team
+            ? <span className="pill team-pill" style={{ background: TEAMS[v.team.team]?.color }}>You&apos;re on Team {v.team.emoji} {v.team.name}</span>
+            : <span className="pill">{v.playerCount} player{v.playerCount === 1 ? '' : 's'} so far</span>}
           <div className="avatar-pick">
             <p>Tap to pick your avatar</p>
             <div role="radiogroup" aria-label="Avatar">
@@ -163,8 +178,10 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
       const startsIn = (v.startsIn ?? 0) - elapsed;
       const total = (v.remaining ?? 0) - (v.startsIn ?? 0);
       const left = (v.remaining ?? 0) - elapsed;
-      const mine = v.myAnswer ?? (picked?.q === v.qIndex ? picked.choice : null);
-      const sending = v.myAnswer == null && picked?.q === v.qIndex && !picked.sent;
+      const mineHere = picked?.q === v.qIndex ? picked : null;
+      const answered = v.myAnswer != null || !!mineHere;
+      const mine = v.myAnswer != null && v.myAnswer >= 0 ? v.myAnswer : mineHere?.choice ?? null;
+      const sending = v.myAnswer == null && !!mineHere && !mineHere.sent;
 
       if (v.qIndex === 0 && startsIn > READY_MS) {
         // After Start game: a 10-second countdown before the first question.
@@ -192,11 +209,13 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
             </Scallop>
           </div>
         );
-      } else if (mine != null) {
+      } else if (answered) {
         mood = 'locked';
         body = (
           <div className="msg">
-            <div className={`tile c${mine} pop`} style={{ minHeight: 0, padding: 18, borderRadius: '50%' }}><Shape i={mine} /></div>
+            {mine != null
+              ? <div className={`tile c${mine} pop`} style={{ minHeight: 0, padding: 18, borderRadius: '50%' }}><Shape i={mine} /></div>
+              : <div className="locked-text pop">{mineHere?.label || '✓'}</div>}
             <h1>{sending ? <>Sending<em>…</em></> : <>Locked <em>in</em></>}</h1>
             <p>{sending ? 'One sec' : 'Hang tight for the others…'}</p>
           </div>
@@ -207,14 +226,9 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           <>
             <div className="bar"><div style={{ width: `${Math.max(0, left / total) * 100}%` }} /></div>
             <div className="qtext">{q.q}</div>
+            {q.kind === 'poll' && <div style={{ textAlign: 'center' }}><span className="pill">📊 Poll · no wrong answers</span></div>}
             {err && <div className="error" style={{ textAlign: 'center' }}>{err}</div>}
-            <div className={`answers ${q.answers.length === 2 ? 'two' : ''}`}>
-              {q.answers.map((a, i) => (
-                <button key={i} className={`tile c${i}`} onClick={() => choose(i)} disabled={left <= 0}>
-                  <Shape i={i} /><span>{a}</span>
-                </button>
-              ))}
-            </div>
+            <AnswerPad key={v.qIndex} q={q} disabled={left <= 0} onSubmit={submit} />
           </>
         );
       }
@@ -224,6 +238,18 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
     case 'reveal': {
       const l = v.last;
       mood = l?.correct ? 'good' : 'bad';
+      if (l?.poll) {
+        mood = 'good';
+        body = (
+          <div className="msg">
+            <Scallop color="var(--paper)" size={130} className="pop"><span className="result">📊</span></Scallop>
+            <h1>{l.missed ? <>No vote <em>this time</em></> : <>Thanks for <em>voting!</em></>}</h1>
+            {!l.missed && v.myAnswer != null && v.answers?.[v.myAnswer] && <p>You picked <b>{v.answers[v.myAnswer]}</b></p>}
+            <p className="muted">See what everyone thinks on the big screen.</p>
+          </div>
+        );
+        break;
+      }
       body = (
         <div className="msg">
           <Scallop color="var(--paper)" size={130} rotate={l?.correct ? 0 : 10} className="pop">
@@ -232,9 +258,10 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           <h1>{l?.correct ? 'Correct!' : l?.missed ? <>Time&apos;s <em>up</em></> : <>Not <em>quite</em></>}</h1>
           {l?.correct
             ? <div className="bignum rise">+{l.points.toLocaleString()}</div>
-            : <p>The answer was <b>{v.answers?.[v.correct!]}</b></p>}
+            : v.solution ? <Solution kind={v.kind} solution={v.solution} /> : <p>The answer was <b>{v.answers?.[v.correct!]}</b></p>}
           {l?.correct && l.bonus > 0 && <span className="pill"><Icon name="flame" size={16} stroke={8} /> {v.streak} in a row · +{l.bonus}</span>}
           <p>You&apos;re <b>#{v.rank}</b>{v.behind && <> · {v.behind.by.toLocaleString()} behind {v.behind.name}</>}</p>
+          {v.team && <TeamPill t={v.team} />}
         </div>
       );
       break;
@@ -247,7 +274,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           <p>Current position</p>
           <div className="bignum pop" style={{ fontSize: 110 }}>#{v.rank}</div>
           <p>{v.behind ? <>{v.behind.by.toLocaleString()} points behind <b>{v.behind.name}</b></> : v.rank === 1 ? <>You&apos;re <em>in the lead</em></> : ''}</p>
-          <span className="pill">Eyes on the big screen</span>
+          {v.team ? <TeamPill t={v.team} /> : <span className="pill">Eyes on the big screen</span>}
         </div>
       );
       break;
@@ -274,6 +301,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           </Scallop>
           <h1>{podium ? <>On the <em>podium!</em></> : <>Nice <em>playing!</em></>}</h1>
           <p>{v.score.toLocaleString()} points</p>
+          {v.team && <TeamPill t={v.team} final />}
           <EndActions v={v} session={session} />
         </div>
       );

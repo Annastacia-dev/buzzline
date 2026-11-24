@@ -829,6 +829,89 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .end-host { display: grid; gap: 4px; justify-items: center; margin-top: 10px; font-size: 14px; color: var(--muted); }
 .end-host a { color: var(--ink); font-weight: 700; }
 
+/* ---------- question types: type the answer, put in order, polls ---------- */
+.type-pad { display: grid; gap: 12px; margin-top: auto; }
+.type-pad .field { font-size: 20px; padding: 18px 20px; text-align: center; font-weight: 700; }
+.order-pad { display: grid; gap: 12px; margin-top: auto; }
+.order-hint { margin: 0; text-align: center; font-weight: 600; color: var(--muted); }
+.order-items { display: grid; gap: 10px; }
+.order-items .tile { min-height: 64px; padding: 12px 16px; }
+.order-items .tile.on { box-shadow: inset 0 0 0 3px var(--ink); }
+.order-n {
+  flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--paper); font-family: var(--font-display); font-weight: 800; box-shadow: inset 0 0 0 2px var(--deep, var(--ink));
+}
+.order-items .tile.on .order-n { background: var(--ink); color: var(--bg); box-shadow: none; }
+.order-actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; }
+.order-actions .btn:last-child { flex: 1; }
+.locked-text {
+  max-width: 100%; padding: 16px 22px; border-radius: 22px; background: var(--paper); font-family: var(--font-display);
+  font-weight: 800; font-size: 22px; overflow-wrap: anywhere;
+}
+.solution-order { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; text-align: left; width: min(360px, 100%); }
+.solution-order li { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 16px; background: var(--paper); font-weight: 700; }
+.solution-order li b { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); font-size: 14px; }
+.solution-order.big { width: min(900px, 100%); margin: 0 auto; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.solution-order.big li { font-size: 22px; padding: 18px 20px; border-radius: 24px; }
+.solution-order.big li b { width: 38px; height: 38px; font-size: 18px; }
+.type-prompt {
+  display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 110px; border-radius: 28px;
+  background: var(--paper); font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 3vw, 34px);
+}
+.order-prompt { display: grid; gap: 10px; }
+.order-prompt > p { margin: 0; text-align: center; font-weight: 700; color: var(--muted); }
+.type-answer {
+  display: grid; justify-items: center; gap: 6px; padding: 20px 28px; border-radius: 28px; background: var(--paper);
+  width: min(760px, 100%); margin: 0 auto; text-align: center;
+}
+.type-answer .label { font-weight: 600; color: var(--muted); }
+.type-answer b { font-family: var(--font-display); font-size: clamp(30px, 4vw, 52px); line-height: 1.05; }
+.bar-label { font-size: 16px; color: var(--muted); }
+.pans-type { padding: 22px; border-radius: 20px; background: var(--bg); font-weight: 700; text-align: center; }
+.pans.order .pans-tile > :first-child { width: auto; height: auto; flex: 1; color: inherit; }
+.pans-note { margin: 0; font-size: 14px; }
+.kind-note { margin: 0; font-size: 14px; }
+.ans-edit.type, .ans-edit.order { grid-template-columns: minmax(0, 1fr); max-width: 520px; }
+.ans-edit .ans-tag { flex: none; min-width: 72px; font-size: 13px; font-weight: 700; color: var(--deep, var(--ink)); }
+.ans-edit .iconbtn { flex: none; }
+
+/* ---------- team mode ---------- */
+.team-lobby { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; width: min(1200px, 100%); margin: 0 auto; align-content: start; position: relative; }
+.team-col { border-radius: 28px; padding: 16px; display: grid; gap: 12px; align-content: start; min-height: 160px; }
+.team-col h3 { margin: 0; font-size: 22px; display: flex; gap: 8px; align-items: center; }
+.team-col h3 small { margin-left: auto; font-size: 16px; background: var(--paper); border-radius: 999px; padding: 2px 10px; }
+.team-col .chips { justify-content: flex-start; }
+.team-col .chip { font-size: 16px; padding: 6px 14px 6px 6px; background: var(--paper); rotate: none; }
+.team-strip { width: min(780px, 100%); margin: 0 auto; display: grid; gap: 10px; position: relative; }
+.team-strip h2 { margin: 0; text-align: center; font-size: 40px; }
+.team-bars { display: grid; gap: 8px; }
+.team-bar { display: grid; grid-template-columns: minmax(120px, 200px) 1fr auto; gap: 14px; align-items: center; background: var(--paper); border-radius: 999px; padding: 10px 20px; font-weight: 700; font-size: 20px; }
+.team-bar small { font-weight: 500; font-size: 13px; color: var(--muted); display: block; }
+.team-bar .tb { height: 16px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+.team-bar .tb i { display: block; height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.2,.9,.3,1.1); }
+.team-bar b { font-family: var(--font-display); font-weight: 800; }
+.team-note { margin: 0; text-align: center; font-size: 13px; }
+.team-pill { box-shadow: none; font-weight: 700; color: var(--ink); }
+
+/* ---------- challenge links ---------- */
+.phone.challenge main { overflow-y: auto; }
+.challenge .msg h1 { font-size: 34px; }
+.challenge-board { display: grid; gap: 8px; width: min(380px, 100%); text-align: left; }
+.challenge-board .label { margin: 6px 0 0; font-weight: 700; color: var(--muted); font-size: 14px; text-align: center; }
+.challenge-board .row { font-size: 16px; padding: 8px 16px 8px 8px; gap: 10px; }
+.challenge-board .row .r { width: 30px; height: 30px; font-size: 14px; }
+.challenge-board .row.me { box-shadow: inset 0 0 0 3px var(--ink); }
+.challenge-img { max-height: 30vh; max-width: 100%; object-fit: contain; border-radius: 18px; align-self: center; }
+
+/* ---------- sync links ---------- */
+.sync-link { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.sync-qr { width: 132px; height: 132px; padding: 10px; background: #fff; border-radius: 16px; flex: none; }
+.sync-qr svg { width: 100%; height: 100%; display: block; }
+.sync-url { display: grid; gap: 8px; justify-items: start; flex: 1; min-width: 200px; }
+.sync-url code { font-size: 13px; padding: 8px 10px; border-radius: 10px; background: var(--bg); overflow-wrap: anywhere; user-select: all; }
+.sync-status { font-size: 13px; }
+.sync-btn.on { box-shadow: inset 0 0 0 1.5px var(--sage-ink); color: var(--sage-ink); }
+
 /* ---------- join page in the game's theme ---------- */
 .join-page { background: var(--bg); transition: background-color .4s ease; }
 .join-page > :not(.doodle) { position: relative; z-index: 1; }

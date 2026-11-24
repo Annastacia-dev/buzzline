@@ -11,26 +11,42 @@ export const INTRO_MS = 10000;
  * `image`: optional picture shown with the question, a URL in Buzzline's image bucket (see lib/images.ts).
  * `reveal`: the picture starts behind a grid of tiles that clear while the question runs (lib/reveal.tsx).
  */
-export interface Question { q: string; answers: string[]; correct: number; time: number; double?: boolean; image?: string; reveal?: boolean }
-/** `from`: the share id this quiz was opened from, so opening the same link twice doesn't add it twice. */
-export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId; from?: string }
+export type QuestionKind = 'choice' | 'type' | 'order' | 'poll';
+/**
+ * `kind`: how players answer (lib/kinds.ts). Default 'choice'. For 'type' the answers are the accepted spellings,
+ * for 'order' the items in the right order, and for 'poll' there is no right answer. `correct` is 0 for those.
+ */
+export interface Question { q: string; answers: string[]; correct: number; time: number; double?: boolean; image?: string; reveal?: boolean; kind?: QuestionKind }
+/**
+ * `from`: the share id or pack this quiz was opened from, so opening the same link twice doesn't add it twice.
+ * `updated`: when it was last changed in the studio (ms), so sync links keep the newest copy.
+ */
+export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId; from?: string; updated?: number }
+
+/** A team in team mode: its number (0–3), name, and score, the average of its players' scores. */
+export interface TeamScore { team: number; name: string; emoji: string; score: number; players: number }
 
 export interface HostView {
   role: 'host'; state: State; pin: string; title: string; theme: ThemeId; qIndex: number; total: number;
   players: { id: string; name: string; avatar: number; score: number }[];
-  question?: { q: string; answers: string[]; time: number; double?: boolean; image?: string; reveal?: boolean };
+  question?: { q: string; answers: string[]; time: number; double?: boolean; image?: string; reveal?: boolean; kind?: QuestionKind };
   answered?: number; remaining?: number; startsIn?: number;
-  correct?: number; distribution?: number[];
+  /** At the reveal. For type and order questions `distribution` is [right, wrong] and `solution` the accepted answers or the right order. */
+  correct?: number; distribution?: number[]; solution?: string[];
+  /** Team mode only: the number of teams, each player's team, and the standings. */
+  teams?: number; playerTeams?: Record<string, number>; teamBoard?: TeamScore[];
   leaderboard?: { name: string; avatar: number; score: number; streak: number; gained: number; up: number }[];
 }
 
 export interface PlayerView {
   role: 'player'; state: State; pin: string; title: string; theme: ThemeId; name: string; avatar: number;
   score: number; rank: number; playerCount: number; qIndex: number; total: number;
-  question?: { q: string; answers: string[]; double?: boolean };
+  question?: { q: string; answers: string[]; double?: boolean; kind?: QuestionKind };
   remaining?: number; startsIn?: number; myAnswer?: number | null;
-  last?: { correct: boolean; points: number; bonus: number; missed?: boolean } | null;
-  streak?: number; correct?: number; answers?: string[];
+  last?: { correct: boolean; points: number; bonus: number; missed?: boolean; poll?: boolean } | null;
+  streak?: number; correct?: number; answers?: string[]; kind?: QuestionKind; solution?: string[];
+  /** Team mode only: this player's team and where it stands. */
+  team?: TeamScore & { rank: number; of: number };
   behind?: { name: string; by: number };
 }
 

@@ -15,6 +15,8 @@ import Studio from './Studio';
 import { Doodle } from '@/lib/doodles';
 import { themeInk } from '@/lib/themes';
 import { GridReveal, clearedAt, revealSeed } from '@/lib/reveal';
+import { TEAMS } from '@/lib/teams';
+import type { TeamScore } from '@/lib/types';
 
 
 type HostSession = { pin: string; token: string };
@@ -31,10 +33,10 @@ export default function HostPage() {
     setReady(true);
   }, []);
 
-  async function host(quiz: Quiz) {
+  async function host(quiz: Quiz, teams = 0) {
     setError('');
     try {
-      const s = await api<HostSession>('/api/game', { quiz });
+      const s = await api<HostSession>('/api/game', { quiz, teams });
       sessionStorage.setItem('bz.host', JSON.stringify(s));
       setSession(s);
     } catch (e) { setError((e as Error).message); }
@@ -209,14 +211,34 @@ function Lobby({ h, act, busy }: ScreenProps) {
         <div className="stat"><b>{h.players.length}</b><span>player{h.players.length === 1 ? '' : 's'}</span></div>
         <button className="btn" onClick={() => act('start')} disabled={!h.players.length} aria-busy={busy === 'start'} style={{ fontSize: 22, padding: '18px 44px' }}>Start game <span aria-hidden>→</span></button>
       </div>
-      <div className="chips" style={{ flex: 1, position: 'relative' }}>
-        {h.players.length === 0 && <p className="muted">Waiting for players…</p>}
-        {h.players.map(p => (
-          <button key={p.id} className="chip pop" title="Click to remove" onClick={() => act('kick', { playerId: p.id })}>
-            <Avatar i={p.avatar} size={36} />{p.name}
-          </button>
-        ))}
-      </div>
+      {h.teams ? (
+        <div className="team-lobby" style={{ flex: 1 }}>
+          {TEAMS.slice(0, h.teams).map((t, ti) => {
+            const ps = h.players.filter(p => h.playerTeams?.[p.id] === ti);
+            return (
+              <div key={ti} className="team-col" style={{ background: t.color }}>
+                <h3><span aria-hidden>{t.emoji}</span> Team {t.name} <small>{ps.length}</small></h3>
+                <div className="chips">
+                  {ps.map(p => (
+                    <button key={p.id} className="chip pop" title="Click to remove" onClick={() => act('kick', { playerId: p.id })}>
+                      <Avatar i={p.avatar} size={30} />{p.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="chips" style={{ flex: 1, position: 'relative' }}>
+          {h.players.length === 0 && <p className="muted">Waiting for players…</p>}
+          {h.players.map(p => (
+            <button key={p.id} className="chip pop" title="Click to remove" onClick={() => act('kick', { playerId: p.id })}>
+              <Avatar i={p.avatar} size={36} />{p.name}
+            </button>
+          ))}
+        </div>
+      )}
     </>
   );
 }
@@ -318,11 +340,14 @@ function QuestionScreen({ h, act, busy }: ScreenProps) {
           ? <img className="stage-img" src={q.image} alt="" />
           : <Doodle theme={h.theme} name="mascot" size={190} className="bob" />}
         {q.double && <span className="pill dark">2× points</span>}
+        {q.kind === 'poll' && <span className="pill dark">📊 Poll</span>}
         <div className="stat"><b>{h.answered}</b><span>of {h.players.length} answered</span></div>
       </div>
-      <div className="answers">
-        {q.answers.map((a, i) => <div key={i} className={`tile c${i}`}><Shape i={i} /><span>{a}</span></div>)}
-      </div>
+      {q.kind === 'type'
+        ? <div className="type-prompt"><span aria-hidden>⌨️</span> Type your answer on your phone</div>
+        : q.kind === 'order'
+        ? <div className="order-prompt"><p>Put these in order on your phone</p><div className="answers">{q.answers.map((a, i) => <div key={i} className={`tile c${i}`}><span>{a}</span></div>)}</div></div>
+        : <div className="answers">{q.answers.map((a, i) => <div key={i} className={`tile c${i}`}><Shape i={i} /><span>{a}</span></div>)}</div>}
       <div style={{ textAlign: 'right' }}><button className="btn ghost small" onClick={() => act('skip')} aria-busy={busy === 'skip'}>Skip timer →</button></div>
     </>
   );
@@ -336,16 +361,47 @@ function Reveal({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: ScreenProp
   const [grow, setGrow] = useState(false);
   useEffect(() => { const t = setTimeout(() => setGrow(true), 50); return () => clearTimeout(t); }, []);
 
+  const poll = q.kind === 'poll';
+  if (h.solution) {
+    // Type and order questions: how many got it, and the answer itself.
+    const [right = 0, wrong = 0] = dist;
+    return (
+      <>
+        <div className="stage-q">{q.q}</div>
+        <div className="stage-mid">
+          {q.image && q.reveal && <img className="stage-img reveal-answer pop" src={q.image} alt="" />}
+          <div className="bars">
+            {[{ n: right, label: '✓', c: 'c2' }, { n: wrong, label: '✕', c: 'c1' }].map((b, i) => (
+              <div key={i}>
+                <span>{b.n}</span>
+                <div className={`col ${b.c}`} style={{ height: grow ? `${(b.n / max) * 80}%` : 0, opacity: i === 0 ? 1 : 0.45 }}>{b.label}</div>
+                <small className="bar-label">{i === 0 ? 'Right' : 'Wrong'}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+        {q.kind === 'order'
+          ? <ol className="solution-order big">{h.solution.map((a, i) => <li key={i} className={`c${i}`}><b>{i + 1}</b>{a}</li>)}</ol>
+          : <div className="type-answer pop"><span className="label">The answer</span><b>{h.solution[0]}</b>
+              {h.solution.length > 1 && <span className="muted">also accepted: {h.solution.slice(1).join(', ')}</span>}</div>}
+        <div style={{ textAlign: 'right' }}>
+          <NextButton label={h.qIndex + 1 >= h.total ? 'Final results →' : 'Scoreboard →'} act={act} busy={busy} auto={auto} secs={autoSecs} />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="stage-q">{q.q}</div>
       <div className="stage-mid">
         {q.image && q.reveal && <img className="stage-img reveal-answer pop" src={q.image} alt="" />}
+        {poll && <span className="pill dark">📊 Poll results</span>}
         <div className="bars">
           {dist.map((n, i) => (
             <div key={i}>
               <span>{n}</span>
-              <div className={`col c${i}`} style={{ height: grow ? `${(n / max) * 80}%` : 0, opacity: i === h.correct ? 1 : 0.35 }}>
+              <div className={`col c${i}`} style={{ height: grow ? `${(n / max) * 80}%` : 0, opacity: poll || i === h.correct ? 1 : 0.35 }}>
                 {i === h.correct && '✓'}
               </div>
               <Shape i={i} />
@@ -355,7 +411,7 @@ function Reveal({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: ScreenProp
       </div>
       <div className="answers">
         {q.answers.map((a, i) => (
-          <div key={i} className={`tile c${i} ${i === h.correct ? 'right' : 'dim'}`}>
+          <div key={i} className={`tile c${i} ${poll ? '' : i === h.correct ? 'right' : 'dim'}`}>
             <Shape i={i} /><span>{a}</span>{i === h.correct && <span className="tick">✓</span>}
           </div>
         ))}
@@ -380,6 +436,7 @@ function Leaderboard({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: Scree
         <Doodle theme={h.theme} name="star" size={100} rotate={10} className="float wiggle" style={{ top: 110, right: '10%' }} />
       </>}
       <h1 style={{ textAlign: 'center', fontSize: 64, position: 'relative' }}>Score<em>board</em></h1>
+      {h.teamBoard && <TeamStrip board={h.teamBoard} />}
       <div className="board" style={{ flex: 1, alignContent: 'start' }}>
         {h.leaderboard!.map((p, i) => (
           <div key={p.name} className="row rise" style={{ animationDelay: `${i * 80}ms` }}>
@@ -394,6 +451,27 @@ function Leaderboard({ h, act, busy, auto, autoSecs = DEFAULT_AUTO_SECS }: Scree
       </div>
       <div style={{ textAlign: 'right' }}><NextButton label="Next question →" act={act} busy={busy} auto={auto} secs={autoSecs} /></div>
     </>
+  );
+}
+
+/** Team standings (team mode): each team's average score, the leader first. */
+function TeamStrip({ board, final }: { board: TeamScore[]; final?: boolean }) {
+  const top = Math.max(1, ...board.map(t => t.score));
+  return (
+    <div className={`team-strip rise ${final ? 'final' : ''}`}>
+      {final && board[0] && <h2>{board[0].emoji} Team {board[0].name} <em>wins!</em></h2>}
+      <div className="team-bars">
+        {board.map((t, i) => (
+          <div key={t.team} className="team-bar">
+            <span className="tn"><span aria-hidden>{t.emoji}</span> {t.name} <small>{t.players} player{t.players === 1 ? '' : 's'}</small></span>
+            <span className="tb"><i style={{ width: `${Math.max(4, (t.score / top) * 100)}%`, background: TEAMS[t.team].color }} /></span>
+            <b>{t.score.toLocaleString()}</b>
+            {i === 0 && <span className="sr-only">leading</span>}
+          </div>
+        ))}
+      </div>
+      <p className="muted team-note">Team score = the average of its players&apos; scores</p>
+    </div>
   );
 }
 
@@ -523,6 +601,7 @@ function Podium({ h, onLeave, onReport }: { h: Stamped<HostView>; onLeave: () =>
           );
         })}
       </div>
+      {finished && h.teamBoard && h.teamBoard.length > 0 && <TeamStrip board={h.teamBoard} final />}
       {finished && lb.length > 3 && (
         <div className="board">
           {lb.slice(3).map((p, i) => (

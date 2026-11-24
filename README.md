@@ -41,6 +41,48 @@ game is cleaned up, and an edited link just shows "not found". `/api/result` onl
 a finished game. The page shows the result in the quiz's theme with a "make your own quiz" button. Its preview picture
 in chats is drawn at `/r/<code>/card` (`lib/og-result.tsx`). Result pages are `noindex`.
 
+## Question types, teams and challenges
+
+**Question types** (the type picker on each question in **Edit quiz**, `lib/kinds.ts`):
+
+- **Multiple choice** (2–4 answers; 2 makes it true or false), as before.
+- **Type answer**: players type it. The host adds the answer plus other spellings that also count. The check ignores case,
+  accents, punctuation and a leading "the/a/an", and forgives one typo (two in long words). Numbers must match exactly.
+- **Put in order**: the host types 2–4 items in the right order. Every screen shows them in the same shuffled order
+  (seeded by the PIN and question), and players tap them in order.
+- **Poll**: no right answer and no points, and it doesn't break anyone's streak. The reveal shows the votes.
+
+Typed answers and orders are checked by the server against the question they were given for, then stored as right (0) or
+wrong (1). `buzz_answer()` only accepts that from the server, so a raw "choice 0" can't score a typed question. Phones
+never see the accepted answers or the right order before the reveal.
+
+**Team mode**: pick **Solo** or **2–4 teams** next to the theme before hosting. Players join the smallest team (Foxes, Owls,
+Bees, Frogs; `lib/teams.ts`). A team scores the average of its players' scores, so a small team can win. The lobby shows
+the teams, the scoreboard shows team standings above the players, the podium names the winning team, and each phone
+shows its team and place.
+
+**Challenge links** (**🏁 Challenge link** in the studio, `lib/challenge.ts`, `/c/<id>`): anyone plays the quiz alone on
+their phone, whenever they like, against a shared leaderboard. The server keeps each player's clock, so answers are timed
+and scored exactly like a live game. Nicknames are unique per challenge, and a reloaded page carries on where it left off.
+Links last 30 days (`buzz_challenges`, `buzz_challenge_runs`).
+
+## Ready-made quizzes
+
+`/quiz` lists free quizzes with answers, and each has its own page at `/quiz/<slug>`: Christmas movies, Christmas around
+the world, Christmas music, New Year's Eve, winter science, a pub quiz, food, 90s and 2000s, an office party quiz, capital
+cities, science and animals (`lib/packs.ts`). Pages are static, carry `Quiz` JSON-LD and are in the sitemap.
+**Host this quiz** opens `/host?pack=<slug>`, which adds the quiz to the studio once, in its suggested theme.
+To add a quiz, add it to `PACKS`. Every question must pass the same checks as a hosted quiz.
+
+## Sync link (quizzes on every device)
+
+**☁️ Sync devices** in the studio sidebar makes a private link, `/host?sync=<secret>`, shown with a QR code. Every browser
+that opens it shares one library, with no account or email. Each quiz carries the time it was last changed. Deletes are
+kept for 120 days as tombstones. Browsers send their changes a moment after each edit and pick up others' changes when
+the studio opens or the tab comes back into view. The newest copy of each quiz wins (`lib/sync.ts`). The server stores
+the library under a SHA-256 of the secret (`buzz_sync_libraries`), so the table alone can't open anyone's quizzes.
+Anyone with the link can change the quizzes, and the studio says so.
+
 ## Generate with AI
 
 In the quiz studio, **✨ Generate with AI** asks for a topic, number of questions (up to 20), seconds per question
@@ -120,7 +162,7 @@ Both API routes are rate-limited per IP (30 shares and 120 images an hour). The 
 ## How it's built
 
 - **Next.js App Router**. Pages: `app/page.tsx` (landing), `app/join`, `app/play` (phone), `app/host` (quiz studio + stage).
-- **Game state** lives in Supabase (`buzz_games` and `buzz_players` tables, schema in `supabase/migrations/`).
+- **Game state** lives in Supabase (`buzz_games` and `buzz_players` tables, schema in `supabase/migrations/`; challenges, sync links and shared quizzes have their own `buzz_` tables).
   Route handlers use the secret key; browsers never touch the tables (RLS is on with no policies).
   Answers go through `buzz_answer()` and scoring through `buzz_end_question()`: database functions that lock
   the game row, so simultaneous answers can't double-score or miss ending the round.

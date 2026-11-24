@@ -30,6 +30,11 @@ export const FEATURES = [
   'Three quiz themes (Classic, Doodlebug and Inkblot) that style the host screen, the join page and every player’s phone',
   'Picture questions, including grid reveal: the picture starts hidden behind tiles that clear as the timer runs',
   'Share a quiz with a link, and back up or restore all your quizzes as one file',
+  'Question types: multiple choice, true or false, type the answer, put in order and polls',
+  'Team mode with 2 to 4 teams, scored on each team’s average',
+  'Challenge links: anyone plays a quiz alone on their phone, any time, against a shared leaderboard',
+  'Ready-made quizzes with answers (Christmas, New Year, pub, office party and classroom), hosted in one click',
+  'Sync link: the same quizzes on every device, with no account',
 ];
 
 export const FAQ: { q: string; a: string }[] = [
@@ -67,7 +72,23 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Where are my quizzes saved?',
-    a: 'Quizzes are saved in your browser on the device you made them on, so there is nothing to sign up for. To use a quiz somewhere else, share it with a link or download a backup of all your quizzes and restore it in another browser.',
+    a: 'Quizzes are saved in your browser, so there is nothing to sign up for. To use them on other devices, turn on sync in the studio: you get a private link (and QR code) that opens the same quizzes anywhere and keeps them up to date. You can also share a single quiz with a link or download a backup.',
+  },
+  {
+    q: 'Can we play in teams?',
+    a: 'Yes. Pick 2, 3 or 4 teams before you host. Players are put in the smallest team as they join, and each team scores the average of its players, so a small team can still win.',
+  },
+  {
+    q: 'Can people play a quiz on their own time?',
+    a: 'Yes. Make a challenge link in the studio and send it round. Everyone plays alone on their phone, whenever they like, against the clock, and sees where they rank on a shared leaderboard. Good for homework and remote friends.',
+  },
+  {
+    q: 'What kinds of questions can I ask?',
+    a: 'Multiple choice with 2 to 4 answers, true or false, type the answer (small typos are forgiven), put items in the right order, and polls with no right answer.',
+  },
+  {
+    q: 'Are there ready-made quizzes?',
+    a: 'Yes. Buzzline has free ready-made quizzes with answers, including Christmas movies, Christmas around the world, New Year’s Eve, pub general knowledge, office party icebreakers and classroom science and geography. Host any of them in one click.',
   },
   {
     q: 'Is Buzzline free?',

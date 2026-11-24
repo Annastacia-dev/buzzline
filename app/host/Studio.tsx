@@ -13,13 +13,34 @@ import { shrinkImage } from '@/lib/images';
 import { GridReveal, clearedAt } from '@/lib/reveal';
 import { Doodle } from '@/lib/doodles';
 import { THEMES, themeOf, DEFAULT_THEME, type ThemeId } from '@/lib/themes';
+import { KINDS, kindOf, orderShown } from '@/lib/kinds';
+import { TEAMS, validTeams } from '@/lib/teams';
+import type { QuestionKind } from '@/lib/types';
+import { mergeLibraries, newSyncSecret, validSyncSecret, type Library, type Tombstone } from '@/lib/sync';
+import SyncDialog from './SyncDialog';
 
 const KEY = 'bz.quizzes';
 const THEME_KEY = 'bz.theme';
+const TEAMS_KEY = 'bz.teams';
+const SYNC_KEY = 'bz.sync';
+const DELETED_KEY = 'bz.deleted';
+/** A short fingerprint of a library: which quizzes, at which versions. Same fingerprint, nothing to sync. */
+const fingerprint = (l: Library) => l.quizzes.map(q => `${q.id}:${q.updated ?? 0}`).join(',') + '|' + l.deleted.length;
+const ORD = ['1st', '2nd', '3rd', '4th'];
+
+/** Changes a question to another kind, keeping what still makes sense. */
+function setKind(x: Question, kind: QuestionKind) {
+  const filled = x.answers.filter(a => a.trim());
+  if (kind === 'type') x.answers = [x.answers[x.correct]?.trim() || filled[0] || ''];
+  else if (kind === 'order') x.answers = filled.length >= 2 ? filled.slice(0, 4) : ['', '', ''];
+  else if (x.answers.length < 2) x.answers = [...x.answers, '', '', ''].slice(0, 4);
+  x.correct = 0;
+  if (kind === 'choice') delete x.kind; else x.kind = kind;
+}
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 /** Quiz library + editor. Quizzes live in this browser's localStorage. */
-export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; error: string }) {
+export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: number) => void; error: string }) {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [dialog, ask] = useAlertDialog();
   const [selId, setSelId] = useState<string>('');
@@ -37,14 +58,38 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   useEffect(() => { setThemeState(themeOf(localStorage.getItem(THEME_KEY))); }, []);
   const setTheme = (t: ThemeId) => { setThemeState(t); localStorage.setItem(THEME_KEY, t); };
+  // Solo or team mode (2–4 teams), remembered in this browser like the theme.
+  const [teams, setTeamsState] = useState(0);
+  useEffect(() => { setTeamsState(validTeams(Number(localStorage.getItem(TEAMS_KEY)))); }, []);
+  const setTeams = (n: number) => { setTeamsState(n); localStorage.setItem(TEAMS_KEY, String(n)); };
+
+  // ---------- sync links ----------
+  const [syncSecret, setSyncSecret] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState('');
+  const [syncOpen, setSyncOpen] = useState(false);
+  const deleted = useRef<Tombstone[]>([]);
+  const synced = useRef(''); // fingerprint of the last library the server confirmed
 
   useEffect(() => {
     let list: Quiz[] = [];
     try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch {}
+    try { deleted.current = JSON.parse(localStorage.getItem(DELETED_KEY) || '[]'); } catch {}
+    // /host?sync=<secret> (a sync link): this browser joins that library.
+    const fromLink = new URLSearchParams(location.search).get('sync');
+    const secret = validSyncSecret(fromLink) ? fromLink : localStorage.getItem(SYNC_KEY);
+    if (validSyncSecret(secret)) {
+      localStorage.setItem(SYNC_KEY, secret);
+      setSyncSecret(secret);
+      if (fromLink) {
+        history.replaceState(null, '', location.pathname);
+        ask({ title: 'Sync is on', message: 'This browser now shares its quizzes with your other devices. Changes on any of them show up everywhere.', confirm: 'OK', cancel: null });
+      }
+    }
     if (!list.length) list = [sampleQuiz()];
     setQuizzes(list);
     setSelId(list[0].id!);
     openSharedLink(list);
+    openPack(list);
     // /host?ai (the landing page's main button) opens Generate with AI straight away.
     if (new URLSearchParams(location.search).has('ai')) {
       setGenerating(true);
@@ -53,12 +98,82 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Changes the library from its latest state (safe after an await) and saves it. */
+  /**
+   * Changes the library from its latest state (safe after an await) and saves it. Quizzes that changed get a new
+   * `updated` time and removed ones a tombstone, so sync can tell which copy is newest.
+   */
   const commit = (fn: (list: Quiz[]) => Quiz[]) => setQuizzes(prev => {
-    const next = fn(prev);
+    const now = Date.now();
+    const before = new Map(prev.map(q => [q.id, q]));
+    const next = fn(prev).map(q => (before.get(q.id) === q ? q : { ...q, updated: now }));
+    const kept = new Set(next.map(q => q.id));
+    const removed = prev.filter(q => !kept.has(q.id)).map(q => ({ id: q.id!, at: now }));
+    if (removed.length) {
+      deleted.current = mergeLibraries({ quizzes: [], deleted: deleted.current }, { quizzes: [], deleted: removed }).deleted;
+      localStorage.setItem(DELETED_KEY, JSON.stringify(deleted.current));
+    }
     localStorage.setItem(KEY, JSON.stringify(next));
     return next;
   });
+
+  /** Takes in a library from the server, keeping anything newer made here meanwhile. */
+  const absorb = (lib: Library) => setQuizzes(prev => {
+    const merged = mergeLibraries({ quizzes: prev, deleted: deleted.current }, lib);
+    deleted.current = merged.deleted;
+    localStorage.setItem(DELETED_KEY, JSON.stringify(merged.deleted));
+    localStorage.setItem(KEY, JSON.stringify(merged.quizzes));
+    synced.current = fingerprint(lib);
+    if (!merged.quizzes.length) return prev;
+    setSelId(id => (merged.quizzes.some(q => q.id === id) ? id : merged.quizzes[0].id!));
+    return merged.quizzes;
+  });
+
+  // Send changes a moment after they're made, and take in the merged library the server sends back.
+  useEffect(() => {
+    if (!syncSecret || !quizzes.length) return;
+    const local: Library = { quizzes, deleted: deleted.current };
+    if (fingerprint(local) === synced.current) return;
+    const t = setTimeout(async () => {
+      setSyncStatus('Saving…');
+      try {
+        const merged = await api<Library>('/api/sync', { secret: syncSecret, library: local });
+        absorb(merged);
+        setSyncStatus('All changes synced');
+      } catch (e) { setSyncStatus(`Not synced: ${(e as Error).message}`); }
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizzes, syncSecret]);
+
+  // Pick up changes from other devices when the studio opens and whenever this tab comes back into view.
+  useEffect(() => {
+    if (!syncSecret) return;
+    const pull = () => api<Library>('/api/sync', { secret: syncSecret }).then(absorb).catch(() => {});
+    pull();
+    const onVisible = () => { if (document.visibilityState === 'visible') pull(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncSecret]);
+
+  async function enableSync() {
+    const secret = newSyncSecret();
+    setSyncStatus('Saving…');
+    try {
+      const merged = await api<Library>('/api/sync', { secret, library: { quizzes, deleted: deleted.current } });
+      localStorage.setItem(SYNC_KEY, secret);
+      absorb(merged);
+      setSyncSecret(secret);
+      setSyncStatus('All changes synced');
+    } catch (e) { setSyncStatus(''); ask({ title: "Couldn't turn on sync", message: (e as Error).message, confirm: 'OK', cancel: null }); }
+  }
+
+  async function disableSync() {
+    const ok = await ask({ title: 'Stop syncing this browser?', message: 'Your quizzes stay here, and on your other devices, but changes will no longer be shared. You can open your sync link again any time to rejoin.', confirm: 'Stop syncing', cancel: 'Keep syncing' });
+    if (!ok) return;
+    localStorage.removeItem(SYNC_KEY);
+    setSyncSecret(null); setSyncStatus(''); setSyncOpen(false);
+  }
   const save = (list: Quiz[]) => commit(() => list);
   const quiz = quizzes.find(q => q.id === selId);
   const update = (fn: (q: Quiz) => Quiz) => save(quizzes.map(q => (q.id === selId ? fn(structuredClone(q)) : q)));
@@ -113,6 +228,43 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
     } catch (e) {
       ask({ title: "Couldn't open that quiz link", message: (e as Error).message, confirm: 'OK', cancel: null });
     }
+  }
+
+  /** /host?pack=<slug> (a ready-made quiz page's "Host this quiz"): add that quiz (once) and open it. */
+  async function openPack(list: Quiz[]) {
+    const slug = new URLSearchParams(location.search).get('pack');
+    if (!slug) return;
+    history.replaceState(null, '', location.pathname);
+    const from = `pack:${slug}`;
+    const had = list.find(q => q.from === from);
+    if (had) { setSelId(had.id!); setCur(0); setTab('preview'); return; }
+    const { packBySlug } = await import('@/lib/packs');
+    const pack = packBySlug(slug);
+    if (!pack) { ask({ title: "Couldn't find that quiz", message: 'It may have been renamed. Pick another from the ready-made quizzes.', confirm: 'OK', cancel: null }); return; }
+    const nq: Quiz = { title: pack.title, questions: structuredClone(pack.questions), id: uid(), from };
+    commit(l => [nq, ...l]);
+    setSelId(nq.id!); setCur(0); setTab('preview');
+    if (pack.theme) setTheme(pack.theme);
+  }
+
+  // ---------- challenge links ----------
+  const [challenging, setChallenging] = useState(false);
+  /** Makes a challenge link: anyone can play this quiz alone on their phone, any time, against a shared leaderboard. */
+  async function challenge() {
+    if (!quiz || challenging) return;
+    setChallenging(true);
+    try {
+      const { id } = await api<{ id: string }>('/api/challenge', { action: 'create', quiz: { ...quiz, theme } });
+      const url = `${location.origin}/c/${id}`;
+      const copied = await navigator.clipboard?.writeText(url).then(() => true, () => false);
+      ask({
+        title: copied ? 'Challenge link copied' : 'Challenge link ready',
+        message: `${url}\n\nAnyone with this link can play “${quiz.title}” on their own phone, whenever they like, and see how they rank against everyone else who played. Good for homework, remote friends or a group chat. The link works for 30 days.`,
+        confirm: 'Done', cancel: null,
+      });
+    } catch (e) {
+      ask({ title: "Couldn't make a challenge link", message: (e as Error).message, confirm: 'OK', cancel: null });
+    } finally { setChallenging(false); }
   }
 
   // ---------- backup ----------
@@ -247,6 +399,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
   return (
     <div className="studio">
       {dialog}
+      {syncOpen && <SyncDialog secret={syncSecret} status={syncStatus} onEnable={enableSync} onDisable={disableSync} onClose={() => setSyncOpen(false)} />}
       {generating && <GenerateDialog onClose={() => setGenerating(false)} onDone={q => { setGenerating(false); addQuiz(q); }} />}
       <aside className="side">
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
@@ -265,6 +418,10 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
         <div style={{ marginTop: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button className="btn ghost small" onClick={() => addQuiz(sampleQuiz())}>Add sample</button>
           <button className="btn ghost small" onClick={backup} title="Download all your quizzes as one file. Import restores it in any browser.">⤓ Back up</button>
+          <button className={`btn ghost small sync-btn ${syncSecret ? 'on' : ''}`} onClick={() => setSyncOpen(true)}
+            title={syncSecret ? 'Synced with your other devices' : 'Use these quizzes on other devices'}>
+            ☁️ {syncSecret ? 'Synced' : 'Sync devices'}
+          </button>
           <button type="button" className="linkbtn side-restore" onClick={() => fileRef.current?.click()}>Restore a backup</button>
           <input ref={fileRef} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.json,application/json" hidden onChange={e => { importQuiz(e.target.files?.[0]); e.target.value = ''; }} />
         </div>
@@ -279,7 +436,12 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                 value: t.id, label: t.name, hint: t.blurb,
                 icon: <span className="sw">{t.swatch.map((c, k) => <i key={k} style={{ background: c }} />)}</span>,
               }))} />
-            <button className="btn" onClick={() => onHost({ ...quiz, theme })}>Host this quiz <span aria-hidden>→</span></button>
+            <QuizSelect className="team-pick" label="Solo or teams" value={teams} onChange={setTeams}
+              options={[
+                { value: 0, label: 'Solo', icon: '🙋', hint: 'Everyone for themselves' },
+                ...[2, 3, 4].map(n => ({ value: n, label: `${n} teams`, icon: TEAMS.slice(0, n).map(t => t.emoji).join(''), hint: 'Players are split into teams as they join. A team scores the average of its players.' })),
+              ]} />
+            <button className="btn" onClick={() => onHost({ ...quiz, theme }, teams)}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div className="editor-bar">
             <div className="tabs" role="tablist" aria-label="Quiz view">
@@ -294,6 +456,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
             <span className="spacer" />
             <button className="btn small" onClick={addQuestion}>+ Add question</button>
             <button className="btn ghost small" onClick={share} aria-busy={sharing} title="Copy a link that opens a copy of this quiz in anyone's studio">🔗 Share</button>
+            <button className="btn ghost small" onClick={challenge} aria-busy={challenging} title="A link anyone can play alone on their phone, any time, with a shared leaderboard">🏁 Challenge link</button>
             <button className="btn ghost small" onClick={remove}>Delete quiz</button>
           </div>
           {error && <div className="card error" style={{ padding: 14 }}>{error}</div>}
@@ -323,7 +486,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                         onClick={() => setCur(i)}>
                         <span className="qthumb-top">
                           <span className="qthumb-n">{i + 1}</span>
-                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}{q.image ? (q.reveal ? ' · 🧩' : ' · 🖼') : ''}</span>
+                          <span className="qthumb-time">⏱ {q.time}s{q.double ? ' · 2×' : ''}{q.kind ? ` · ${KINDS.find(k => k.id === q.kind)?.icon}` : ''}{q.image ? (q.reveal ? ' · 🧩' : ' · 🖼') : ''}</span>
                         </span>
                         <span className="qthumb-q">{q.q || <i>No question text yet</i>}</span>
                         <span className={`qthumb-ans ${q.answers.length === 2 ? 'two' : ''}`} aria-hidden>
@@ -349,17 +512,23 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                     <span className="pill dark">Question {ci + 1}</span>
                     <span className="pill">⏱ {cq.time}s</span>
                     {cq.double && <span className="pill">2× points</span>}
+                    {cq.kind && <span className="pill">{KINDS.find(k => k.id === cq.kind)?.icon} {KINDS.find(k => k.id === cq.kind)?.name}</span>}
                     {cq.image && cq.reveal && <span className="pill">🧩 Grid reveal</span>}
                   </header>
                   <h2>{cq.q || <span className="muted">No question text yet</span>}</h2>
                   {cq.image && (cq.reveal
                     ? <GridReveal src={cq.image} size="preview" seed={ci + 1} cleared={clearedAt(0.45)} alt={`Picture for question ${ci + 1}, partly hidden: tiles clear as the timer runs`} />
                     : <img className="q-img" src={cq.image} alt={`Picture for question ${ci + 1}`} />)}
-                  <div className={`pans ${cq.answers.length === 2 ? 'two' : ''}`}>
-                    {cq.answers.map((a, j) => (
-                      <div key={j} className={`pans-tile c${j}`}><Shape i={j} /><span>{a || '—'}</span></div>
-                    ))}
-                  </div>
+                  {kindOf(cq) === 'type'
+                    ? <div className="pans-type">⌨️ Players type the answer on their phones</div>
+                    : (
+                      <div className={`pans ${cq.answers.length === 2 ? 'two' : ''} ${kindOf(cq) === 'order' ? 'order' : ''}`}>
+                        {(kindOf(cq) === 'order' ? orderShown(cq.answers.length, `preview:${ci}`).map(i => cq.answers[i]) : cq.answers).map((a, j) => (
+                          <div key={j} className={`pans-tile c${j}`}>{kindOf(cq) !== 'order' && <Shape i={j} />}<span>{a || '—'}</span></div>
+                        ))}
+                      </div>
+                    )}
+                  {kindOf(cq) === 'order' && <p className="muted pans-note">Shuffled like this on screen. Players put them in order.</p>}
                 </article>
               ) : (
                 <div className="card qcard flash" key={`e${ci}`}>
@@ -369,11 +538,14 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                     <QuizSelect size="sm" icon="⏱" label={`Question ${ci + 1} time limit`} value={cq.time}
                       onChange={t => setQ(ci, x => { x.time = t; })}
                       options={(TIMES.includes(cq.time) ? TIMES : [...TIMES, cq.time].sort((a, b) => a - b)).map(t => ({ value: t, label: `${t}s` }))} />
-                    <label><input type="checkbox" checked={!!cq.double} onChange={e => setQ(ci, x => { x.double = e.target.checked; })} /> 2× points</label>
-                    <button className="iconbtn" title="Toggle 2 / 4 answers" aria-label={`Question ${ci + 1}: switch to ${cq.answers.length === 4 ? 2 : 4} answers`} onClick={() => setQ(ci, x => {
+                    <QuizSelect size="sm" className="kind-pick" label={`Question ${ci + 1} type`} value={kindOf(cq)}
+                      onChange={k => setQ(ci, x => setKind(x, k))}
+                      options={KINDS.map(k => ({ value: k.id, label: k.name, icon: k.icon, hint: k.hint }))} />
+                    {kindOf(cq) !== 'poll' && <label><input type="checkbox" checked={!!cq.double} onChange={e => setQ(ci, x => { x.double = e.target.checked; })} /> 2× points</label>}
+                    {(kindOf(cq) === 'choice' || kindOf(cq) === 'poll') && <button className="iconbtn" title="Toggle 2 / 4 answers" aria-label={`Question ${ci + 1}: switch to ${cq.answers.length === 4 ? 2 : 4} answers`} onClick={() => setQ(ci, x => {
                       if (x.answers.length === 4) { x.answers = ['True', 'False']; x.correct = Math.min(x.correct, 1); }
                       else x.answers = [...x.answers, '', ''];
-                    })}>{cq.answers.length === 4 ? '2' : '4'}</button>
+                    })}>{cq.answers.length === 4 ? '2' : '4'}</button>}
                     <button className="iconbtn" title="Move up" aria-label={`Move question ${ci + 1} up`} disabled={ci === 0} onClick={() => moveQuestion(ci, ci - 1)}>↑</button>
                     <button className="iconbtn" title="Move down" aria-label={`Move question ${ci + 1} down`} disabled={ci === quiz.questions.length - 1} onClick={() => moveQuestion(ci, ci + 2)}>↓</button>
                     <button className="iconbtn" title="Duplicate" aria-label={`Duplicate question ${ci + 1}`} onClick={() => { update(z => { z.questions.splice(ci + 1, 0, structuredClone(z.questions[ci])); return z; }); setCur(ci + 1); }}>⧉</button>
@@ -405,14 +577,42 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz) => void; e
                       </div>
                     );
                   })()}
-                  <div className="ans-edit">
-                    {cq.answers.map((a, j) => (
-                      <label key={j} className={`c${j}`} title="Select the correct answer">
-                        <input type="radio" name={`correct-${ci}`} checked={cq.correct === j} onChange={() => setQ(ci, x => { x.correct = j; })} aria-label={`Answer ${j + 1} is correct`} />
-                        <input type="text" value={a} placeholder={`Answer ${j + 1}`} aria-label={`Question ${ci + 1} answer ${j + 1}`} onChange={e => setQ(ci, x => { x.answers[j] = e.target.value; })} />
-                      </label>
-                    ))}
-                  </div>
+                  {kindOf(cq) === 'choice' ? (
+                    <div className="ans-edit">
+                      {cq.answers.map((a, j) => (
+                        <label key={j} className={`c${j}`} title="Select the correct answer">
+                          <input type="radio" name={`correct-${ci}`} checked={cq.correct === j} onChange={() => setQ(ci, x => { x.correct = j; })} aria-label={`Answer ${j + 1} is correct`} />
+                          <input type="text" value={a} placeholder={`Answer ${j + 1}`} aria-label={`Question ${ci + 1} answer ${j + 1}`} onChange={e => setQ(ci, x => { x.answers[j] = e.target.value; })} />
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <p className="muted kind-note">{KINDS.find(k => k.id === kindOf(cq))?.hint}</p>
+                      <div className={`ans-edit ${kindOf(cq)}`}>
+                        {cq.answers.map((a, j) => {
+                          const kind = kindOf(cq);
+                          const label = kind === 'type' ? (j === 0 ? 'Answer' : 'Also accept') : kind === 'order' ? ORD[j] : `Option ${j + 1}`;
+                          const min = kind === 'type' ? 1 : 2;
+                          return (
+                            <label key={j} className={`c${j}`}>
+                              <span className="ans-tag">{label}</span>
+                              <input type="text" value={a} placeholder={kind === 'type' ? (j === 0 ? 'The answer' : 'Another spelling') : kind === 'order' ? `${ORD[j]} item` : `Option ${j + 1}`}
+                                aria-label={`Question ${ci + 1} ${label}`} onChange={e => setQ(ci, x => { x.answers[j] = e.target.value; })} />
+                              {kind !== 'poll' && cq.answers.length > min && (
+                                <button type="button" className="iconbtn" aria-label={`Remove ${label}`} onClick={() => setQ(ci, x => { x.answers.splice(j, 1); })}>✕</button>
+                              )}
+                            </label>
+                          );
+                        })}
+                      </div>
+                      {kindOf(cq) !== 'poll' && cq.answers.length < 4 && (
+                        <button type="button" className="linkbtn" onClick={() => setQ(ci, x => { x.answers.push(''); })}>
+                          {kindOf(cq) === 'type' ? '+ Accept another spelling' : '+ Add an item'}
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
               </div>

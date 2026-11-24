@@ -2,7 +2,7 @@ import { createGame, gameTitle, GameError } from '@/lib/game';
 import { post } from '@/lib/http';
 import type { Quiz } from '@/lib/types';
 
-export const POST = post(b => createGame(b.quiz as Quiz));
+export const POST = post(b => createGame(b.quiz as Quiz, b.teams));
 
 /** GET /api/game?pin= → { title, theme, started } so the join page can show the quiz's name in its theme. */
 export async function GET(req: Request) {

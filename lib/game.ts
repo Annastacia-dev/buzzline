@@ -7,16 +7,18 @@ import { READY_MS, INTRO_MS, type Quiz, type Question, type HostView, type Playe
 import { avatarCount, validAvatar } from './avatars';
 import { themeOf } from './themes';
 import { validImage } from './images';
+import { answersShown, checkedKinds, choiceFor, kindError, kindOf, shuffleSeed, type Submission } from './kinds';
+import { smallestTeam, teamBoard, validTeams } from './teams';
 
 interface GameRow {
-  pin: string; host_token: string; quiz: Quiz; state: State; q_index: number; q_start: string | null; updated_at: string;
+  pin: string; host_token: string; quiz: Quiz; state: State; q_index: number; q_start: string | null; updated_at: string; teams: number;
 }
 interface PlayerRow {
   id: string; pin: string; token: string; name: string; avatar: number; score: number; streak: number; rank: number; prev_rank: number;
   answer: { q: number; choice: number; ms: number } | null;
   last: { correct: boolean; points: number; bonus: number; missed?: boolean } | null;
   history: { q: number; choice: number | null; ms: number | null; correct: boolean; points: number }[];
-  joined_at: string;
+  joined_at: string; team: number | null;
 }
 
 const GRACE_MS = 300;   // network slack after the buzzer
@@ -32,9 +34,8 @@ export function validateQuiz(quiz: Quiz | undefined): string | null {
   if (quiz.questions.length > 100) return 'Quiz can have at most 100 questions';
   for (const [i, q] of quiz.questions.entries()) {
     if (!q.q || !String(q.q).trim()) return `Question ${i + 1} has no text`;
-    if (!Array.isArray(q.answers) || q.answers.length < 2 || q.answers.length > 4) return `Question ${i + 1} needs 2–4 answers`;
-    if (q.answers.some(a => !String(a).trim())) return `Question ${i + 1} has an empty answer`;
-    if (!Number.isInteger(q.correct) || q.correct < 0 || q.correct >= q.answers.length) return `Question ${i + 1} has no correct answer`;
+    const err = kindError(q, i + 1);
+    if (err) return err;
   }
   return null;
 }
@@ -128,10 +129,12 @@ export function cleanQuiz(quiz: Quiz): Quiz {
     theme: themeOf(quiz.theme),
     questions: quiz.questions.map((q): Question => {
       const image = validImage(q.image);
+      const kind = kindOf(q);
       return {
         q: String(q.q).slice(0, 240),
-        answers: q.answers.map(a => String(a).slice(0, 90)),
-        correct: q.correct,
+        answers: q.answers.map(a => String(a).trim().slice(0, 90)),
+        correct: kind === 'choice' ? q.correct : 0,
+        ...(kind !== 'choice' ? { kind } : {}),
         time: Math.min(120, Math.max(5, Number(q.time) || 20)),
         double: !!q.double,
         ...(image ? { image, ...(q.reveal ? { reveal: true } : {}) } : {}),
@@ -140,8 +143,9 @@ export function cleanQuiz(quiz: Quiz): Quiz {
   };
 }
 
-export async function createGame(quiz: Quiz) {
+export async function createGame(quiz: Quiz, teamsIn?: unknown) {
   const clean = cleanQuiz(quiz);
+  const teams = validTeams(teamsIn);
 
   // Housekeeping: drop games idle for 6 hours (their players go with them).
   await db().from('buzz_games').delete().lt('updated_at', new Date(Date.now() - 6 * 3600e3).toISOString());
@@ -149,7 +153,7 @@ export async function createGame(quiz: Quiz) {
   const hostToken = token();
   for (let attempt = 0; attempt < 8; attempt++) {
     const pin = String(crypto.randomInt(100000, 1000000));
-    const { error } = await db().from('buzz_games').insert({ pin, host_token: hostToken, quiz: clean });
+    const { error } = await db().from('buzz_games').insert({ pin, host_token: hostToken, quiz: clean, teams });
     if (!error) return { pin, token: hostToken };
     if (error.code !== '23505') throw new Error(error.message); // 23505 = PIN taken, try another
   }
@@ -162,7 +166,7 @@ export async function join(pinIn: unknown, nameIn: unknown) {
   const name = String(nameIn ?? '').trim().replace(/\s+/g, ' ').slice(0, 16);
   if (!name) throw new GameError('Pick a nickname', 400);
 
-  const { data: taken, error: cErr } = await db().from('buzz_players').select('avatar').eq('pin', g.pin);
+  const { data: taken, error: cErr } = await db().from('buzz_players').select('avatar, team').eq('pin', g.pin);
   fail(cErr);
   const count = taken?.length ?? 0;
   if (count >= MAX_PLAYERS) throw new GameError('Game is full');
@@ -174,7 +178,8 @@ export async function join(pinIn: unknown, nameIn: unknown) {
   const avatar = pool[crypto.randomInt(pool.length)];
 
   const tok = token();
-  const { data, error } = await db().from('buzz_players').insert({ pin: g.pin, token: tok, name, avatar }).select('id').single();
+  const team = g.teams ? smallestTeam(g.teams, taken ?? []) : null;
+  const { data, error } = await db().from('buzz_players').insert({ pin: g.pin, token: tok, name, avatar, team }).select('id').single();
   if (error?.code === '23505') throw new GameError('That nickname is taken');
   fail(error);
   // Host refetches; lobby phones just update their player count from the ping (no refetch storm).
@@ -200,13 +205,25 @@ const ANSWER_ERRORS: Record<string, GameError> = {
   not_in_game: new GameError('Not in this game', 403),
 };
 
-/** Records an answer. One database call (buzz_answer) does the checks, the save, and ends the round if it was the last. */
-export async function answer(pin: unknown, id: unknown, tok: unknown, choice: unknown) {
+/**
+ * Records an answer. One database call (buzz_answer) does the checks, the save, and ends the round if it was the last.
+ * A typed answer or an order is checked here first (against the question it was given for) and saved as 0 (right) or 1 (wrong).
+ */
+export async function answer(pin: unknown, id: unknown, tok: unknown, sub: Submission) {
   const arrived = new Date(); // time the answer before any database round trip, so DB latency doesn't cost points
-  if (!Number.isInteger(choice)) throw ANSWER_ERRORS.bad_choice;
   const p = String(pin ?? '').trim();
+  let choice = sub.choice, kind = 'choice', q: number | null = null;
+  if (sub.text !== undefined || sub.order !== undefined) {
+    const g = await mustGame(p);
+    if (g.state !== 'question') throw ANSWER_ERRORS.too_late;
+    const cur = currentQ(g);
+    if (!checkedKinds.includes(kindOf(cur))) throw ANSWER_ERRORS.bad_choice;
+    choice = choiceFor(cur, sub, shuffleSeed(g.pin, g.q_index));
+    kind = kindOf(cur); q = g.q_index;
+  }
+  if (!Number.isInteger(choice)) throw ANSWER_ERRORS.bad_choice;
   const { data, error } = await db().rpc('buzz_answer', {
-    p_pin: p, p_id: String(id), p_token: String(tok), p_choice: choice, p_arrived: arrived.toISOString(),
+    p_pin: p, p_id: String(id), p_token: String(tok), p_choice: choice, p_arrived: arrived.toISOString(), p_q: q, p_kind: kind,
   });
   fail(error);
   if (data === 'ok') return notify(p, { to: 'host' });      // answer count changed
@@ -262,9 +279,15 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
     qIndex: g.q_index, total: g.quiz.questions.length,
     players: ps.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score })),
   };
+  if (g.teams) {
+    v.teams = g.teams;
+    v.playerTeams = Object.fromEntries(ps.map(p => [p.id, p.team ?? 0]));
+    if (g.state !== 'question') v.teamBoard = teamBoard(g.teams, ps);
+  }
   if (g.state === 'question' || g.state === 'reveal') {
     const q = currentQ(g);
-    v.question = { q: q.q, answers: q.answers, time: q.time, double: q.double, image: q.image, reveal: q.reveal };
+    const kind = kindOf(q);
+    v.question = { q: q.q, answers: answersShown(q, shuffleSeed(g.pin, g.q_index)), time: q.time, double: q.double, image: q.image, reveal: q.reveal, ...(kind !== 'choice' ? { kind } : {}) };
     v.answered = ps.filter(p => answeredNow(g, p)).length;
   }
   if (g.state === 'question') {
@@ -273,8 +296,10 @@ function hostView(g: GameRow, ps: PlayerRow[]): HostView {
   }
   if (g.state === 'reveal') {
     const q = currentQ(g);
-    v.correct = q.correct;
-    v.distribution = q.answers.map((_, i) => ps.filter(p => answeredNow(g, p) && p.answer!.choice === i).length);
+    const checked = checkedKinds.includes(kindOf(q));
+    v.correct = kindOf(q) === 'poll' ? -1 : q.correct;
+    v.distribution = (checked ? [0, 1] : q.answers.map((_, i) => i)).map(i => ps.filter(p => answeredNow(g, p) && p.answer!.choice === i).length);
+    if (checked) v.solution = q.answers;
   }
   if (g.state === 'leaderboard' || g.state === 'end') {
     v.leaderboard = ranked(ps).slice(0, g.state === 'end' ? 10 : 5).map(p => ({
@@ -291,18 +316,28 @@ function playerView(g: GameRow, ps: PlayerRow[], p: PlayerRow): PlayerView {
     score: p.score, rank: p.rank, playerCount: ps.length,
     qIndex: g.q_index, total: g.quiz.questions.length,
   };
+  if (g.teams && p.team != null) {
+    const board = teamBoard(g.teams, ps);
+    const i = board.findIndex(t => t.team === p.team);
+    if (i >= 0) v.team = { ...board[i], rank: i + 1, of: board.length };
+  }
   if (g.state === 'question') {
     const q = currentQ(g);
-    v.question = { q: q.q, answers: q.answers, double: q.double };
+    const kind = kindOf(q);
+    v.question = { q: q.q, answers: answersShown(q, shuffleSeed(g.pin, g.q_index)), double: q.double, ...(kind !== 'choice' ? { kind } : {}) };
     v.remaining = Math.max(0, deadline(g) - Date.now());
     v.startsIn = Math.max(0, openAt(g) - Date.now());
-    v.myAnswer = answeredNow(g, p) ? p.answer!.choice : null;
+    // Typed answers and orders are already marked right or wrong: keep that for the reveal.
+    v.myAnswer = answeredNow(g, p) ? (checkedKinds.includes(kind) ? -1 : p.answer!.choice) : null;
   }
   if (g.state === 'reveal' || g.state === 'leaderboard' || g.state === 'end') {
     v.last = p.last; v.streak = p.streak;
     if (g.state === 'reveal') {
       const q = currentQ(g);
-      v.correct = q.correct; v.answers = q.answers; v.myAnswer = answeredNow(g, p) ? p.answer!.choice : null;
+      const kind = kindOf(q);
+      v.correct = kind === 'poll' ? -1 : q.correct; v.answers = q.answers; v.myAnswer = answeredNow(g, p) ? p.answer!.choice : null;
+      if (kind !== 'choice') v.kind = kind;
+      if (checkedKinds.includes(kind)) v.solution = q.answers;
     }
     const r = ranked(ps); const i = r.findIndex(x => x.id === p.id);
     if (i > 0) v.behind = { name: r[i - 1].name, by: r[i - 1].score - p.score };
@@ -339,15 +374,16 @@ export async function getAnalytics(pin: unknown, tok: unknown): Promise<GameAnal
   // Questions that have been scored: all up to the current one, unless it's still open.
   const scored = g.state === 'lobby' ? 0 : g.state === 'question' ? g.q_index : g.q_index + 1;
 
-  const questions = g.quiz.questions.slice(0, scored).map((q, i) => {
+  const questions = g.quiz.questions.slice(0, scored).map((q, i) => ({ q, i })).filter(({ q }) => kindOf(q) !== 'poll').map(({ q, i }) => {
+    const checked = checkedKinds.includes(kindOf(q));
     const rows = ps.map(p => ({ p, h: (p.history ?? []).find(h => h.q === i) })).filter(r => r.h);
     const answered = rows.filter(r => r.h!.choice != null);
     const right = answered.filter(r => r.h!.correct);
     const fastest = right.reduce<{ name: string; ms: number } | null>(
       (best, r) => (best && best.ms <= r.h!.ms! ? best : { name: r.p.name, ms: r.h!.ms! }), null);
     return {
-      q: q.q, answers: q.answers, correct: q.correct, double: q.double, time: q.time,
-      counts: q.answers.map((_, c) => answered.filter(r => r.h!.choice === c).length),
+      q: q.q, answers: checked ? [kindOf(q) === 'order' ? 'Right order' : `Right (${q.answers[0]})`, 'Wrong'] : q.answers, correct: q.correct, double: q.double, time: q.time,
+      counts: (checked ? [0, 1] : q.answers.map((_, c) => c)).map(c => answered.filter(r => r.h!.choice === c).length),
       answered: answered.length, correctCount: right.length, missed: rows.length - answered.length, players: rows.length,
       avgMs: mean(answered.map(r => r.h!.ms!)), fastest,
     };

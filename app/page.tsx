@@ -130,6 +130,7 @@ export default function Landing() {
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <div className={styles.navLinks}>
           <a href="#how">How it works</a>
+          <Link href="/quiz">Quizzes</Link>
           <a href="#themes">Themes</a>
           <a href="#faq">FAQ</a>
         </div>
@@ -256,6 +257,7 @@ export default function Landing() {
         <h2>Your next quiz night is <em>one topic away.</em></h2>
         <p>Free, no sign-up. Pick a topic and you&apos;re hosting in about a minute.</p>
         <Link href="/host?ai" className={`btn ${styles.mainCta}`}>✨ Create a free quiz with AI</Link>
+        <Link href="/quiz" className={styles.textLink}>or pick a ready-made Christmas quiz →</Link>
       </section>
 
       <footer className={styles.footer}>
@@ -263,6 +265,7 @@ export default function Landing() {
         <nav className={styles.footerLinks} aria-label="Footer">
           <Link href="/host">Host a quiz</Link>
           <Link href="/join">Join a game</Link>
+          <Link href="/quiz">Ready-made quizzes</Link>
           <a href="#faq">FAQ</a>
         </nav>
         <span>Made for classrooms, team socials and quiz nights.</span>
