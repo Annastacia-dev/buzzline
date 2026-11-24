@@ -6,7 +6,7 @@ export const THEMES = [
   { id: 'doodlebug', name: 'Doodlebug', blurb: 'Blue ink on beige paper, handwriting and doodles', swatch: ['#f2e9d6', '#1f3fb9', '#cdd6f5', '#fbf6ea'] },
   { id: 'inkblot', name: 'Inkblot', blurb: 'Black and white line art, bold type, solid ink accents', swatch: ['#ffffff', '#111111', '#e4e4e2', '#111111'] },
   { id: 'toybox', name: 'Toybox', blurb: 'Soft pastel clay: puffy matte shapes with gentle light and soft shadows', swatch: ['#f9dfe6', '#c9bff3', '#a9e0cf', '#f8dc8c'] },
-  { id: 'glass', name: 'Glass', blurb: 'Clear, colourless liquid glass with bright rims and soft light and shade', swatch: ['#e4e6ea', '#ffffff', '#c9ccd3', '#1b1c21'] },
+  { id: 'glass', name: 'Glass', blurb: 'Clear frosted glass floating over vivid, glowing bokeh', swatch: ['#3b1e80', '#ff7a35', '#3f7dff', '#ff3ea5'] },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -16,7 +16,7 @@ export const DEFAULT_THEME: ThemeId = 'classic';
 export const themeOf = (v: unknown): ThemeId => (THEMES.some(t => t.id === v) ? (v as ThemeId) : DEFAULT_THEME);
 
 /** The ink colour for things drawn outside CSS, such as the lobby QR code. */
-export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#1b1c21' : t === 'toybox' ? '#3a3d6b' : '#161616');
+export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'toybox' ? '#3a3d6b' : '#161616');
 
 /** Themes with their own line drawings in lib/doodles.tsx (the others decorate with shapes or colour). */
 export const hasDoodles = (t: ThemeId) => t === 'doodlebug' || t === 'inkblot';

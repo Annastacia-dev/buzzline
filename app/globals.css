@@ -813,132 +813,157 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .join-page { background: var(--bg); transition: background-color .4s ease; }
 .join-page > :not(.doodle) { position: relative; z-index: 1; }
 
-/* ---------- Glass: clear, colourless liquid glass on a soft grey surface ----------
-   Every piece is a clear, slightly frosted pane: a bright specular rim on the top-left, a softer one on the
-   bottom-right, and soft neumorphic light and shade around it. No colour anywhere: just white, greys and ink. */
+/* ---------- Glass: clear frosted glass floating over vivid, glowing bokeh ----------
+   The background is four soft pools of colour (--b1 to --b4) with drifting circles of light on top. Every piece
+   is a clear pane that blurs what is behind it, with a thin bright rim and white text. Each phone moment swaps
+   the four colours, so the mood still shows. */
 [data-theme=glass] {
-  --bg: #e4e6ea; --paper: rgba(255, 255, 255, .4); --ink: #1b1c21; --muted: #6b6e78; --line: rgba(255, 255, 255, .75);
-  --butter: rgba(255, 255, 255, .5); --butter-ink: #1b1c21;
-  --sage:   rgba(255, 255, 255, .5); --sage-ink:   #1b1c21;
-  --olive:  rgba(255, 255, 255, .5);
-  --lilac:  rgba(255, 255, 255, .5); --lilac-ink:  #1b1c21;
-  --peri:   rgba(255, 255, 255, .5); --peri-ink:   #1b1c21;
-  --pink:   rgba(255, 255, 255, .5); --pink-ink:   #1b1c21;
-  --peach:  rgba(255, 255, 255, .5); --peach-ink:  #1b1c21;
-  --mint:   rgba(255, 255, 255, .5); --mint-ink:   #1b1c21;
-  --coral:  rgba(255, 255, 255, .5); --coral-ink:  #1b1c21;
-  --good: #2f7d5b; --bad: #b4434c;
+  --bg: #2c1d63; --paper: rgba(255, 255, 255, .14); --ink: #ffffff; --muted: rgba(255, 255, 255, .74); --line: rgba(255, 255, 255, .32);
+  --butter: rgba(255, 196, 92, .3);  --butter-ink: #ffe2a3;
+  --sage:   rgba(46, 214, 180, .28); --sage-ink:   #aef5e2;
+  --olive:  rgba(255, 255, 255, .14);
+  --lilac:  rgba(160, 110, 255, .3); --lilac-ink:  #e1d1ff;
+  --peri:   rgba(90, 140, 255, .3);  --peri-ink:   #d3e0ff;
+  --pink:   rgba(255, 70, 170, .3);  --pink-ink:   #ffd0ea;
+  --peach:  rgba(255, 140, 80, .3);  --peach-ink:  #ffdcc6;
+  --mint:   rgba(46, 214, 180, .28); --mint-ink:   #aef5e2;
+  --coral:  rgba(255, 90, 120, .3);  --coral-ink:  #ffd0d9;
+  --good: #6df2bf; --bad: #ff7d96;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
   --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --radius: 30px;
-  /* the surface: soft white and grey pools for the glass to bend, all colourless */
+  --radius: 34px;
+  /* the colour pools: top-left, top-right, bottom-middle, bottom-left, over a deep violet base */
+  --b1: #ff7a35; --b2: #3f7dff; --b3: #ff3ea5; --b4: #14c4ad; --base: #3b1e80;
+  --bokeh:
+    radial-gradient(circle at 8% 22%, rgba(255, 255, 255, .28) 0 11px, transparent 12px),
+    radial-gradient(circle at 17% 64%, rgba(255, 255, 255, .16) 0 18px, transparent 19px),
+    radial-gradient(circle at 27% 12%, rgba(255, 255, 255, .2) 0 6px, transparent 7px),
+    radial-gradient(circle at 36% 88%, rgba(255, 255, 255, .22) 0 15px, transparent 16px),
+    radial-gradient(circle at 46% 40%, rgba(255, 255, 255, .12) 0 24px, transparent 25px),
+    radial-gradient(circle at 55% 8%, rgba(255, 255, 255, .26) 0 9px, transparent 10px),
+    radial-gradient(circle at 63% 74%, rgba(255, 255, 255, .18) 0 12px, transparent 13px),
+    radial-gradient(circle at 72% 30%, rgba(255, 255, 255, .14) 0 20px, transparent 21px),
+    radial-gradient(circle at 81% 90%, rgba(255, 255, 255, .24) 0 16px, transparent 17px),
+    radial-gradient(circle at 88% 52%, rgba(255, 255, 255, .2) 0 7px, transparent 8px),
+    radial-gradient(circle at 94% 14%, rgba(255, 255, 255, .22) 0 13px, transparent 14px),
+    radial-gradient(circle at 4% 92%, rgba(255, 255, 255, .16) 0 10px, transparent 11px),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 26px);
   --glass-wash:
-    radial-gradient(38% 46% at 14% 16%, #ffffff 0, rgba(255, 255, 255, 0) 70%),
-    radial-gradient(42% 50% at 88% 22%, #cfd2d9 0, rgba(207, 210, 217, 0) 70%),
-    radial-gradient(46% 50% at 74% 92%, #ffffff 0, rgba(255, 255, 255, 0) 70%),
-    radial-gradient(40% 46% at 10% 88%, #d3d6dc 0, rgba(211, 214, 220, 0) 70%),
-    linear-gradient(160deg, #eceef1, #dfe1e6);
-  /* one pane recipe: clear fill, blur, specular rims and soft light and shade */
-  --pane: linear-gradient(145deg, rgba(255, 255, 255, .62), rgba(255, 255, 255, .2) 55%, rgba(255, 255, 255, .34));
-  --rim: inset 1.5px 1.5px 0 rgba(255, 255, 255, .95), inset -1px -1px 0 rgba(255, 255, 255, .5), inset 0 0 0 1px rgba(255, 255, 255, .35), inset 0 -10px 20px -14px rgba(27, 28, 33, .18);
-  --lift: -6px -6px 16px rgba(255, 255, 255, .7), 10px 12px 26px -6px rgba(70, 74, 88, .26), 0 1px 2px rgba(70, 74, 88, .12);
-  --sink: inset 3px 3px 7px rgba(70, 74, 88, .18), inset -3px -3px 7px rgba(255, 255, 255, .8);
-  --smoke: linear-gradient(145deg, rgba(64, 66, 76, .85), rgba(27, 28, 33, .92));
-  --blur: blur(18px) saturate(160%);
+    var(--bokeh),
+    radial-gradient(42% 52% at 14% 12%, var(--b1) 0, transparent 72%),
+    radial-gradient(46% 56% at 86% 18%, var(--b2) 0, transparent 72%),
+    radial-gradient(50% 50% at 58% 96%, var(--b3) 0, transparent 72%),
+    radial-gradient(40% 50% at 6% 92%, var(--b4) 0, transparent 72%),
+    linear-gradient(160deg, var(--base), #4a2391);
+  /* one pane recipe: a faint white sheen, blur, a thin bright rim and a soft shadow */
+  --pane: linear-gradient(135deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .08) 60%, rgba(255, 255, 255, .12));
+  --rim: inset 0 0 0 1px rgba(255, 255, 255, .5), inset 0 1px 0 rgba(255, 255, 255, .55);
+  --drop: 0 12px 32px -12px rgba(25, 8, 70, .5);
+  --blur: blur(22px) saturate(170%);
   font-family: var(--font-main);
   color: var(--ink);
 }
 :is(.stage, .phone, .qstage, .join-page)[data-theme=glass], [data-theme=glass] .countdown-overlay { background: var(--glass-wash); }
+.phone[data-theme=glass][data-mood=ready] { --b1: #7a5cff; --b2: #2fa8ff; --b3: #b04bff; --b4: #3f7dff; }
+.phone[data-theme=glass][data-mood=locked] { --b1: #9b5cff; --b2: #5a6bff; --b3: #d04bd8; --b4: #6a3fe0; }
+.phone[data-theme=glass][data-mood=good] { --b1: #1fd1a0; --b2: #36b6ff; --b3: #14c4ad; --b4: #5be07a; --base: #12406b; }
+.phone[data-theme=glass][data-mood=bad] { --b1: #ff5a6e; --b2: #ff3ea5; --b3: #ff7a35; --b4: #c2307a; --base: #5a1648; }
+.phone[data-theme=glass]:is([data-mood=rank], [data-mood=end]) { --b1: #ffb23f; --b2: #ff6a8a; --b3: #ff3ea5; --b4: #ffcf4a; }
 
 /* Classic's stickers make way for the glass */
 :is(.stage[data-theme=glass], [data-theme=glass] :is(.countdown-overlay, .pinbox)) > :is(.shapebox, .sticker) { display: none; }
-[data-theme=glass] .shapebox { filter: grayscale(1) drop-shadow(0 12px 18px rgba(70, 74, 88, .15)); }
+[data-theme=glass] .shapebox { filter: drop-shadow(0 10px 24px rgba(25, 8, 70, .35)); }
 
-[data-theme=glass] :is(h1, h2, h3, .bignum, .stage-q, .logo) { letter-spacing: -0.025em; font-weight: 700; }
-[data-theme=glass] em, [data-theme=glass] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; color: #7a7d88; }
+[data-theme=glass] :is(h1, h2, h3, .bignum, .stage-q, .logo) { letter-spacing: -0.025em; font-weight: 800; text-shadow: 0 2px 14px rgba(25, 8, 70, .25); }
+[data-theme=glass] em, [data-theme=glass] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; color: #ffe2a3; }
 
-/* panes: panels, cards, counters, pills */
-[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .row, .kpi, .qcard, .qthumb, .chip, .qr, .flash, .pill, .ring) {
-  background: var(--pane); border: 0; box-shadow: var(--rim), var(--lift);
+/* clear panes: panels, cards, counters, pills */
+[data-theme=glass] :is(.card, .stage-q, .stat, .pinbox, .row, .kpi, .qcard, .qthumb, .chip, .flash, .pill, .ring, .field, .tabs) {
+  background: var(--pane); border: 0; box-shadow: var(--rim), var(--drop); color: var(--ink);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
-[data-theme=glass] .pill { box-shadow: var(--rim), -3px -3px 8px rgba(255, 255, 255, .6), 4px 5px 12px -4px rgba(70, 74, 88, .25); }
-[data-theme=glass] .pill.dark, [data-theme=glass] .qthumb-n, [data-theme=glass] .qcard-head .qnum {
-  background: var(--smoke); color: #fff;
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .35), inset -1px -1px 0 rgba(255, 255, 255, .1), 4px 5px 12px -4px rgba(27, 28, 33, .4);
+[data-theme=glass] .pill { box-shadow: var(--rim); }
+[data-theme=glass] .join-quiz-tag { background: var(--pane); box-shadow: var(--rim); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+[data-theme=glass] :is(.pill.dark, .qthumb-n, .qcard-head .qnum) {
+  background: linear-gradient(135deg, rgba(255, 70, 170, .75), rgba(255, 70, 170, .45)); color: #fff; box-shadow: var(--rim);
 }
+[data-theme=glass] .pill.gold { background: linear-gradient(135deg, rgba(255, 196, 92, .6), rgba(255, 196, 92, .3)); }
 [data-theme=glass] .pinbox .label { color: var(--muted); }
 [data-theme=glass] .chip { rotate: 0deg !important; }
-/* fields and tab tracks are pressed into the surface */
-[data-theme=glass] :is(.field, .tabs) { background: rgba(255, 255, 255, .3); border: 0; box-shadow: var(--sink); }
 [data-theme=glass] .field { border-radius: 999px; }
-[data-theme=glass] .field:focus { box-shadow: var(--sink), 0 0 0 2px rgba(27, 28, 33, .55); }
-[data-theme=glass] .qthumb.on { box-shadow: var(--rim), var(--lift), 0 0 0 2px var(--ink); }
-[data-theme=glass] .tabs button.on { background: var(--pane); color: var(--ink); box-shadow: var(--rim), 3px 4px 10px -3px rgba(70, 74, 88, .3); }
-[data-theme=glass] .tabs button:hover:not(.on) { background: rgba(255, 255, 255, .35); }
-[data-theme=glass] .row .r { background: var(--pane); box-shadow: var(--rim), 2px 3px 8px -2px rgba(70, 74, 88, .3); }
-[data-theme=glass] .row:nth-child(1) .r { background: var(--smoke); color: #fff; }
+[data-theme=glass] .field::placeholder { color: rgba(255, 255, 255, .6); }
+[data-theme=glass] .field:focus { box-shadow: var(--rim), 0 0 0 3px rgba(255, 255, 255, .35); outline: none; }
+[data-theme=glass] .qthumb.on { box-shadow: inset 0 0 0 2px #fff, var(--drop); }
+[data-theme=glass] .tabs { box-shadow: var(--rim); }
+[data-theme=glass] .tabs button { color: var(--ink); }
+[data-theme=glass] .tabs button.on { background: rgba(255, 255, 255, .3); color: #fff; box-shadow: var(--rim); }
+[data-theme=glass] .tabs button:hover:not(.on) { background: rgba(255, 255, 255, .14); }
+[data-theme=glass] .row .r { background: rgba(255, 255, 255, .16); color: #fff; box-shadow: var(--rim); }
+[data-theme=glass] .row:nth-child(1) .r { background: linear-gradient(135deg, rgba(255, 196, 92, .8), rgba(255, 140, 80, .55)); }
 
-/* the timer: an ink line in a pressed glass groove */
-[data-theme=glass] .bar { height: 10px; border-radius: 99px; background: rgba(255, 255, 255, .35); box-shadow: var(--sink); }
-[data-theme=glass] .bar > div { border-radius: 99px; background: linear-gradient(90deg, #5a5d68, var(--ink)); }
-[data-theme=glass] .ring circle:first-child { stroke: rgba(255, 255, 255, .6); }
-[data-theme=glass] .ring circle:last-child:not([stroke="var(--bad)"]) { stroke: var(--ink); }
+/* the QR card stays white so phones can scan it */
+[data-theme=glass] .qr { background: rgba(255, 255, 255, .94); color: #2c1d63; box-shadow: var(--rim), var(--drop); }
 
-/* buttons: dark smoked glass for the main action, clear glass for the rest */
+/* the timer: a bright line in a glass track */
+[data-theme=glass] .bar { height: 10px; border-radius: 99px; background: rgba(255, 255, 255, .18); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+[data-theme=glass] .bar > div { border-radius: 99px; background: linear-gradient(90deg, #8ff3ff, #fff); box-shadow: 0 0 12px rgba(255, 255, 255, .7); }
+[data-theme=glass] .ring circle:first-child { stroke: rgba(255, 255, 255, .22); }
+[data-theme=glass] .ring circle:last-child { filter: drop-shadow(0 0 6px rgba(255, 255, 255, .6)); }
+
+/* buttons: tinted glass pills, violet for the main action, clear for the rest */
 [data-theme=glass] .btn {
-  background: var(--smoke); color: #fff;
-  box-shadow: inset 1.5px 1.5px 0 rgba(255, 255, 255, .35), inset -1px -1px 0 rgba(255, 255, 255, .1), -4px -4px 12px rgba(255, 255, 255, .6), 8px 10px 22px -8px rgba(27, 28, 33, .45);
+  background: linear-gradient(135deg, rgba(150, 95, 255, .8), rgba(120, 70, 230, .5)); color: #fff;
+  box-shadow: var(--rim), 0 10px 26px -10px rgba(90, 40, 200, .7);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
-[data-theme=glass] :is(.btn.light, .btn.ghost, .btn.ai) { background: var(--pane); color: var(--ink); box-shadow: var(--rim), var(--lift); }
-[data-theme=glass] .btn.ghost { background: rgba(255, 255, 255, .18); }
-[data-theme=glass] .btn.danger { background: var(--pane); color: var(--bad); box-shadow: var(--rim), var(--lift); }
-[data-theme=glass] .btn:active:not(:disabled) { transform: scale(.97); box-shadow: var(--sink); }
-[data-theme=glass] .btn:disabled { opacity: .45; }
+[data-theme=glass] :is(.btn.light, .btn.ghost) { background: var(--pane); color: #fff; box-shadow: var(--rim), var(--drop); }
+[data-theme=glass] .btn.ai { background: linear-gradient(135deg, rgba(20, 196, 173, .75), rgba(20, 196, 173, .4)); color: #fff; box-shadow: var(--rim), var(--drop); }
+[data-theme=glass] .btn.danger { background: linear-gradient(135deg, rgba(255, 90, 120, .55), rgba(255, 90, 120, .3)); color: #fff; box-shadow: var(--rim); }
+[data-theme=glass] .btn.danger-solid { background: linear-gradient(135deg, rgba(255, 80, 115, .9), rgba(225, 45, 90, .75)); box-shadow: var(--rim), 0 10px 26px -10px rgba(225, 45, 90, .7); }
+[data-theme=glass] .btn:active:not(:disabled) { transform: scale(.97); }
 
-/* answers: four clear panes, told apart by their shapes; each has a slightly different frost */
+/* answers: clear glass pills with a round glass badge for the shape */
 [data-theme=glass] :is(.tile, .pans-tile) {
-  background: linear-gradient(145deg, rgba(255, 255, 255, .6), var(--tint, rgba(255, 255, 255, .3)) 60%, rgba(255, 255, 255, .3));
-  border: 0; box-shadow: var(--rim), var(--lift); color: var(--ink);
+  background: var(--pane); border: 0; box-shadow: var(--rim), var(--drop); color: #fff;
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
-[data-theme=glass] .c0 { --tint: rgba(255, 255, 255, .34); --deep: var(--ink); }
-[data-theme=glass] .c1 { --tint: rgba(236, 238, 242, .3); --deep: var(--ink); }
-[data-theme=glass] .c2 { --tint: rgba(214, 217, 223, .34); --deep: var(--ink); }
-[data-theme=glass] .c3 { --tint: rgba(196, 199, 207, .36); --deep: var(--ink); }
-[data-theme=glass] .tile .shape { background: var(--pane); box-shadow: var(--rim), 3px 4px 8px -3px rgba(70, 74, 88, .35); }
-[data-theme=glass] .pcard.flash .pans-tile { border: 0; box-shadow: var(--rim), 4px 5px 12px -5px rgba(70, 74, 88, .3); }
-[data-theme=glass] .phone .tile:active { transform: scale(.97); box-shadow: var(--rim), var(--sink); }
-[data-theme=glass] .tile.right { box-shadow: var(--rim), 0 0 0 2.5px var(--ink), 0 0 0 7px rgba(255, 255, 255, .55), var(--lift); }
-[data-theme=glass] .tile .tick { background: var(--ink); color: #fff; }
-[data-theme=glass] .bars .col { background: var(--pane); box-shadow: var(--rim), 4px 6px 14px -6px rgba(70, 74, 88, .35); color: var(--ink); }
-[data-theme=glass] :is(.bars > div .shape, .dist-name .shape) { fill: var(--ink); }
-[data-theme=glass] .podium .block { background: var(--pane) !important; box-shadow: var(--rim); }
+[data-theme=glass] :is(.stage .answers .tile, .pans-tile) { border-radius: 999px; }
+[data-theme=glass] .phone .tile { border-radius: 30px; }
+[data-theme=glass] :is(.c0, .c1, .c2, .c3) { --deep: #fff; }
+[data-theme=glass] .tile .shape { background: rgba(255, 255, 255, .16); border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .6); }
+[data-theme=glass] .pcard.flash .pans-tile { border: 0; box-shadow: var(--rim); }
+[data-theme=glass] .phone .tile:active { transform: scale(.97); background: rgba(255, 255, 255, .3); }
+[data-theme=glass] .tile.right { background: linear-gradient(135deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, .16)); box-shadow: inset 0 0 0 2px #fff, 0 0 28px rgba(255, 255, 255, .45), var(--drop); }
+[data-theme=glass] .tile .tick { background: #fff; color: #2c1d63; }
+[data-theme=glass] .bars .col { background: var(--pane); box-shadow: var(--rim); color: #fff; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+[data-theme=glass] :is(.bars > div .shape, .dist-name .shape) { fill: #fff; }
+[data-theme=glass] .podium .block { background: var(--pane) !important; box-shadow: var(--rim); color: #fff; }
 
-/* pictures and grid reveal: the picture sits in a glass frame; the tiles are frosted panes */
-[data-theme=glass] :is(.stage-img, .reveal) { box-shadow: 0 0 0 6px rgba(255, 255, 255, .5), 0 0 0 7px rgba(27, 28, 33, .06), 10px 14px 30px -10px rgba(70, 74, 88, .35); }
+/* pictures and grid reveal: a glass frame; the tiles are frosted panes */
+[data-theme=glass] :is(.stage-img, .reveal) { box-shadow: 0 0 0 6px rgba(255, 255, 255, .22), 0 0 0 7px rgba(255, 255, 255, .5), var(--drop); }
 [data-theme=glass] .reveal-tile {
-  background: linear-gradient(145deg, rgba(255, 255, 255, .6), rgba(225, 227, 232, .45)) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(120%); backdrop-filter: blur(24px) saturate(120%);
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .9), inset -1px -1px 0 rgba(255, 255, 255, .4);
+  background: linear-gradient(135deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, .18)) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45);
 }
-[data-theme=glass] .reveal-tile span { color: var(--muted); }
+[data-theme=glass] .reveal-tile span { color: #fff; opacity: .8; }
 
-/* the phone screens: the same grey surface, lighter or deeper for each moment */
-.phone[data-theme=glass][data-mood=ready] { --glass-wash: radial-gradient(60% 50% at 20% 15%, #fff 0, rgba(255, 255, 255, 0) 70%), linear-gradient(160deg, #e6e8ec, #d6d9df); }
-.phone[data-theme=glass][data-mood=good] { --glass-wash: radial-gradient(70% 55% at 50% 10%, #fff 0, rgba(255, 255, 255, 0) 70%), linear-gradient(160deg, #f1f2f4, #e2e4e8); }
-.phone[data-theme=glass][data-mood=bad] { --glass-wash: radial-gradient(60% 50% at 80% 85%, #c9ccd3 0, rgba(201, 204, 211, 0) 70%), linear-gradient(160deg, #dcdee3, #cfd2d8); }
-.phone[data-theme=glass] footer { background: var(--smoke); color: #fff; box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .3); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
-.phone[data-theme=glass][data-mood=lobby] .avatar-pick > div { background: rgba(255, 255, 255, .4); box-shadow: var(--rim); }
+/* dialogs and the game report: deep violet glass so the text stays readable */
+[data-theme=glass] .alert-body { background: rgba(44, 29, 99, .86); box-shadow: var(--rim), 0 24px 60px rgba(15, 5, 45, .5); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+[data-theme=glass] .report-body { background: var(--glass-wash); }
+[data-theme=glass] .meter-track { background: rgba(255, 255, 255, .18); }
+[data-theme=glass] .dist li:hover, [data-theme=glass] .dist li:focus-visible { background: rgba(255, 255, 255, .1); }
+
+/* phone */
+.phone[data-theme=glass] footer { background: var(--pane); color: #fff; box-shadow: var(--rim), var(--drop); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.phone[data-theme=glass][data-mood=lobby] .avatar-pick > div { background: rgba(255, 255, 255, .14); box-shadow: var(--rim); }
 .phone[data-theme=glass] > :is(header, main, footer) { position: relative; z-index: 1; }
 
 /* studio preview */
 .qstage[data-theme=glass] { border-radius: 28px; padding: 14px 18px 18px; overflow-x: hidden; }
-.qstage[data-theme=glass] .flash { border-radius: 30px; }
-.qstage[data-theme=glass] .flash-deck::before, .qstage[data-theme=glass] .flash-deck::after {
-  border: 0; background: rgba(255, 255, 255, .3); box-shadow: inset 1px 1px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .5), 6px 8px 18px -8px rgba(70, 74, 88, .3);
-}
+.qstage[data-theme=glass] .flash { border-radius: 34px; }
+.qstage[data-theme=glass] .flash-deck::before, .qstage[data-theme=glass] .flash-deck::after { border: 0; background: rgba(255, 255, 255, .1); box-shadow: var(--rim); }
+.qstage[data-theme=glass] :is(.muted, p) { color: var(--muted); }
 
 /* ---------- Toybox: soft pastel clay, puffy matte shapes with gentle light and soft shadows ----------
    Each piece is a soft clay pillow: lit from the top-left, shaded inside its bottom-right edge, with a soft

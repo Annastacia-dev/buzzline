@@ -55,9 +55,10 @@ all side by side.
   flat grey circles behind the illustrations, with a buzzer mascot.
 - **Toybox**: soft pastel clay: puffy matte shapes in lavender, pink, mint and butter, lit from the top-left with soft
   tinted shadows, that squish when tapped. Rounded Fredoka font, with Classic's shapes as clay cut-outs.
-- **Glass**: clear, colourless liquid glass on a soft grey surface: frosted panes with bright specular rims and soft
-  neumorphic light and shade, smoked-glass main buttons and near-black text in the device's own system font. The
-  answers are told apart by their shapes; grid reveal tiles are frosted panes.
+- **Glass**: clear frosted glass floating over vivid, glowing bokeh: soft pools of orange, blue, magenta and teal
+  with drifting circles of light, thin bright rims, white text in the device's own system font, pill-shaped answers
+  with round glass badges and tinted glass buttons. Each phone moment swaps the colours (teal for correct, pink for
+  wrong, gold for the podium). The QR card stays white so it scans.
 
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.

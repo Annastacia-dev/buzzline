@@ -64,9 +64,9 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     tiles: [['#c9bff3', '#3a3d6b'], ['#f7bccb', '#3a3d6b'], ['#a9e0cf', '#3a3d6b'], ['#f8dc8c', '#3a3d6b']],
   },
   glass: {
-    bg: '#e4e6ea', paper: '#f6f7f9', ink: '#1b1c21', muted: '#6b6e78', accent: '#1b1c21',
-    blobs: ['#ffffff', '#cfd2d9'], pills: ['#f6f7f9', '#dcdfe4', '#ffffff'], deck: ['#f0f1f4', '#d6d9df'],
-    tiles: [['#f6f7f9', '#1b1c21'], ['#eceef1', '#1b1c21'], ['#dfe1e6', '#1b1c21'], ['#d0d3d9', '#1b1c21']],
+    bg: '#3b1e80', paper: '#5a3aa8', ink: '#ffffff', muted: '#d9ccff', accent: '#ffe2a3',
+    blobs: ['#ff7a35', '#3f7dff'], pills: ['#ff3ea5', '#7a4fe0', '#5a3aa8'], deck: ['#ff3ea5', '#14c4ad'],
+    tiles: [['#6b48c8', '#ffffff'], ['#6b48c8', '#ffffff'], ['#6b48c8', '#ffffff'], ['#6b48c8', '#ffffff']],
   },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
