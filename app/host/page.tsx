@@ -16,6 +16,7 @@ import { Doodle } from '@/lib/doodles';
 import { themeInk } from '@/lib/themes';
 import { GridReveal, clearedAt, revealSeed } from '@/lib/reveal';
 import { TEAMS } from '@/lib/teams';
+import { SeasonalEffect } from '@/lib/effects';
 import type { TeamScore } from '@/lib/types';
 
 
@@ -89,6 +90,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
 
   return (
     <div className="stage" data-theme={h.theme}>
+      <SeasonalEffect effect={h.effect} />
       <div className="stage-top">
         <div className="logo">Buzzline<span className="dot" /></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>

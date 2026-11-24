@@ -922,9 +922,13 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .sync-status { font-size: 13px; }
 .sync-btn.on { box-shadow: inset 0 0 0 1.5px var(--sage-ink); color: var(--sage-ink); }
 
+/* ---------- seasonal effects (lib/effects.tsx) ---------- */
+.fx { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+.fx.fx-contained { position: absolute; z-index: 3; border-radius: 30px; }
+
 /* ---------- join page in the game's theme ---------- */
 .join-page { background: var(--bg); transition: background-color .4s ease; }
-.join-page > :not(.doodle) { position: relative; z-index: 1; }
+.join-page > :not(.doodle, .fx) { position: relative; z-index: 1; }
 
 /* ---------- Glass: clear frosted glass floating over vivid, glowing bokeh ----------
    The background is four soft pools of colour (--b1 to --b4) with drifting circles of light on top. Every piece

@@ -117,6 +117,16 @@ all side by side.
   with round glass badges and tinted glass buttons. Each phone moment swaps the colours (teal for correct, pink for
   wrong, gold for the podium). The QR card stays white so it scans.
 
+### Seasonal effects
+
+The **Seasonal effect** dropdown next to the theme adds an animated layer over any theme: **Snow**, **Christmas
+lights** (a string of twinkling bulbs along the top), **Fireworks**, **Autumn leaves** or **Hearts**. It is saved
+with the quiz (`quiz.effect`), so the host screen, the join page, every phone and challenge links show it, and the
+studio preview shows it over the card. Like the theme, the choice is remembered in the browser; the Christmas and New
+Year packs suggest one. The effect is one canvas (`lib/effects.tsx`) that never takes taps, sizes itself to the
+screen, pauses while the tab is hidden and, with "reduce motion" on, shows only the lights, held still. Effect ids
+are in `lib/effect-ids.ts`.
+
 Illustrations for the illustrated themes are in `lib/doodles.tsx`. Themes are listed in `lib/themes.ts`. Each is a `[data-theme=…]` block of CSS variables and overrides at the end of
 `app/globals.css`, so a new theme is a new entry there plus its CSS.
 

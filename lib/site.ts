@@ -27,7 +27,8 @@ export const FEATURES = [
   'AI quiz generator: type a topic and get up to 20 questions',
   'Import Kahoot-format spreadsheets (.xlsx) and download a ready-made template',
   'Auto mode that moves through the game on a timer',
-  'Three quiz themes (Classic, Doodlebug and Inkblot) that style the host screen, the join page and every player’s phone',
+  'Five quiz themes (Classic, Doodlebug, Inkblot, Toybox and Glass) that style the host screen, the join page and every player’s phone',
+  'Seasonal effects on top of any theme: snow, Christmas lights, fireworks, autumn leaves or hearts',
   'Picture questions, including grid reveal: the picture starts hidden behind tiles that clear as the timer runs',
   'Share a quiz with a link, and back up or restore all your quizzes as one file',
   'Question types: multiple choice, true or false, type the answer, put in order and polls',
@@ -64,7 +65,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Can I change how a quiz looks?',
-    a: 'Yes. Pick a theme in the studio: Classic (bright pastel blocks), Doodlebug (blue ink on beige paper with handwriting and doodles) or Inkblot (black and white line art). The host screen, the join page and every player’s phone use it.',
+    a: 'Yes. Pick a theme in the studio: Classic (bright pastel blocks), Doodlebug (blue ink on beige paper with handwriting and doodles), Inkblot (black and white line art), Toybox (soft pastel clay) or Glass (frosted glass over glowing colour). You can add a seasonal effect on top: snow, Christmas lights, fireworks, autumn leaves or hearts. The host screen, the join page and every player’s phone use both.',
   },
   {
     q: 'Can I add pictures to questions?',

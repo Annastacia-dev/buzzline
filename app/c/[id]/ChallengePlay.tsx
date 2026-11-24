@@ -8,6 +8,7 @@ import { Sound, SoundToggle } from '@/lib/sound';
 import { AnswerPad, Solution } from '@/lib/answer-pad';
 import type { Submission } from '@/lib/kinds';
 import type { ChallengeInfo, RunView } from '@/lib/challenge';
+import { SeasonalEffect } from '@/lib/effects';
 
 type Run = { run: string; token: string };
 const keyFor = (id: string) => `bz.challenge.${id}`;
@@ -154,6 +155,7 @@ export default function ChallengePlay({ id }: { id: string }) {
 
   return (
     <div className="phone challenge" data-mood={mood} data-theme={info.theme}>
+      <SeasonalEffect effect={info.effect} />
       <header>
         <Link href="/" className="logo" style={{ fontSize: 20 }}>Buzzline<span className="dot" /></Link>
         <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

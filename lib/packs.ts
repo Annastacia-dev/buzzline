@@ -2,10 +2,11 @@
 // Seasonal packs first, so they're easy to find in December.
 import type { Question } from './types';
 import type { ThemeId } from './themes';
+import type { EffectId } from './effect-ids';
 
 export type PackCategory = 'christmas' | 'party' | 'classroom';
 export interface Pack {
-  slug: string; title: string; emoji: string; category: PackCategory; theme?: ThemeId;
+  slug: string; title: string; emoji: string; category: PackCategory; theme?: ThemeId; effect?: EffectId;
   /** One or two sentences for the page and search results. */
   blurb: string;
   questions: Question[];
@@ -25,7 +26,7 @@ const poll = (q: string, options: string[], time = 20): Question => ({ q, answer
 
 export const PACKS: Pack[] = [
   {
-    slug: 'christmas-movies', title: 'Christmas movies quiz', emoji: '🎬', category: 'christmas', theme: 'doodlebug',
+    slug: 'christmas-movies', title: 'Christmas movies quiz', emoji: '🎬', category: 'christmas', theme: 'doodlebug', effect: 'snow',
     blurb: 'Twelve questions on the films everyone watches in December, from Home Alone to Elf, with answers.',
     questions: [
       poll('Warm-up: what is the best Christmas film?', ['Home Alone', 'Elf', 'Love Actually', 'Die Hard']),
@@ -43,7 +44,7 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    slug: 'christmas-around-the-world', title: 'Christmas around the world quiz', emoji: '🌍', category: 'christmas', theme: 'classic',
+    slug: 'christmas-around-the-world', title: 'Christmas around the world quiz', emoji: '🌍', category: 'christmas', theme: 'classic', effect: 'lights',
     blurb: 'How Christmas is celebrated from Iceland to Mexico to Japan: twelve questions with answers.',
     questions: [
       c('Decorated Christmas trees are usually traced back to which country, in the 1500s?', ['Germany', 'England', 'Finland', 'France'], 0),
@@ -61,7 +62,7 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    slug: 'christmas-music', title: 'Christmas music quiz', emoji: '🎶', category: 'christmas', theme: 'glass',
+    slug: 'christmas-music', title: 'Christmas music quiz', emoji: '🎶', category: 'christmas', theme: 'glass', effect: 'snow',
     blurb: 'Christmas songs and the singers behind them: a festive music round with answers.',
     questions: [
       c('Who sang “All I Want for Christmas Is You” (1994)?', ['Whitney Houston', 'Mariah Carey', 'Celine Dion', 'Kylie Minogue'], 1),
@@ -79,7 +80,7 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    slug: 'new-years-eve-quiz', title: 'New Year’s Eve quiz', emoji: '🎆', category: 'christmas', theme: 'glass',
+    slug: 'new-years-eve-quiz', title: 'New Year’s Eve quiz', emoji: '🎆', category: 'christmas', theme: 'glass', effect: 'fireworks',
     blurb: 'Midnight traditions from Spain to Japan to Scotland: a quiz to count down to the New Year.',
     questions: [
       c('Which country is one of the very first to welcome the New Year?', ['Kiribati', 'Japan', 'New Zealand', 'Fiji'], 0),
@@ -96,7 +97,7 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    slug: 'winter-science-quiz', title: 'Winter science quiz', emoji: '❄️', category: 'christmas', theme: 'toybox',
+    slug: 'winter-science-quiz', title: 'Winter science quiz', emoji: '❄️', category: 'christmas', theme: 'toybox', effect: 'snow',
     blurb: 'Snowflakes, solstices and hibernation: a winter science quiz for the classroom, with answers.',
     questions: [
       typed('At what temperature does water freeze, in degrees Celsius?', ['0', 'zero', '0 degrees'], 20),

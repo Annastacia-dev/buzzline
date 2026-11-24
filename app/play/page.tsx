@@ -12,6 +12,7 @@ import { Doodle, type DoodleName } from '@/lib/doodles';
 import { AnswerPad, Solution } from '@/lib/answer-pad';
 import type { Submission } from '@/lib/kinds';
 import { TEAMS } from '@/lib/teams';
+import { SeasonalEffect } from '@/lib/effects';
 
 /** Doodlebug theme: the illustration in the corner of each phone screen. */
 const MOOD_DOODLE: Record<string, DoodleName> = { lobby: 'mascot', ready: 'stopwatch', locked: 'sparkles', good: 'star', bad: 'cloud', rank: 'trophy', end: 'trophy' };
@@ -311,6 +312,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
 
   return (
     <div className="phone" data-mood={mood} data-theme={v.theme}>
+      <SeasonalEffect effect={v.effect} />
       {v.theme !== 'classic' && MOOD_DOODLE[mood] && (
         <Doodle theme={v.theme} key={mood} name={MOOD_DOODLE[mood]} size={mood === 'lobby' ? 110 : 92} className="float wiggle" style={{ right: 12, top: 58 }} />
       )}
