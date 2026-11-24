@@ -107,6 +107,17 @@ export async function gameTitle(pinIn: unknown) {
   return { title: g.title || 'Untitled quiz', theme: themeOf(g.theme), started: g.state !== 'lobby' };
 }
 
+/** A player's own final result, for a share link. Only that player (by token), and only once the game is over. */
+export async function playerResult(pinIn: unknown, id: unknown, token: unknown) {
+  const pin = String(pinIn ?? '').trim();
+  const [g, ps] = await Promise.all([loadGame(pin), /^\d{6}$/.test(pin) ? loadPlayers(pin) : Promise.resolve([])]);
+  if (!g) throw new GameError('That game has closed', 404);
+  const p = ps.find(x => x.id === id && x.token === token);
+  if (!p) throw new GameError('Not a player in this game', 403);
+  if (g.state !== 'end') throw new GameError('Results can be shared once the game is over', 409);
+  return { name: p.name, avatar: p.avatar, rank: p.rank, players: ps.length, score: p.score, title: g.quiz.title || 'Untitled quiz', theme: themeOf(g.quiz.theme) };
+}
+
 
 /** A validated copy of a quiz with only known fields, trimmed to size. Throws if the quiz can't be played. */
 export function cleanQuiz(quiz: Quiz): Quiz {

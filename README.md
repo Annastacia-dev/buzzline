@@ -33,6 +33,14 @@ seconds each of those screens stays up (3 by default).
 Scoring: a correct answer is worth 500–1000 points (faster is more), ×2 on double-points questions,
 plus a streak bonus of +100 for each answer in a row (up to +500). A round ends early once everyone has answered.
 
+**Sharing a result**: when the game ends, each phone offers **Share your win** (or **Share my result**), **Play again**
+and a link to host a quiz of their own. Sharing uses the phone's share sheet, or copies the link where there isn't one.
+The link, `/r/<code>`, carries the player's name, avatar, place, score, the quiz title and theme, signed with a key
+derived from `SUPABASE_SECRET_KEY` (`lib/results.ts`). That means it needs no database table, keeps working after the
+game is cleaned up, and an edited link just shows "not found". `/api/result` only signs a result for a real player of
+a finished game. The page shows the result in the quiz's theme with a "make your own quiz" button. Its preview picture
+in chats is drawn at `/r/<code>/card` (`lib/og-result.tsx`). Result pages are `noindex`.
+
 ## Generate with AI
 
 In the quiz studio, **✨ Generate with AI** asks for a topic, number of questions (up to 20), seconds per question

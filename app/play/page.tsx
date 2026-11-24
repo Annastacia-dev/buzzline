@@ -15,6 +15,42 @@ const MOOD_DOODLE: Record<string, DoodleName> = { lobby: 'mascot', ready: 'stopw
 
 type Session = { id: string; token: string; pin: string };
 
+const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`;
+
+/** Game over on a phone: share your result (a link with its own preview card), play again, or host your own. */
+function EndActions({ v, session }: { v: PlayerView; session: Session }) {
+  const [status, setStatus] = useState<'idle' | 'busy' | 'copied' | 'error'>('idle');
+  async function share() {
+    setStatus('busy');
+    try {
+      const { url } = await api<{ url: string }>('/api/result', session);
+      const link = `${location.origin}${url}`;
+      const text = v.rank === 1 ? `I won “${v.title}” on Buzzline 🏆` : `I came ${ordinal(v.rank)} of ${v.playerCount} in “${v.title}” on Buzzline`;
+      if (navigator.share) {
+        await navigator.share({ title: 'My Buzzline result', text, url: link });
+        setStatus('idle');
+      } else {
+        await navigator.clipboard.writeText(`${text} ${link}`);
+        setStatus('copied');
+      }
+    } catch (e) {
+      setStatus((e as Error).name === 'AbortError' ? 'idle' : 'error');
+    }
+  }
+  return (
+    <>
+      <div className="end-actions">
+        <button className="btn" onClick={share} disabled={status === 'busy'}>
+          {status === 'busy' ? 'Getting your link…' : status === 'copied' ? 'Link copied ✓' : v.rank === 1 ? '🏆 Share your win' : 'Share my result'}
+        </button>
+        <Link className="btn light" href="/join">Play again <span aria-hidden>→</span></Link>
+      </div>
+      {status === 'error' && <p className="error" role="alert">Couldn&apos;t make a link, try again.</p>}
+      <p className="end-host">Loved it? <Link href="/host?ai">Host your own quiz, free →</Link></p>
+    </>
+  );
+}
+
 export default function PlayPage() {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
@@ -238,7 +274,7 @@ function Player({ v, session }: { v: PlayerView & { at: number }; session: Sessi
           </Scallop>
           <h1>{podium ? <>On the <em>podium!</em></> : <>Nice <em>playing!</em></>}</h1>
           <p>{v.score.toLocaleString()} points</p>
-          <Link className="btn" href="/join">Play again <span aria-hidden>→</span></Link>
+          <EndActions v={v} session={session} />
         </div>
       );
       break;
