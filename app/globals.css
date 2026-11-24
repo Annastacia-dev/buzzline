@@ -683,6 +683,50 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=doodlebug] .field, .qstage[data-theme=doodlebug] .ans-edit input[type=text] { font-family: var(--font-main); }
 
 /* theme picker in the studio toolbar: a dropdown with a swatch per theme */
+/* Style picker: one button for theme + decoration + falling effect, opening a panel (app/host/StylePicker.tsx) */
+.style-pick { flex-shrink: 0; }
+.style-pick .qsel-btn { min-width: 150px; }
+.style-pick .sw { display: grid; grid-template-columns: 1fr 1fr; width: 22px; height: 22px; flex: none; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px var(--ink); }
+.style-pick .sw i, .style-theme-sw i { display: block; }
+.style-extras { flex: none; font-size: 15px; letter-spacing: 1px; }
+.style-panel {
+  position: absolute; z-index: 50; top: calc(100% + 8px); right: 0; width: min(420px, calc(100vw - 32px));
+  display: grid; gap: 16px; padding: 18px; background: var(--paper); color: var(--ink); border-radius: 24px;
+  box-shadow: 0 0 0 1.5px var(--ink), 0 18px 40px rgba(22, 22, 22, .18);
+  animation: qsel-in .16s cubic-bezier(.3, 1.4, .5, 1); transform-origin: top right;
+}
+.style-section { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+.style-section legend { padding: 0; margin-bottom: 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.style-themes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.style-theme { display: grid; justify-items: center; gap: 6px; padding: 8px 4px; border-radius: 16px; cursor: pointer; border: 1.5px solid transparent; font-size: 13px; text-align: center; }
+.style-theme:hover { border-color: var(--line); }
+.style-theme.on { border-color: var(--ink); background: var(--butter); }
+.style-theme-sw { display: grid; grid-template-columns: 1fr 1fr; width: 42px; height: 42px; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1.5px var(--ink); }
+.style-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.style-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; cursor: pointer; font-size: 14px; font-weight: 700;
+  border: 1.5px solid var(--line); background: var(--paper); }
+.style-chip:hover { border-color: var(--ink); }
+.style-chip.on { border-color: var(--ink); background: var(--lilac); }
+.style-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+/* Radios stay focusable for the keyboard but are drawn as the chips and cards around them. */
+:is(.style-theme, .style-chip, .team-switch label) input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+:is(.style-theme, .style-chip, .team-switch label):has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+/* Solo / Teams switch */
+.team-switch { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.seg { display: inline-flex; padding: 4px; gap: 2px; border-radius: 999px; background: var(--paper); border: 1.5px solid var(--line); }
+.seg label { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 15px; white-space: nowrap; }
+.seg label.on { background: var(--butter); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.seg-n label { padding: 8px 12px; min-width: 36px; justify-content: center; }
+@media (max-width: 560px) {
+  /* On a phone the panel is a sheet along the bottom of the screen, wherever the button wrapped to. */
+  .style-panel { position: fixed; top: auto; left: 12px; right: 12px; bottom: 12px; width: auto; max-height: 80vh; overflow-y: auto;
+    transform-origin: bottom center; box-shadow: 0 0 0 1.5px var(--ink), 0 -10px 40px rgba(22, 22, 22, .25); }
+  .style-themes { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .style-theme { font-size: 11.5px; padding: 6px 2px; }
+  .style-theme-sw { width: 36px; height: 36px; }
+}
+
 .theme-pick { flex-shrink: 0; }
 .theme-pick .qsel-btn { min-width: 170px; }
 .theme-pick .qsel-list { left: auto; right: 0; min-width: 300px; transform-origin: top right; }

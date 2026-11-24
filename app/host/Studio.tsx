@@ -12,13 +12,14 @@ import { api, Shape } from '@/lib/client';
 import { shrinkImage } from '@/lib/images';
 import { GridReveal, clearedAt } from '@/lib/reveal';
 import { Doodle } from '@/lib/doodles';
-import { THEMES, themeOf, DEFAULT_THEME, type ThemeId } from '@/lib/themes';
+import { themeOf, DEFAULT_THEME, type ThemeId } from '@/lib/themes';
 import { KINDS, kindOf, orderShown } from '@/lib/kinds';
-import { TEAMS, validTeams } from '@/lib/teams';
+import { validTeams } from '@/lib/teams';
 import type { QuestionKind } from '@/lib/types';
 import { mergeLibraries, newSyncSecret, validSyncSecret, type Library, type Tombstone } from '@/lib/sync';
 import SyncDialog from './SyncDialog';
-import { EFFECTS, FALLS, SeasonalEffect, effectsOf, type EffectId, type FallId } from '@/lib/effects';
+import { StylePicker, TeamSwitch } from './StylePicker';
+import { SeasonalEffect, effectsOf, type EffectId, type FallId } from '@/lib/effects';
 
 const KEY = 'bz.quizzes';
 const THEME_KEY = 'bz.theme';
@@ -446,20 +447,8 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
         <section className="editor">
           <div className="editor-top">
             <input className="field" value={quiz.title} onChange={e => update(z => ({ ...z, title: e.target.value }))} placeholder="Quiz title" aria-label="Quiz title" title="Click to rename" maxLength={120} />
-            <QuizSelect className="theme-pick" label="Quiz theme" value={theme} onChange={setTheme}
-              options={THEMES.map(t => ({
-                value: t.id, label: t.name, hint: t.blurb,
-                icon: <span className="sw">{t.swatch.map((c, k) => <i key={k} style={{ background: c }} />)}</span>,
-              }))} />
-            <QuizSelect className="effect-pick" label="Decoration" value={effect} onChange={setEffect}
-              options={EFFECTS.map(e => ({ value: e.id, label: e.name, icon: e.icon, hint: e.hint }))} />
-            <QuizSelect className="fall-pick" label="Falling effect" value={fall} onChange={setFall}
-              options={FALLS.map(e => ({ value: e.id, label: e.name, icon: e.icon, hint: e.hint }))} />
-            <QuizSelect className="team-pick" label="Solo or teams" value={teams} onChange={setTeams}
-              options={[
-                { value: 0, label: 'Solo', icon: '🙋', hint: 'Everyone for themselves' },
-                ...[2, 3, 4].map(n => ({ value: n, label: `${n} teams`, icon: TEAMS.slice(0, n).map(t => t.emoji).join(''), hint: 'Players are split into teams as they join. A team scores the average of its players.' })),
-              ]} />
+            <StylePicker theme={theme} effect={effect} fall={fall} onTheme={setTheme} onEffect={setEffect} onFall={setFall} />
+            <TeamSwitch teams={teams} onChange={setTeams} />
             <button className="btn" onClick={() => onHost({ ...quiz, theme, effect, fall }, teams)}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div className="editor-bar">
