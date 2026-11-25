@@ -128,6 +128,8 @@ all side by side.
   wrong, gold for the podium). The QR card stays white so it scans.
 - **Retro**: an old desktop. Grey windows with blue title bars, bevelled buttons, a blocky progress bar, VT323 and
   Silkscreen pixel type, a pixel mouse pointer, and pixel-art illustrations (`lib/pixels.tsx`) with a computer mascot.
+- **Receipt**: till receipts hanging from a printer slot over a grey counter: shaded paper, torn edges, dashed lines,
+  Space Mono, a barcode timer, and answers on carbon-copy sheets (white, pink, yellow, blue).
 
 ### Seasonal effects
 
