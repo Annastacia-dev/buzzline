@@ -96,7 +96,8 @@ and difficulty. `app/api/generate` sends that to Claude (`claude-opus-5-5`, stru
 checks every question for its type and the new quiz opens in the editor for changes. Pick any **question types**: multiple
 choice, true or false, type answer and put in order (all on to start with). Multiple choice gets
 the biggest share. Picture questions are never put-in-order. Each difficulty is spelled out as who should be
-able to answer (`LEVELS`), and hard quizzes get more thinking time.
+able to answer (`LEVELS`), and hard quizzes get more thinking time. Topics that don't suit all ages are rejected with
+a message: Claude judges the topic before writing (`suitable`), and educational topics such as wars or biology are fine.
 
 **🖼 Questions with pictures** can be *None*, *Some* (a percentage you set, spread through the quiz) or *All* (also set by a 🖼 topic
 idea such as *Flags of the world*). Claude writes each picture question about the picture ("Which country's flag is this?") without naming the answer, plus the words of a
