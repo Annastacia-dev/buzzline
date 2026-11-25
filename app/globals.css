@@ -125,6 +125,8 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .phone footer { margin: 0 12px 12px; background: var(--ink); color: #fff; border-radius: 999px; padding: 12px 20px; }
 .phone main { flex: 1; display: flex; flex-direction: column; padding: 4px 14px 14px; gap: 14px; min-height: 0; }
 .msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; }
+.phone main:has(> .msg) { overflow: clip auto; } /* a message taller than the screen scrolls instead of running under the name bar */
+.phone main > .msg { flex: 1 0 auto; max-width: 100%; }
 .msg h1 { font-size: 40px; line-height: 1; }
 .msg p { margin: 0; font-size: 18px; }
 .qtext { text-align: center; font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.2; letter-spacing: -0.02em; }
@@ -843,7 +845,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -891,7 +893,12 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 /* phone: end-of-game buttons */
 .end-actions { display: grid; gap: 10px; width: min(300px, 100%); margin-top: 6px; }
 .end-actions .btn { justify-content: center; }
-.end-host { display: grid; gap: 4px; justify-items: center; margin-top: 10px; font-size: 14px; color: var(--muted); }
+.phone[data-mood=end] .msg { gap: 10px; }
+.phone[data-mood=end] .msg > .shapebox { zoom: .8; }
+.phone .end-actions { grid-template-columns: 1fr 1fr; width: min(340px, 100%); }
+.phone .end-actions > :first-child { grid-column: 1 / -1; }
+.phone .end-actions > :not(:first-child) { padding: 13px 8px; gap: 6px; font-size: 15px; white-space: normal; line-height: 1.15; }
+.end-host { display: flex; flex-wrap: wrap; gap: 2px 6px; justify-content: center; margin-top: 6px; font-size: 14px; color: var(--muted); }
 .end-host a { color: var(--ink); font-weight: 700; }
 
 /* ---------- question types: type the answer, put in order, polls ---------- */
@@ -1429,6 +1436,9 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .phone[data-theme=retro] .msg h1 { font-size: 32px; }
 .phone[data-theme=retro] .bignum { font-family: var(--font-main) !important; font-size-adjust: ex-height .52; } /* the blocky # is hard to read */
 .phone[data-theme=retro][data-mood=lobby] .msg { gap: 8px; }
+.phone[data-theme=retro][data-mood=end] .msg { gap: 6px; }
+.phone[data-theme=retro][data-mood=end] .msg > .shapebox { zoom: .55; }
+.phone[data-theme=retro][data-mood=end] .end-host { margin-top: 0; }
 .phone[data-theme=retro][data-mood=lobby] .msg > .avatar { zoom: .6; }
 .phone[data-theme=retro][data-mood=lobby] .msg p { font-size: 15px; }
 .phone[data-theme=retro][data-mood=lobby] .avatar-pick { justify-items: center; }
@@ -1575,6 +1585,565 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 [data-theme=receipt] .flash { --tilt: 0deg !important; }
 [data-theme=receipt] .flash-deck::before, [data-theme=receipt] .flash-deck::after { display: none; }
 [data-theme=receipt] .flash-deck { padding-bottom: 14px; }
+
+/* ---------- Polaroid: a photo album. White frames with a thick bottom margin, handwritten captions, masking tape ----------
+   --photo is the colour of a picture inside its frame; --tape and --tape-edge draw a torn strip of tape. */
+[data-theme=polaroid] {
+  --bg: #d9c5a3; --paper: #fffdf8; --ink: #35291f; --muted: #64513d; --line: #d8cbb4;
+  --butter: #f6e3ad; --butter-ink: #7a5300;
+  --sage:   #cfe0c3; --sage-ink:   #33602f;
+  --olive:  #cdbd93;
+  --lilac:  #dcd6ea; --lilac-ink:  #574489;
+  --peri:   #c9dbe8; --peri-ink:   #2a5475;
+  --pink:   #f3cfc6; --pink-ink:   #a13c2a;
+  --peach:  #f4d9bd; --peach-ink:  #8f4d17;
+  --mint:   #cfe3d8; --mint-ink:   #28604a;
+  --coral:  #efb9ab; --coral-ink:  #a13c2a;
+  --good: #3f7d3a; --bad: #b8432f;
+  --font-display: var(--font-hand-display), var(--font-hand), cursive;
+  --font-main: var(--font-hand), cursive;
+  --radius: 3px;
+  --frame: 0 1px 2px rgba(60, 40, 20, .3), 0 10px 18px -5px rgba(60, 40, 20, .42);
+  --tape: linear-gradient(90deg, rgba(255, 255, 255, .25), transparent 18% 82%, rgba(255, 255, 255, .2)), rgba(238, 219, 158, .86);
+  --tape-edge: polygon(0 0, 3% 17%, 0 33%, 3% 50%, 0 67%, 3% 83%, 0 100%, 100% 100%, 97% 83%, 100% 67%, 97% 50%, 100% 33%, 97% 17%, 100% 0);
+  --album: radial-gradient(circle at 20% 15%, rgba(255, 245, 220, .5), transparent 55%), repeating-linear-gradient(92deg, rgba(90, 60, 25, .045) 0 1px, transparent 1px 5px), repeating-linear-gradient(1deg, rgba(90, 60, 25, .035) 0 1px, transparent 1px 7px), var(--page, #d4bd97);
+  font-family: var(--font-main);
+  color: var(--ink);
+  font-synthesis: none;          /* handwriting has one weight */
+  font-size-adjust: ex-height .5; /* hand fonts run small */
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=polaroid], [data-theme=polaroid] .countdown-overlay { background: var(--album); }
+.phone[data-theme=polaroid][data-mood=ready] { --page: #bccbd3; }
+.phone[data-theme=polaroid][data-mood=locked] { --page: #cfc6db; }
+.phone[data-theme=polaroid][data-mood=good] { --page: #bcd0ac; }
+.phone[data-theme=polaroid][data-mood=bad] { --page: #e0b5a6; }
+.phone[data-theme=polaroid]:is([data-mood=rank], [data-mood=end]) { --page: #e2c98b; }
+.phone[data-theme=polaroid] { position: relative; }
+.phone[data-theme=polaroid] > :is(header, main, footer) { position: relative; z-index: 1; }
+
+[data-theme=polaroid] :is(h1, h2, h3, .bignum, .stage-q, .logo, .qtext, .pin) { font-weight: 400; letter-spacing: 0; }
+[data-theme=polaroid] em, [data-theme=polaroid] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; color: #a33a26; }
+
+/* white card, nothing rounder than a print's corner */
+[data-theme=polaroid] :is(.tile, .tile .shape, .pans-tile, .stat, .qr, .chip, .row, .card, .kpi, .podium .block, .bars .col, .flash, .q-img, .stage-img, .phone-img, .reveal, .team-col, .solution-order li, .type-prompt, .type-answer,
+  .locked-text, .join-quiz-tag, .avatar-pick > div, .ans-edit label, .ans-edit input[type=text], .field, footer, .shapebox, .chip .avatar, .podium .avatar) { border-radius: 3px !important; }
+[data-theme=polaroid] :is(.stage-q, .pinbox, .stat, .row, .kpi, .chip, .flash, .team-col, .solution-order li, .type-prompt, .type-answer, .join-quiz-tag, .qcard), .join-page[data-theme=polaroid] form.card, [data-theme=polaroid] .card {
+  background-color: var(--paper) !important; border: 0; box-shadow: var(--frame);
+}
+
+/* the big cards: a thick bottom margin, a little tilt, and a strip of masking tape */
+[data-theme=polaroid] :is(.stage-q, .pinbox, .flash), .join-page[data-theme=polaroid] form.card, .phone[data-theme=polaroid] .msg { position: relative; border-radius: 3px; }
+[data-theme=polaroid] :is(.stage-q, .pinbox, .flash, .stat)::before, .join-page[data-theme=polaroid] form.card::before, .phone[data-theme=polaroid] .msg::before, [data-theme=polaroid] .shapebox:has(> div)::before {
+  content: ''; position: absolute; z-index: 2; top: -15px; left: 50%; width: 120px; height: 30px; translate: -50% 0; rotate: -3deg;
+  background: var(--tape); clip-path: var(--tape-edge); pointer-events: none;
+}
+[data-theme=polaroid] .stage-q { rotate: -.5deg; margin: 8px 14px 0; padding-bottom: 46px; }
+[data-theme=polaroid] .pinbox { rotate: .5deg; margin-top: 4px; padding-block: 16px 30px; }
+[data-theme=polaroid] .stat { position: relative; rotate: 2deg; padding-bottom: 26px; }
+[data-theme=polaroid] .stat::before { width: 64px; height: 22px; top: -11px; rotate: 4deg; }
+[data-theme=polaroid] .stage-top > .stat { rotate: -2deg; }
+.join-page[data-theme=polaroid] form.card { rotate: -1deg; padding: 28px 16px 40px !important; }
+[data-theme=polaroid] .join-quiz-tag { rotate: 2deg; }
+[data-theme=polaroid] .qr { rotate: -2deg; background: #fff; box-shadow: 0 0 0 1px var(--line); padding-bottom: 14px; }
+[data-theme=polaroid] .pinbox .label { color: var(--muted); }
+
+/* pictures are prints */
+[data-theme=polaroid] :is(.stage-img, .reveal, .q-img) { border: 12px solid #fffdf8; border-bottom-width: 44px; box-shadow: var(--frame); }
+[data-theme=polaroid] :is(.stage-img, .reveal-stage) { rotate: 1.2deg; }
+[data-theme=polaroid] :is(.phone-img, .reveal-phone) { border: 6px solid #fffdf8; border-bottom-width: 20px; box-shadow: var(--frame); rotate: -1deg; }
+[data-theme=polaroid] .reveal-tile { box-shadow: inset 0 0 0 1px rgba(255, 253, 248, .6); }
+[data-theme=polaroid] .reveal-tile span { color: #fff; opacity: .9; }
+
+/* answers: four prints, each a colour with its shape, and the answer written underneath */
+[data-theme=polaroid] .c0 { --photo: linear-gradient(150deg, #7ab0d4, #3f78a8); --deep: #2a5c86; background: var(--photo); }
+[data-theme=polaroid] .c1 { --photo: linear-gradient(150deg, #ee9a80, #c65240); --deep: #a13c2a; background: var(--photo); }
+[data-theme=polaroid] .c2 { --photo: linear-gradient(150deg, #a4c88d, #5d8f55); --deep: #33602f; background: var(--photo); }
+[data-theme=polaroid] .c3 { --photo: linear-gradient(150deg, #f2cd72, #cd922f); --deep: #7a5300; background: var(--photo); }
+[data-theme=polaroid] :is(.tile, .pans-tile) { background: var(--paper); color: var(--ink); box-shadow: var(--frame); overflow: visible; font-weight: 400; }
+[data-theme=polaroid] .tile:not(:has(> .shape)) { border-left: 18px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--photo) border-box; }
+[data-theme=polaroid] .tile:has(> .shape) { flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: center; gap: 10px; padding: 10px 10px 16px; }
+[data-theme=polaroid] .tile > .shape { width: 100%; height: 0; min-height: 60px; flex: 1 1 70px; padding: 14px; box-sizing: border-box; background: var(--photo); fill: #fff; filter: none; }
+[data-theme=polaroid] .tile > .shape + span { overflow-wrap: anywhere; line-height: 1.15; }
+[data-theme=polaroid] .card .tile:has(> .shape):not(.answers *) { padding: 6px 6px 8px; gap: 6px; }
+[data-theme=polaroid] .card .tile > .shape:not(.answers *) { width: 100%; height: 46px; min-height: 0; flex: none; padding: 8px; }
+.stage[data-theme=polaroid] .answers:has(.tile > .shape) { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px; padding: 0 8px; }
+.stage[data-theme=polaroid] .answers .tile:has(> .shape) { min-height: 190px; }
+.stage[data-theme=polaroid] .answers .tile > .shape { height: 0; width: 100%; padding: 22px; }
+[data-theme=polaroid] .answers .tile:has(> .shape):nth-child(4n+1) { rotate: -1.6deg; }
+[data-theme=polaroid] .answers .tile:has(> .shape):nth-child(4n+2) { rotate: 1.2deg; }
+[data-theme=polaroid] .answers .tile:has(> .shape):nth-child(4n+3) { rotate: -.8deg; }
+[data-theme=polaroid] .answers .tile:has(> .shape):nth-child(4n+4) { rotate: 1.8deg; }
+[data-theme=polaroid] .answers .tile:has(> .shape)::before { content: ''; position: absolute; top: -10px; left: 50%; width: 68px; height: 22px; translate: -50% 0; rotate: 3deg; background: var(--tape); clip-path: var(--tape-edge); }
+[data-theme=polaroid] .tile.right { box-shadow: 0 0 0 4px var(--good), var(--frame); }
+[data-theme=polaroid] .tile .tick { position: absolute; top: 18px; right: 18px; background: var(--good); color: #fff; }
+.phone[data-theme=polaroid] .answers { gap: 16px; padding: 10px 4px 4px; }
+.phone[data-theme=polaroid] .msg .tile { width: 130px; height: 150px; padding: 10px 10px 34px !important; flex: none; rotate: -3deg; }
+[data-theme=polaroid] .pans-tile { position: relative; padding: 8px 12px 8px 8px; }
+[data-theme=polaroid] .pcard.flash .pans-tile { border: 0; box-shadow: 0 0 0 1px var(--line), 0 4px 8px -3px rgba(60, 40, 20, .3); padding: 8px 14px 8px 8px; }
+[data-theme=polaroid] .pans-tile > :first-child { box-sizing: border-box; width: 60px !important; height: 60px !important; padding: 16px; background: var(--photo); fill: #fff; color: #fff; border-radius: 2px; }
+[data-theme=polaroid] .ans-edit input[type=text] { color: var(--ink); background: rgba(255, 253, 248, .92); }
+[data-theme=polaroid] .ans-edit .ans-tag { color: #fff; }
+[data-theme=polaroid] .solution-order li { background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--photo, var(--line)) border-box !important; border-left: 14px solid transparent; }
+[data-theme=polaroid] .bars .col { border: 5px solid #fffdf8; box-shadow: var(--frame); color: #fff; }
+
+/* players are little prints too */
+[data-theme=polaroid] .chip { background: var(--paper) !important; }
+[data-theme=polaroid] .stage .chips .chip, .stage[data-theme=polaroid] > .chips .chip { display: grid; justify-items: center; gap: 6px; padding: 8px 10px 10px; font-size: 19px; min-width: 84px; }
+.stage[data-theme=polaroid] > .chips .chip .avatar { zoom: 1.5; }
+.stage[data-theme=polaroid] > .chips { gap: 18px; padding-top: 6px; }
+[data-theme=polaroid] .chip:hover { background: #efb9ab !important; }
+[data-theme=polaroid] .row { font-weight: 400; }
+[data-theme=polaroid] .row:nth-child(odd) { rotate: -.4deg; } [data-theme=polaroid] .row:nth-child(even) { rotate: .4deg; }
+[data-theme=polaroid] .podium .who { background: var(--paper); padding: 12px 12px 10px; box-shadow: var(--frame); position: relative; }
+[data-theme=polaroid] .podium > :nth-child(1) .who { rotate: -2.5deg; } [data-theme=polaroid] .podium > :nth-child(3) .who { rotate: 2.5deg; }
+[data-theme=polaroid] .podium .block { background: var(--paper) !important; box-shadow: var(--frame); }
+[data-theme=polaroid] .podium > .first .block { background: #f6e3ad !important; }
+
+/* labels, fields, buttons */
+[data-theme=polaroid] .pill { background: var(--tape); box-shadow: none; border-radius: 0; clip-path: polygon(0 0, 5px 25%, 0 50%, 5px 75%, 0 100%, 100% 100%, calc(100% - 5px) 75%, 100% 50%, calc(100% - 5px) 25%, 100% 0); padding-inline: 16px; font-size: 16px; }
+[data-theme=polaroid] .pill.dark { background: #6e8fa5; color: #fff; }
+[data-theme=polaroid] :is(.field, .tabs) { border: 0 !important; border-bottom: 2px solid #b8a482 !important; background: #f8f1e2; box-shadow: none; }
+[data-theme=polaroid] .field:focus { outline: 2px solid #6e8fa5; outline-offset: 2px; }
+[data-theme=polaroid] .btn { background: #35291f; color: #fffdf8; font-weight: 400; border-radius: 6px; font-size: 1.1em; }
+[data-theme=polaroid] :is(.btn.light, .btn.ghost) { background: var(--paper); color: var(--ink); box-shadow: var(--frame); }
+[data-theme=polaroid] .btn:is(.danger, .danger-solid) { background: #b8432f; color: #fff; box-shadow: none; }
+[data-theme=polaroid] .bar { height: 14px; border-radius: 0; background: rgba(255, 253, 248, .6); }
+[data-theme=polaroid] .bar > div { border-radius: 0; background: #a33a26; }
+[data-theme=polaroid] .ring { background: var(--paper); box-shadow: var(--frame); }
+[data-theme=polaroid] .avatar-pick > div { background: #f2e8d3; }
+
+/* Classic's blobs go; a countdown badge becomes a print */
+[data-theme=polaroid] .shapebox > svg { display: none; }
+[data-theme=polaroid] .shapebox:has(> div) { background: linear-gradient(150deg, #f8e8c4, #e7c99a) 10px 10px / calc(100% - 20px) calc(100% - 44px) no-repeat, var(--paper); padding-bottom: 34px; box-shadow: var(--frame); rotate: -2deg !important; }
+[data-theme=polaroid] .shapebox::before { width: 70px !important; height: 24px !important; top: -12px !important; }
+[data-theme=polaroid] .pinbox > .sticker { display: none; } /* it would cover the QR code */
+
+/* phones: each message is a print stuck on the page */
+.phone[data-theme=polaroid] .msg { background: var(--paper); margin: 16px 8px 10px; padding: 26px 16px 44px; box-shadow: var(--frame); rotate: -.6deg; justify-content: safe center; min-height: 0; }
+.phone[data-theme=polaroid] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=polaroid][data-mood=end] .msg { gap: 8px; padding-block: 20px 14px; }
+.phone[data-theme=polaroid][data-mood=end] .msg > .shapebox { zoom: .62; }
+.phone[data-theme=polaroid][data-mood=lobby] .msg { gap: 8px; padding-bottom: 18px; }
+.phone[data-theme=polaroid][data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone[data-theme=polaroid][data-mood=lobby] .msg p { font-size: 15px; }
+.phone[data-theme=polaroid][data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone[data-theme=polaroid][data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
+.phone[data-theme=polaroid] footer { background: var(--paper); color: var(--ink); box-shadow: var(--frame); }
+
+/* studio preview */
+.qstage[data-theme=polaroid] { padding: 14px 22px 22px; overflow-x: hidden; border-radius: 12px; }
+[data-theme=polaroid] .pcard.flash { padding-bottom: 52px; }
+[data-theme=polaroid] .flash-deck::before, [data-theme=polaroid] .flash-deck::after { border: 0; border-radius: 3px; background: #f7f0e0; box-shadow: var(--frame); }
+
+/* ---------- Messages: a phone chat. Grey bubbles ask, coloured bubbles answer, and pills are timestamps ----------
+   --bub is a bubble's colour. A bubble is round with one tight corner: bottom left if received, bottom right if sent. */
+[data-theme=messages] {
+  --bg: #ffffff; --paper: #f1f1f4; --ink: #111114; --muted: #66666d; --line: #dcdce1;
+  --butter: #ffe9a8; --butter-ink: #7a5300;
+  --sage:   #cdf2d6; --sage-ink:   #14682c;
+  --olive:  #dff0c8;
+  --lilac:  #e4dcff; --lilac-ink:  #5a36b8;
+  --peri:   #d6e8ff; --peri-ink:   #0058b8;
+  --pink:   #ffdbe6; --pink-ink:   #b3194f;
+  --peach:  #ffe3cc; --peach-ink:  #974300;
+  --mint:   #cdf3ee; --mint-ink:   #0c6157;
+  --coral:  #ffd2cf; --coral-ink:  #b3211a;
+  --good: #1f8a3d; --bad: #d4281f; --blue: #0a7cff; --grey: #e8e8ea; --head: #f5f5f5; --label: #77777d;
+  --font-main: var(--font-chat), -apple-system, system-ui, sans-serif;
+  --font-display: var(--font-main);
+  --radius: 26px;
+  --chat: #fff;
+  font-family: var(--font-main); color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=messages], .phone[data-theme=messages][data-mood], [data-theme=messages] .countdown-overlay { background: var(--chat); }
+[data-theme=messages] :is(h1, h2, h3, .bignum, .stage-q, .logo, .qtext, .pin) { letter-spacing: -.02em; font-weight: 600; }
+[data-theme=messages] :is(.stage-q, .qtext) { font-weight: 500; }
+[data-theme=messages] em, [data-theme=messages] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; font-family: inherit; }
+.join-page[data-theme=messages] h1 em, .stage[data-theme=messages] :is(h1, h2) em { color: var(--blue); }
+
+/* the question is an incoming bubble */
+[data-theme=messages] :is(.stage-q, .tile, .pans-tile, .msg > h1, .msg > p, .msg > .qtext, .msg > .bignum) { position: relative; }
+[data-theme=messages] .stage-q { --bub: var(--grey); background: var(--bub); align-self: flex-start; max-width: 88%; min-width: 46%; text-align: left; border-radius: 34px 34px 34px 8px; padding: 26px 38px; }
+
+/* answers are outgoing bubbles, one colour each */
+[data-theme=messages] .c0 { --bub: #0a7cff; --deep: #0058b8; background: var(--bub); }
+[data-theme=messages] .c1 { --bub: #1f8a3d; --deep: #14682c; background: var(--bub); }
+[data-theme=messages] .c2 { --bub: #7a45dd; --deep: #5a36b8; background: var(--bub); }
+[data-theme=messages] .c3 { --bub: #d02a62; --deep: #b3194f; background: var(--bub); }
+[data-theme=messages] :is(.tile, .pans-tile) { color: #fff; font-weight: 600; border-radius: 26px; }
+[data-theme=messages] .answers .tile { border-radius: 28px 28px 7px 28px; font-weight: 500; }
+[data-theme=messages] .tile { overflow: visible; }
+[data-theme=messages] .tile .shape { background: rgba(255, 255, 255, .95); }
+[data-theme=messages] .tile.right { box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--good); }
+[data-theme=messages] .tile .tick { background: #fff; color: var(--good); }
+[data-theme=messages] .pans-tile > :first-child { fill: #fff; }
+.stage[data-theme=messages] { gap: 18px; padding-bottom: 18px; }
+.stage[data-theme=messages] .answers { gap: 12px 16px; }
+.stage[data-theme=messages] .answers .tile { min-height: 100px; }
+[data-theme=messages] .answers:has(.tile > .shape)::after { content: 'Delivered'; grid-column: 1 / -1; text-align: right; font-size: 15px; line-height: 1; color: var(--label); font-weight: 500; margin-top: -2px; }
+.phone[data-theme=messages] .answers { gap: 10px; padding: 0; }
+.phone[data-theme=messages] .answers::after { content: none !important; }
+[data-theme=messages] .order-n { background: #fff; color: var(--ink); }
+[data-theme=messages] .order-move button { background: rgba(255, 255, 255, .92); }
+[data-theme=messages] .solution-order li { background: var(--grey) !important; border-radius: 20px; }
+[data-theme=messages] .solution-order li b { background: var(--blue); color: #fff; }
+[data-theme=messages] .bars > div:nth-child(1) .shape { fill: #0a7cff; } [data-theme=messages] .bars > div:nth-child(2) .shape { fill: #1f8a3d; } [data-theme=messages] .bars > div:nth-child(3) .shape { fill: #7a45dd; } [data-theme=messages] .bars > div:nth-child(4) .shape { fill: #d02a62; }
+[data-theme=messages] .bars .col { color: #fff; }
+[data-theme=messages] .reveal-tile span { color: #fff; opacity: .9; }
+[data-theme=messages] :is(.stage-img, .phone-img, .reveal) { box-shadow: 0 0 0 1px var(--line); }
+[data-theme=messages] .ans-edit input[type=text] { color: var(--ink); background: rgba(255, 255, 255, .94); }
+[data-theme=messages] .ans-edit .ans-tag { color: #fff; }
+
+/* cards are contact cards, rows are notifications, players are contacts */
+[data-theme=messages] :is(.pinbox, .card, .flash, .qcard), .join-page[data-theme=messages] form.card { background: #fff; box-shadow: 0 0 0 1px var(--line), 0 14px 34px -14px rgba(20, 25, 50, .28); }
+.join-page[data-theme=messages] form.card { border-radius: 28px; background: #fff !important; }
+.join-page[data-theme=messages] .join-quiz-tag { border: 0; box-shadow: none; background: var(--grey); rotate: none; }
+[data-theme=messages] .pinbox .label { color: var(--muted); }
+[data-theme=messages] .pinbox .pin { color: var(--blue); }
+[data-theme=messages] .pinbox > .sticker { display: none; }
+[data-theme=messages] .qr { rotate: none; background: #fff; box-shadow: 0 0 0 1px var(--line); }
+[data-theme=messages] .qr span::before, [data-theme=messages] .logo .dot { background: var(--blue); }
+[data-theme=messages] :is(.row, .stat, .ring, .type-prompt, .type-answer, .team-bar) { background: #fff; box-shadow: 0 0 0 1px var(--line), 0 8px 20px -10px rgba(20, 25, 50, .25); }
+[data-theme=messages] .row { border-radius: 24px; }
+[data-theme=messages] .chip { rotate: none !important; border-radius: 999px; background: var(--grey) !important; font-weight: 600; }
+[data-theme=messages] .chip:hover { background: var(--coral) !important; }
+[data-theme=messages] .chip .avatar { box-shadow: 0 0 0 2px #fff; }
+[data-theme=messages] .podium .block { border-radius: 30px 30px 0 0; background: var(--grey) !important; }
+[data-theme=messages] .podium > .first .block { background: var(--blue) !important; color: #fff !important; }
+[data-theme=messages] .podium > .first .block * { color: #fff; }
+
+/* labels, fields, buttons */
+[data-theme=messages] .pill { background: rgba(120, 120, 135, .13); box-shadow: none; font-weight: 600; }
+[data-theme=messages] .pill.dark { background: var(--blue); color: #fff; }
+[data-theme=messages] .field { border: 1px solid #c9c9d0 !important; border-radius: 999px; background: #fff; }
+[data-theme=messages] textarea.field { border-radius: 20px; }
+[data-theme=messages] .field:focus { border-color: var(--blue); outline: 2px solid var(--blue); }
+[data-theme=messages] .btn { background: var(--blue); color: #fff; font-weight: 600; }
+[data-theme=messages] :is(.btn.light, .btn.ghost) { background: var(--grey); color: #0058b8; box-shadow: none; }
+[data-theme=messages] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; }
+[data-theme=messages] .bar > div { background: var(--blue); }
+
+/* Classic's blobs go; a badge becomes a contact photo */
+[data-theme=messages] .shapebox > svg { display: none; }
+[data-theme=messages] .shapebox:has(> div) { border-radius: 50%; background: #9a9eac; color: #fff; rotate: 0deg !important; }
+[data-theme=messages] .shapebox:has(> div) :is(.bignum, .result) { color: #fff; }
+
+/* phones: the screen is the thread. Headlines are sent, notes are received */
+
+/* the top bar is the chat's contact: a photo with the name underneath, and a back arrow on phones */
+[data-theme=messages] :is(header, .stage-top) .logo { display: block; text-align: center; font-size: 14px !important; font-weight: 500; letter-spacing: 0; line-height: 1.3; }
+[data-theme=messages] :is(header, .stage-top) .logo::before { content: 'BZ'; display: grid; place-items: center; width: 42px; height: 42px; margin: 0 auto 3px; border-radius: 50%; background: #9a9eac; color: #fff; font-size: 18px; font-weight: 600; }
+[data-theme=messages] :is(header, .stage-top) .logo::after { content: ' \203A'; color: var(--label); }
+[data-theme=messages] :is(header, .stage-top) .logo .dot { display: none; }
+.phone[data-theme=messages] header { position: relative; justify-content: center; padding: 8px 16px; background: var(--head); border-bottom: 1px solid #d3d3d6; }
+.phone[data-theme=messages] header::before { content: '\2039'; position: absolute; left: 16px; top: 50%; translate: 0 -56%; font-size: 44px; line-height: 1; font-weight: 400; color: var(--blue); }
+.phone[data-theme=messages] header .pill { font-size: 12px; padding: 7px 9px; }
+.phone[data-theme=messages] header > :last-child { position: absolute; right: 14px; top: 50%; translate: 0 -50%; }
+.stage[data-theme=messages] > .stage-top:has(.logo) { margin: -22px -32px 0; padding: 8px 32px; background: var(--head); border-bottom: 1px solid #d3d3d6; }
+@media (max-width: 760px) { .stage[data-theme=messages] > .stage-top:has(.logo) { margin: -16px -16px 0; padding: 8px 16px; } }
+.phone[data-theme=messages] main:has(.msg) { padding-top: 10px; }
+.phone[data-theme=messages] .msg::before { content: 'Buzzline\A Today'; white-space: pre; font-size: 13px; line-height: 1.5; font-weight: 500; color: var(--label); }
+[data-theme=messages][data-mood=locked] .msg > h1, [data-theme=messages][data-mood=good] .msg > .bignum { position: relative; margin-bottom: 18px; }
+[data-theme=messages][data-mood=locked] .msg > h1::after, [data-theme=messages][data-mood=good] .msg > .bignum::after { content: 'Delivered'; position: absolute; right: 4px; top: calc(100% + 5px); font-size: 13px; line-height: 1; font-weight: 500; letter-spacing: 0; color: var(--label); white-space: nowrap; }
+[data-theme=messages][data-mood=good] .msg > .bignum::after { content: 'Read'; }
+.phone[data-theme=messages] .msg { padding: 0 4px; gap: 9px; }
+.phone[data-theme=messages] .msg > * { flex-shrink: 0; }
+[data-theme=messages] .msg > :is(h1, .bignum) { --bub: var(--blue); align-self: flex-end; background: var(--bub); color: #fff; padding: 11px 18px 12px; border-radius: 24px 24px 5px 24px; text-align: left; max-width: 88%; }
+[data-theme=messages] .msg > h1 { font-size: 28px; line-height: 1.15; font-weight: 500; }
+[data-theme=messages] .msg > .bignum { font-size: 56px !important; }
+[data-theme=messages] .msg > :is(p, .qtext):not(.end-host, .muted) { --bub: var(--grey); align-self: flex-start; background: var(--bub); padding: 11px 18px 12px; border-radius: 22px 22px 22px 5px; text-align: left; max-width: 88%; }
+[data-theme=messages] .msg > :is(p, .qtext):empty { display: none; }
+[data-theme=messages][data-mood=good] .msg > :is(h1, .bignum) { --bub: var(--good); }
+[data-theme=messages][data-mood=bad] .msg > h1 { --bub: var(--bad); }
+[data-theme=messages] .msg .tile { align-self: flex-end; border-radius: 26px !important; }
+[data-theme=messages] .locked-text { align-self: flex-end; background: var(--blue); color: #fff; }
+.phone[data-theme=messages][data-mood=locked] .msg::after { /* someone is typing */
+  content: ''; align-self: flex-start; flex: none; width: 74px; height: 42px; border-radius: 22px; animation: busy 1.2s ease-in-out infinite;
+  background: radial-gradient(circle at 21px 50%, #8a8a90 5px, transparent 5.6px), radial-gradient(circle at 37px 50%, #a9a9ae 5px, transparent 5.6px), radial-gradient(circle at 53px 50%, #c4c4c8 5px, transparent 5.6px), var(--grey);
+}
+.phone[data-theme=messages] footer { position: relative; margin: 0 12px 12px 62px; padding: 7px 18px 7px 8px; background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px #c6c6c9; font-weight: 500; }
+.phone[data-theme=messages] footer::before { content: '+'; position: absolute; left: -50px; top: 50%; translate: 0 -50%; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--grey); color: #77777d; font-size: 26px; line-height: 1; font-weight: 400; }
+.phone[data-theme=messages][data-mood=end] .msg > .shapebox { zoom: .55; }
+.phone[data-theme=messages][data-mood=end] .msg { gap: 7px; }
+.phone[data-theme=messages] .avatar-pick > div { background: var(--paper); }
+
+/* studio preview */
+.qstage[data-theme=messages] { padding: 14px 22px 22px; border-radius: 20px; }
+[data-theme=messages] :is(.pcard.flash, .pcard.flash .pans-tile) { border: 0; }
+[data-theme=messages] .pcard.flash .pans-tile { box-shadow: none; }
+[data-theme=messages] .flash-deck::before, [data-theme=messages] .flash-deck::after { border: 0; background: var(--grey); }
+
+/* ---------- Comic: a comic book. Black-inked panels, halftone dots, speech bubbles and starbursts ----------
+   --page is the page colour, --dots the halftone screen over it; --burst cuts the starburst badges. */
+[data-theme=comic] {
+  --bg: #ffe066; --paper: #ffffff; --ink: #14110f; --muted: #544c40; --line: #14110f;
+  --butter: #ffd93b; --butter-ink: #14110f;
+  --sage:   #7ed67f; --sage-ink:   #0d4a1d;
+  --olive:  #a9d36a;
+  --lilac:  #c7b3ff; --lilac-ink:  #3b1d94;
+  --peri:   #8cc8ff; --peri-ink:   #0b3f80;
+  --pink:   #ff9ab8; --pink-ink:   #a50f45;
+  --peach:  #ffbf7a; --peach-ink:  #8a3a00;
+  --mint:   #8fe6d4; --mint-ink:   #0a5346;
+  --coral:  #ff8a7a; --coral-ink:  #9c1609;
+  --good: #158a3a; --bad: #d8231b; --red: #d8231b;
+  --font-display: var(--font-comic-display), Impact, sans-serif;
+  --font-main: var(--font-comic), 'Comic Sans MS', sans-serif;
+  --radius: 6px;
+  --dots: radial-gradient(circle, rgba(225, 80, 20, .28) 22%, transparent 24%) 0 0 / 12px 12px, radial-gradient(circle, rgba(225, 80, 20, .28) 22%, transparent 24%) 6px 6px / 12px 12px;
+  --burst: polygon(50.0% 1.0%, 57.2% 13.7%, 67.2% 8.4%, 70.6% 19.2%, 84.6% 15.4%, 80.8% 29.4%, 91.6% 32.8%, 86.3% 42.8%, 99.0% 50.0%, 86.3% 57.2%, 91.6% 67.2%, 80.8% 70.6%, 84.6% 84.6%, 70.6% 80.8%, 67.2% 91.6%, 57.2% 86.3%, 50.0% 99.0%, 42.8% 86.3%, 32.8% 91.6%, 29.4% 80.8%, 15.4% 84.6%, 19.2% 70.6%, 8.4% 67.2%, 13.7% 57.2%, 1.0% 50.0%, 13.7% 42.8%, 8.4% 32.8%, 19.2% 29.4%, 15.4% 15.4%, 29.4% 19.2%, 32.8% 8.4%, 42.8% 13.7%);
+  --panel: 5px 5px 0 rgba(20, 17, 15, .9);
+  font-family: var(--font-main); font-weight: 700; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=comic], .phone[data-theme=comic][data-mood], [data-theme=comic] .countdown-overlay {
+  background: radial-gradient(circle at 50% 42%, var(--page, #ffe066) 30%, transparent 85%), var(--dots), var(--page, #ffe066);
+}
+[data-theme=comic] .countdown-overlay, .phone[data-theme=comic]:is([data-mood=ready], [data-mood=good], [data-mood=end]) { /* speed lines */
+  background: radial-gradient(circle at 50% 45%, var(--page) 20%, transparent 70%), repeating-conic-gradient(from 3deg at 50% 45%, rgba(255, 255, 255, .55) 0 6deg, transparent 6deg 12deg), var(--page);
+}
+[data-theme=comic] .countdown-overlay, .phone[data-theme=comic][data-mood=ready] { --page: #7cc4ff; }
+.phone[data-theme=comic][data-mood=locked] { --page: #c7b3ff; }
+.phone[data-theme=comic][data-mood=good] { --page: #7ed67f; }
+.phone[data-theme=comic][data-mood=bad] { --page: #ff9a8a; }
+.phone[data-theme=comic][data-mood=rank] { --page: #ffbf7a; }
+.phone[data-theme=comic][data-mood=end] { --page: #ffd93b; }
+
+[data-theme=comic] :is(h1, h2, h3, .bignum, .stage-q, .logo, .qtext, .pin, .name, .stat b, .ring span, .bars > div, .podium .m, .row b) { font-weight: 400; letter-spacing: .03em; }
+[data-theme=comic] em, [data-theme=comic] .it { font: inherit; letter-spacing: inherit; color: var(--red); }
+[data-theme=comic] :is(.stage-q, .qtext) { line-height: 1.15; }
+[data-theme=comic] .logo .dot { background: var(--red); border: 2px solid var(--ink); width: 11px; height: 11px; }
+
+/* every panel: white, inked, with a hard shadow */
+[data-theme=comic] :is(.stage-q, .pinbox, .stat, .qr, .chip, .row, .card, .kpi, .flash, .type-prompt, .type-answer, .locked-text, :where(.solution-order li), .team-bar, .join-quiz-tag, .tile, .pans-tile, .stage-img, .phone-img, .reveal, .q-img, .quiz-title-pill),
+.join-page[data-theme=comic] form.card, .phone[data-theme=comic] .msg { border: 3px solid var(--ink); border-radius: 6px; box-shadow: var(--panel); }
+[data-theme=comic] :is(.stage-q, .stat, .row, .type-prompt, .type-answer, .join-quiz-tag, .locked-text, .team-bar) { background: var(--paper); }
+[data-theme=comic] .row { box-shadow: 4px 4px 0 var(--ink); }
+[data-theme=comic] .row:nth-child(1) { background: #ffd93b; }
+[data-theme=comic] .pinbox { background: #7cc4ff; border-width: 4px; }
+[data-theme=comic] .pinbox .label { color: var(--ink); }
+[data-theme=comic] .pinbox .pin { color: #fff; -webkit-text-stroke: 8px var(--ink); paint-order: stroke fill; }
+[data-theme=comic] .pinbox > .sticker { display: none; }
+[data-theme=comic] .qr { background: #fff; }
+.join-page[data-theme=comic] form.card { background: #7cc4ff !important; }
+[data-theme=comic] .quiz-title-pill { padding: 6px 14px; background: #fff; }
+
+/* the question is a speech bubble */
+[data-theme=comic] .stage-q { position: relative; border-width: 4px; border-radius: 40px; box-shadow: none; margin-bottom: 10px; }
+[data-theme=comic] .stage-q::before, [data-theme=comic] .stage-q::after { content: ''; position: absolute; left: 14%; top: 100%; width: 44px; height: 32px; background: var(--ink); clip-path: polygon(0 0, 100% 0, 10% 100%); }
+[data-theme=comic] .stage-q::after { left: calc(14% + 6px); top: calc(100% - 1px); width: 31px; height: 21px; background: var(--paper); }
+
+/* answers: four ink colours with a halftone corner */
+[data-theme=comic] .c0 { --deep: #a31209; --fill: #d8291f; background: var(--half), var(--fill); color: #fff; }
+[data-theme=comic] .c1 { --deep: #0b3f80; --fill: #1666c4; background: var(--half), var(--fill); color: #fff; }
+[data-theme=comic] .c2 { --deep: #6b4a00; --fill: #ffd21f; background: var(--half), var(--fill); color: var(--ink); }
+[data-theme=comic] .c3 { --deep: #0d5a24; --fill: #15803a; background: var(--half), var(--fill); color: #fff; }
+[data-theme=comic] :is(.c0, .c1, .c2, .c3) { --half: linear-gradient(115deg, var(--fill) 55%, transparent 90%), radial-gradient(circle, rgba(0, 0, 0, .3) 28%, transparent 30%) 0 0 / 9px 9px; }
+[data-theme=comic] .tile { font-weight: 700; }
+[data-theme=comic] .tile .shape { background: #fff; border: 3px solid var(--ink); }
+[data-theme=comic] .tile.right { box-shadow: 0 0 0 4px #fff, 0 0 0 9px var(--ink); }
+[data-theme=comic] .tile .tick { background: #fff; color: var(--good); border: 3px solid var(--ink); }
+[data-theme=comic] .pans-tile > :first-child { fill: currentColor; }
+[data-theme=comic] .order-n { background: #fff; color: var(--ink); border: 2px solid var(--ink); }
+[data-theme=comic] .order-move button { border: 2px solid var(--ink); }
+[data-theme=comic] .solution-order li { background: #fff; color: var(--ink); }
+[data-theme=comic] .bars > div:nth-child(1) .shape { fill: #d8291f; } [data-theme=comic] .bars > div:nth-child(2) .shape { fill: #1666c4; } [data-theme=comic] .bars > div:nth-child(3) .shape { fill: #8a6100; } [data-theme=comic] .bars > div:nth-child(4) .shape { fill: #15803a; }
+[data-theme=comic] .bars .col { border: 3px solid var(--ink); border-bottom-width: 6px; border-radius: 6px 6px 0 0; }
+[data-theme=comic] .reveal-tile { box-shadow: inset 0 0 0 1.5px var(--ink); }
+[data-theme=comic] .reveal-tile span { color: inherit; opacity: 1; }
+[data-theme=comic] .ans-edit label { border: 3px solid var(--ink); border-radius: 6px; }
+[data-theme=comic] .ans-edit input[type=text] { color: var(--ink); background: #fff; border-radius: 4px; }
+[data-theme=comic] .ans-edit .ans-tag { color: inherit; }
+
+[data-theme=comic] .chip:hover { background: var(--coral); }
+[data-theme=comic] .chip { box-shadow: 4px 4px 0 var(--ink); }
+[data-theme=comic] :is(.avatar, .ring, .row .r) { box-shadow: 0 0 0 3px var(--ink); }
+[data-theme=comic] .podium .block { border: 4px solid var(--ink); border-bottom: 0; border-radius: 6px 6px 0 0; }
+[data-theme=comic] .podium > .first .block { background: var(--dots), #ffd93b !important; }
+
+/* labels, fields, buttons */
+[data-theme=comic] .pill { border: 2.5px solid var(--ink); border-radius: 4px; box-shadow: none; font-weight: 700; }
+[data-theme=comic] .pill.dark { background: var(--red); color: #fff; }
+[data-theme=comic] .field { border: 3px solid var(--ink) !important; border-radius: 6px; background: #fff; font-weight: 700; }
+[data-theme=comic] .field:focus { outline: 3px solid #1666c4; outline-offset: 2px; }
+[data-theme=comic] .btn { background: var(--red); color: #fff; border: 3px solid var(--ink); border-radius: 6px; box-shadow: 4px 4px 0 var(--ink); font-family: var(--font-display); font-weight: 400; letter-spacing: .05em; font-size: 1.15em; }
+[data-theme=comic] :is(.btn.light, .btn.ghost) { background: #fff; color: var(--ink); }
+[data-theme=comic] .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+[data-theme=comic] .bar { height: 16px; background: #fff; border: 3px solid var(--ink); border-radius: 4px; }
+[data-theme=comic] .bar > div { background: var(--red); border-radius: 0; }
+
+/* Classic's blobs become starbursts */
+[data-theme=comic] .shapebox > svg { display: none; }
+[data-theme=comic] .shapebox:has(> div) { isolation: isolate; }
+[data-theme=comic] .shapebox:has(> div)::before, [data-theme=comic] .shapebox:has(> div)::after { content: ''; position: absolute; inset: -14%; z-index: -1; background: var(--ink); clip-path: var(--burst); }
+[data-theme=comic] .shapebox:has(> div)::after { inset: -8%; background: #ffd93b; }
+[data-theme=comic] .shapebox:has(> div) .bignum { color: var(--red); font-size: 64px; }
+
+/* phones: each message is a panel with a sound effect */
+.phone[data-theme=comic] .msg { background: var(--paper); margin: 4px 4px 8px; padding: 22px 14px; gap: 16px; }
+.phone[data-theme=comic] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=comic] .msg > .shapebox { margin-block: 16px; }
+.phone[data-theme=comic] .msg::before { font-family: var(--font-display); font-weight: 400; font-size: 54px; line-height: 1; letter-spacing: .04em; rotate: -5deg; color: #ffd93b; -webkit-text-stroke: 8px var(--ink); paint-order: stroke fill; }
+.phone[data-theme=comic][data-mood=good] .msg::before { content: 'POW!'; }
+.phone[data-theme=comic][data-mood=bad] .msg::before { content: 'OOPS!'; color: #ff6a58; }
+.phone[data-theme=comic][data-mood=locked] .msg::before { content: 'ZAP!'; color: #7cc4ff; }
+.phone[data-theme=comic][data-mood=bad] .msg { gap: 8px; padding-block: 14px; }
+.phone[data-theme=comic][data-mood=bad] .msg::before { font-size: 42px; }
+.phone[data-theme=comic][data-mood=bad] .msg > .shapebox { zoom: .65; }
+.phone[data-theme=comic] .msg .tile { border-radius: 6px !important; }
+.phone[data-theme=comic] footer { background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 6px; box-shadow: 4px 4px 0 var(--ink); padding-block: 9px; }
+[data-theme=comic] .avatar-pick > div { border: 2px solid var(--ink); border-radius: 6px; background: #fff3c4; }
+.phone[data-theme=comic][data-mood=end] .msg { gap: 8px; padding-block: 12px; }
+.phone[data-theme=comic][data-mood=end] .msg > .shapebox { zoom: .62; margin-block: 22px; }
+
+/* studio preview */
+.qstage[data-theme=comic] { padding: 14px 24px 24px; border-radius: 12px; overflow-x: hidden; }
+[data-theme=comic] .flash-deck::before, [data-theme=comic] .flash-deck::after { border: 3px solid var(--ink); border-radius: 6px; }
+
+/* ---------- Tarot: gilded cream cards dealt on a midnight cloth scattered with gold stars ----------
+   The theme's variables describe the cards (cream, plum ink); text lying straight on the cloth takes --moon instead.
+   --gilt is the double gold frame, --rays the sunburst behind an emblem. */
+[data-theme=tarot] {
+  --bg: #1c1438; --paper: #f7ecd0; --ink: #2b1c46; --muted: #665678; --line: #cfb477; --moon: #f6e6b8; --gold: #c79a3a;
+  --butter: #f0d48a; --butter-ink: #6b4700;
+  --sage:   #c6d8b4; --sage-ink:   #245224;
+  --olive:  #bdbf8a;
+  --lilac:  #d5c5ea; --lilac-ink:  #4c2b88;
+  --peri:   #bccbea; --peri-ink:   #233f80;
+  --pink:   #efc3c4; --pink-ink:   #8c1f3c;
+  --peach:  #f2cfa4; --peach-ink:  #7f3f0c;
+  --mint:   #bfe0d4; --mint-ink:   #14574a;
+  --coral:  #eab0a2; --coral-ink:  #8f2415;
+  --good: #2c6e38; --bad: #a2283a;
+  --font-display: var(--font-tarot-display), Georgia, serif;
+  --font-main: var(--font-tarot), Georgia, serif;
+  --radius: 14px;
+  --gilt: inset 0 0 0 5px var(--paper), inset 0 0 0 7px var(--gold), inset 0 0 0 10px var(--paper), inset 0 0 0 11px var(--gold), 0 10px 24px -6px rgba(5, 2, 20, .75);
+  --rays: repeating-conic-gradient(from 0deg, rgba(255, 238, 190, .26) 0 7.5deg, transparent 7.5deg 15deg);
+  font-family: var(--font-main); font-weight: 600; color: var(--ink);
+  font-variant-numeric: lining-nums; font-size-adjust: ex-height .46; /* the old-style serif runs small */
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=tarot], .phone[data-theme=tarot][data-mood], [data-theme=tarot] .countdown-overlay {
+  color: var(--moon);
+  background: radial-gradient(circle, #f3d98b 1.2px, transparent 1.8px) 12px 18px / 110px 130px, radial-gradient(circle, rgba(243, 217, 139, .75) 1px, transparent 1.5px) 70px 80px / 150px 110px,
+    radial-gradient(circle, rgba(255, 255, 255, .6) .8px, transparent 1.3px) 30px 60px / 87px 97px, radial-gradient(ellipse at 50% 0%, var(--glow, #4d3488), transparent 70%), var(--page, #1c1438);
+}
+.phone[data-theme=tarot][data-mood=locked] { --glow: #6a3f9e; }
+.phone[data-theme=tarot][data-mood=good] { --glow: #2f7a5b; --page: #0f2b2a; }
+.phone[data-theme=tarot][data-mood=bad] { --glow: #8c2f4a; --page: #2b1026; }
+.phone[data-theme=tarot]:is([data-mood=rank], [data-mood=end]) { --glow: #a3752a; --page: #2a1a2e; }
+
+[data-theme=tarot] :is(h1, h2, h3, .bignum, .stage-q, .logo, .qtext, .pin, .name) { font-weight: 700; letter-spacing: .01em; }
+[data-theme=tarot] em, [data-theme=tarot] .it { font: inherit; letter-spacing: inherit; color: #955f0c; }
+.stage[data-theme=tarot] :is(h1, h2) em, .join-page[data-theme=tarot] h1 em { color: #f0c65a; }
+[data-theme=tarot] .logo .dot { background: #f0c65a; border-radius: 0; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); width: 15px; height: 15px; }
+[data-theme=tarot] :is(.order-hint, .order-prompt > p, .bar-label, .team-note), :is(.qstage, .stage)[data-theme=tarot] .muted:not(:is(.flash, .card, .stat, .row, .type-answer) .muted), .join-page[data-theme=tarot] > :is(p, .muted) { color: #dccfa8; }
+.join-page[data-theme=tarot] > :not(form) a { color: var(--moon) !important; }
+
+/* gilded cards */
+[data-theme=tarot] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .tile), .join-page[data-theme=tarot] form.card, .phone[data-theme=tarot] .msg {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 14px; box-shadow: var(--gilt);
+}
+[data-theme=tarot] :is(.row, .chip, .qr, .ring, :where(.solution-order li), .team-bar, .team-col, .kpi) { background: var(--paper) !important; color: var(--ink); border-radius: 10px; box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 4px var(--gold), 0 6px 14px -4px rgba(5, 2, 20, .7); }
+[data-theme=tarot] .ring { border-radius: 50%; }
+[data-theme=tarot] .stage-q { padding-block: 28px 24px; }
+[data-theme=tarot] .stage-q::before { content: '☾ ✦ ☽'; display: block; font-size: 20px; line-height: 1; color: #955f0c; margin: -8px 0 8px; letter-spacing: .3em; font-family: Georgia, 'Segoe UI Symbol', serif; }
+[data-theme=tarot] .pinbox { background: var(--paper); padding: 24px 44px; }
+[data-theme=tarot] .pinbox .label { color: var(--muted); }
+[data-theme=tarot] .pinbox > .sticker { display: none; }
+[data-theme=tarot] .qr { rotate: none; background: #fffaf0 !important; }
+[data-theme=tarot] .join-quiz-tag { padding: 14px 24px; }
+.join-page[data-theme=tarot] form.card { padding: 26px 24px; }
+[data-theme=tarot] :is(.stage-img, .phone-img, .reveal, .q-img) { border: 3px solid var(--gold); border-radius: 10px; box-shadow: 0 0 0 5px var(--paper), 0 0 0 7px var(--gold), 0 12px 24px rgba(5, 2, 20, .6); }
+
+/* answers: four dealt cards, numbered I to IV, with the shape as the emblem in its arch */
+[data-theme=tarot] .c0 { --deep: #2b4a94; --night: #2b4a94; background: var(--night); }
+[data-theme=tarot] .c1 { --deep: #962a4a; --night: #962a4a; background: var(--night); }
+[data-theme=tarot] .c2 { --deep: #1f6b55; --night: #1f6b55; background: var(--night); }
+[data-theme=tarot] .c3 { --deep: #93600f; --night: #93600f; background: var(--night); }
+[data-theme=tarot] .tile { background: var(--paper); color: var(--ink); font-weight: 700; overflow: visible; }
+[data-theme=tarot] .pans-tile { color: #fff; border-radius: 10px; }
+[data-theme=tarot] .pans-tile > :first-child { fill: #f6e0a0; }
+[data-theme=tarot] .tile:not(:has(> .shape)) { border-left: 20px solid var(--night, var(--gold)); padding-left: 22px; }
+[data-theme=tarot] .tile:has(> .shape) { flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: center; gap: 8px; padding: 20px 20px 18px; }
+[data-theme=tarot] .tile > .shape { width: 100%; height: 0; min-height: 56px; flex: 1 1 70px; padding: 16px; box-sizing: border-box; border-radius: 80px 80px 4px 4px; background: var(--rays), var(--night); fill: #f9e3a4; box-shadow: 0 0 0 2px var(--gold); }
+[data-theme=tarot] .tile > .shape + span { overflow-wrap: anywhere; line-height: 1.15; }
+[data-theme=tarot] .answers { counter-reset: card; }
+[data-theme=tarot] .answers .tile:has(> .shape) { counter-increment: card; }
+[data-theme=tarot] .answers .tile:has(> .shape)::before { content: counter(card, upper-roman); font-family: var(--font-display); font-size: 17px; line-height: 1; color: #86590c; }
+.stage[data-theme=tarot] .answers:has(.tile > .shape) { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px; }
+.stage[data-theme=tarot] .answers .tile:has(> .shape) { min-height: 200px; }
+.stage[data-theme=tarot] .answers .tile > .shape { width: 100%; height: 0; padding: 20px; }
+.stage[data-theme=tarot] .answers .tile:has(> .shape):nth-child(4n+1) { rotate: -1.5deg; }
+.stage[data-theme=tarot] .answers .tile:has(> .shape):nth-child(4n+4) { rotate: 1.5deg; }
+.phone[data-theme=tarot] .answers .tile > .shape { width: 100%; height: 0; padding: 12px; }
+.phone[data-theme=tarot] .answers .tile:has(> .shape) { padding: 17px 17px 16px; }
+[data-theme=tarot] .card .tile:has(> .shape):not(.answers *) { padding: 14px 14px 12px; gap: 6px; border-radius: 10px; }
+[data-theme=tarot] .card .tile > .shape:not(.answers *) { width: 100%; height: 44px; min-height: 0; flex: none; padding: 8px; }
+[data-theme=tarot] .tile.right { box-shadow: var(--gilt), 0 0 0 5px #f0c65a, 0 0 34px 8px rgba(255, 214, 110, .55); }
+[data-theme=tarot] .tile .tick { position: absolute; top: 14px; right: 14px; background: var(--good); color: #fff; }
+[data-theme=tarot] .order-n, [data-theme=tarot] .solution-order li b { background: var(--ink); color: var(--moon); }
+[data-theme=tarot] .order-items .tile { box-shadow: 0 0 0 2px var(--gold), 0 6px 14px -4px rgba(5, 2, 20, .7); border-radius: 10px; }
+[data-theme=tarot] .bars .col { border: 2px solid var(--gold); color: #fff; border-radius: 40px 40px 4px 4px; }
+[data-theme=tarot] .bars .shape { fill: #f0c65a !important; }
+[data-theme=tarot] .reveal-tile { box-shadow: inset 0 0 0 1px var(--gold); }
+[data-theme=tarot] .reveal-tile span { color: #f9e3a4; opacity: 1; }
+[data-theme=tarot] .ans-edit label { border-radius: 10px; }
+[data-theme=tarot] .ans-edit input[type=text] { color: var(--ink); background: #fffaf0; border-radius: 6px; }
+[data-theme=tarot] .ans-edit .ans-tag { color: #fff; }
+
+/* players are little cards */
+.stage[data-theme=tarot] > .chips .chip { display: grid; justify-items: center; gap: 6px; padding: 14px 14px 12px; min-width: 88px; font-size: 19px; border-radius: 8px; }
+.stage[data-theme=tarot] > .chips .chip .avatar { zoom: 1.4; }
+[data-theme=tarot] .chip:hover { background: var(--coral) !important; }
+[data-theme=tarot] .avatar { box-shadow: 0 0 0 2px var(--gold); }
+[data-theme=tarot] .podium .block { background: var(--paper) !important; color: var(--ink); border-radius: 90px 90px 0 0; box-shadow: inset 0 0 0 5px var(--paper), inset 0 0 0 7px var(--gold); padding-top: 32px; }
+[data-theme=tarot] .podium > .first .block { background: var(--rays), #e9c568 !important; box-shadow: inset 0 0 0 5px #e9c568, inset 0 0 0 7px #7a5210, 0 0 50px rgba(255, 214, 110, .45); }
+
+/* labels, fields, buttons */
+[data-theme=tarot] .pill { background: rgba(16, 9, 38, .55); color: var(--moon); box-shadow: inset 0 0 0 1.5px var(--gold); font-weight: 700; font-size: 16px; }
+[data-theme=tarot] .sound-toggle { color: var(--moon); }
+[data-theme=tarot] :is(.msg, .card, .flash) .pill { background: #efdfb5; color: var(--ink); }
+[data-theme=tarot] :is(.pill.dark, .card .pill.dark, .flash .pill.dark) { background: var(--ink); color: var(--moon); }
+[data-theme=tarot] .field { border: 1.5px solid #b08a3c !important; border-radius: 8px; background: #fffaf0; color: var(--ink); font-weight: 600; }
+[data-theme=tarot] .field:focus { outline: 2px solid #4c2b88; outline-offset: 2px; }
+[data-theme=tarot] .btn { background: linear-gradient(#efcf7c, #cf9f3e); color: #2b1c46; border-radius: 10px; font-weight: 700; box-shadow: inset 0 0 0 1.5px #f9e7b0, 0 0 0 1.5px #8a6318; font-size: 1.08em; }
+[data-theme=tarot] :is(.btn.light, .btn.ghost) { background: #fffaf0; color: var(--ink); box-shadow: 0 0 0 1.5px #b08a3c; }
+[data-theme=tarot] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; }
+[data-theme=tarot] .bar { height: 12px; background: rgba(255, 240, 200, .18); box-shadow: 0 0 0 1.5px var(--gold); }
+[data-theme=tarot] .bar > div { background: linear-gradient(90deg, #c79a3a, #f6dd92); }
+
+/* Classic's blobs go; a badge becomes a sun */
+[data-theme=tarot] .shapebox > svg { display: none; }
+[data-theme=tarot] .shapebox:has(> div) { border-radius: 50%; background: var(--rays), #3a2568; box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 0 7px #3a2568, inset 0 0 0 8px var(--gold); rotate: 0deg !important; }
+[data-theme=tarot] .shapebox:has(> div) :is(.bignum, .result) { color: #f9e3a4; }
+
+/* phones: every moment is a card of the major arcana, with its name at the foot */
+.phone[data-theme=tarot] .msg { margin: 4px 8px 8px; padding: 26px 24px 22px; gap: 12px; }
+.phone[data-theme=tarot] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=tarot] .msg h1 { font-size: 34px; }
+.phone[data-theme=tarot] .msg::after { font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: .12em; color: #86590c; border-top: 1.5px solid var(--gold); padding-top: 8px; margin-top: 4px; width: 80%; }
+.phone[data-theme=tarot][data-mood=ready] .msg::after { content: 'X · WHEEL OF FORTUNE'; }
+.phone[data-theme=tarot][data-mood=locked] .msg::after { content: 'IX · THE HERMIT'; }
+.phone[data-theme=tarot][data-mood=good] .msg::after { content: 'XIX · THE SUN'; }
+.phone[data-theme=tarot][data-mood=bad] .msg::after { content: 'XVI · THE TOWER'; }
+.phone[data-theme=tarot][data-mood=rank] .msg::after { content: 'XVII · THE STAR'; }
+.phone[data-theme=tarot][data-mood=end] .msg::after { content: 'XXI · THE WORLD'; }
+.phone[data-theme=tarot] .msg .tile { width: 130px; height: 170px; flex: none; border-radius: 12px !important; padding: 18px !important; }
+.phone[data-theme=tarot] footer { background: rgba(16, 9, 38, .75); color: var(--moon); box-shadow: inset 0 0 0 1.5px var(--gold); border-radius: 12px; }
+.phone[data-theme=tarot] .avatar-pick > div { background: #efdfb5; border-radius: 10px; }
+.phone[data-theme=tarot][data-mood=end] .msg { gap: 7px; padding-block: 20px 16px; }
+.phone[data-theme=tarot][data-mood=end] .msg > .shapebox { zoom: .62; }
+
+/* studio preview */
+.qstage[data-theme=tarot] { padding: 14px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=tarot] .flash-deck::before, [data-theme=tarot] .flash-deck::after { border: 0; border-radius: 14px; background: #3a2568; box-shadow: inset 0 0 0 5px #3a2568, inset 0 0 0 6.5px var(--gold); }
+
+/* Messages, Comic and Tarot: the phone lobby shrinks so the avatar picker fits */
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .msg { gap: 8px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .msg p { font-size: 15px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
 
 /* ---------- Admin dashboard (/admin) ---------- */
 /* Series colors: validated for colorblind separation on white (dataviz validate_palette). Text never uses them. */

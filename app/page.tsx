@@ -17,7 +17,7 @@ const steps = [
 const features: { title: string; body: string; tint: string; ink: string; icon: IconName }[] = [
   { title: 'AI writes your quiz', body: 'Pick a topic, how many questions and how hard. Claude drafts it; you tweak what you like.', tint: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'sparkle' },
   { title: 'Free, no sign-up', body: 'Hosting and playing are free. No accounts, no app, no ads between rounds.', tint: 'var(--sage)', ink: 'var(--sage-ink)', icon: 'smile' },
-  { title: 'Seven themes', body: 'Classic, Doodlebug, Inkblot, Toybox, Glass, Retro or Receipt, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
+  { title: 'Eleven themes', body: 'From Classic pastels to Glass, Polaroid, Messages, Comic and Tarot, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
   { title: 'Speed scoring', body: '500 to 1,000 points per right answer, streak bonuses and double-points rounds.', tint: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'bolt' },
   { title: 'Pictures & grid reveal', body: 'Add a picture to any question, and reveal it tile by tile as the clock runs.', tint: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
   { title: 'Kahoot import', body: 'Bring a Kahoot-style spreadsheet, or share a quiz with a link.', tint: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'flame' },
@@ -32,6 +32,10 @@ const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: numbe
   glass: { q: 'Which gas makes up most of the air?', answers: ['Oxygen', 'Nitrogen', 'Argon', 'Helium'], right: 1, note: 'Glowing and dreamy. Looks stunning on a big screen in a dim room.' },
   retro: { q: 'How many bits are in a byte?', answers: ['Four', 'Eight', 'Ten', 'Sixteen'], right: 1, note: 'Boots up like a 90s computer. Great for tech teams and nostalgia nights.' },
   receipt: { q: 'Which country uses the yen?', answers: ['Japan', 'China', 'India', 'Peru'], right: 0, note: 'Printed fresh for every question. Fun for cafés, shops and finance teams.' },
+  polaroid: { q: 'Where is Machu Picchu?', answers: ['Chile', 'Mexico', 'Peru', 'Spain'], right: 2, note: 'Like flicking through an album. Lovely for birthdays, reunions and travel quizzes.' },
+  messages: { q: 'What does “brb” stand for?', answers: ['Be right back', 'Big red bus', 'Bring real bread', 'Best read before'], right: 0, note: 'Feels like the group chat. Fun for friends, teens and pop culture rounds.' },
+  comic: { q: 'Which of these is a sound word?', answers: ['Purple', 'Splash', 'Quickly', 'Cape'], right: 1, note: 'POW! Loud and punchy. Great for kids, film nights and big rooms.' },
+  tarot: { q: 'Which sign is a pair of twins?', answers: ['Leo', 'Virgo', 'Gemini', 'Aries'], right: 2, note: 'Moody and magical. Made for Halloween, astrology and late-night quizzes.' },
 };
 
 // Structured data for search engines and AI answer engines: the app itself, the site, and the FAQ below.
@@ -222,7 +226,7 @@ export default function Landing() {
                     ? <Scallop color="var(--pink)" size={120} rotate={-18} className={styles.themeDeco} />
                     : <Doodle theme={t.id} name="mascot" size={66} className={`bob ${styles.themeMascot}`} />}
                   <div className={`card ${styles.themeCard}`}>
-                    <div className={styles.liveTop}><span className="pill dark">Q {i + 2} / 10</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10, 14][i]}</span></div>
+                    <div className={styles.liveTop}><span className="pill dark">Q {i + 1} / 12</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10, 14, 8, 13, 6, 16][i]}</span></div>
                     <div className={styles.liveQ}>{ex.q}</div>
                     <div className={styles.liveTiles}>
                       {ex.answers.map((a, j) => <div key={a} className={`tile c${j} ${j === ex.right ? 'right' : ''}`}><Shape i={j} />{a}</div>)}

@@ -130,6 +130,14 @@ all side by side.
   Silkscreen pixel type, a pixel mouse pointer, and pixel-art illustrations (`lib/pixels.tsx`) with a computer mascot.
 - **Receipt**: till receipts hanging from a printer slot over a grey counter: shaded paper, torn edges, dashed lines,
   Space Mono, a barcode timer, and answers on carbon-copy sheets (white, pink, yellow, blue).
+- **Polaroid**: a kraft-paper photo album. White prints with a thick bottom margin, tilted and held on with masking tape.
+  Answers are four prints with handwritten captions, and lobby and podium players are prints too.
+- **Messages**: a phone chat set in Inter. The question is a grey bubble, answers are coloured bubbles, the top bar is
+  the chat's contact, and phones read like a thread, with Delivered receipts and typing dots while others answer.
+- **Comic**: a comic book. Bangers and Comic Neue, black-inked panels, halftone dots, speech bubbles, starburst badges,
+  and a POW!, ZAP! or OOPS! on phones.
+- **Tarot**: gilded cream cards on a midnight cloth full of gold stars, set in Cinzel and Cormorant. Answers are four
+  cards numbered I to IV, and each phone moment is a card of the major arcana (The Sun for a right answer).
 
 ### Seasonal effects
 

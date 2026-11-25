@@ -78,6 +78,26 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     blobs: ['#dfe0e2', '#b4b7bb'], pills: ['#fbeaa0', '#f6c9d0', '#fbfbfa'], deck: ['#f3f3f1', '#e4e4e5'],
     tiles: [['#fcfcfb', '#27282b'], ['#f6c9d0', '#27282b'], ['#fbeaa0', '#27282b'], ['#c4dcf2', '#27282b']],
   },
+  polaroid: {
+    bg: '#d9c5a3', paper: '#fffdf8', ink: '#35291f', muted: '#64513d', accent: '#a33a26',
+    blobs: ['#f6e3ad', '#c9dbe8'], pills: ['#f6e3ad', '#f3cfc6', '#fffdf8'], deck: ['#f7f0e0', '#efe4cc'],
+    tiles: [['#c9dbe8', '#35291f'], ['#f3cfc6', '#35291f'], ['#cfe0c3', '#35291f'], ['#f6e3ad', '#35291f']],
+  },
+  messages: {
+    bg: '#ffffff', paper: '#f1f1f4', ink: '#111114', muted: '#66666d', accent: '#0a6ee8',
+    blobs: ['#d6e8ff', '#cdf2d6'], pills: ['#d6e8ff', '#e9e9ee', '#cdf2d6'], deck: ['#e9e9ee', '#d6e8ff'],
+    tiles: [['#0a6ee8', '#ffffff'], ['#1f8a3d', '#ffffff'], ['#7a45dd', '#ffffff'], ['#d02a62', '#ffffff']],
+  },
+  comic: {
+    bg: '#ffe066', paper: '#ffffff', ink: '#14110f', muted: '#544c40', accent: '#d8231b',
+    blobs: ['#ffbf7a', '#7cc4ff'], pills: ['#ffffff', '#7cc4ff', '#ff9ab8'], deck: ['#7cc4ff', '#ff8a7a'],
+    tiles: [['#d8291f', '#ffffff'], ['#1666c4', '#ffffff'], ['#ffd21f', '#14110f'], ['#15803a', '#ffffff']],
+  },
+  tarot: {
+    bg: '#1c1438', paper: '#3a2568', ink: '#f6e6b8', muted: '#d3c5a0', accent: '#f0c65a',
+    blobs: ['#4d3488', '#6b2c56'], pills: ['#3a2568', '#4d3488', '#5a2749'], deck: ['#4d3488', '#5a2749'],
+    tiles: [['#2b4a94', '#ffffff'], ['#962a4a', '#ffffff'], ['#1f6b55', '#ffffff'], ['#93600f', '#ffffff']],
+  },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
     blobs: ['#e4e4e2', '#ececea'], pills: ['#ececea', '#e2e2e0', '#ffffff'], deck: ['#ececea', '#e2e2e0'],

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque, Caveat_Brush, DM_Sans, Fredoka, Patrick_Hand, Silkscreen, Space_Grotesk, Space_Mono, VT323 } from 'next/font/google';
+import { Bangers, Bricolage_Grotesque, Caveat_Brush, Cinzel, Comic_Neue, Cormorant, DM_Sans, Fredoka, Inter, Patrick_Hand, Silkscreen, Space_Grotesk, Space_Mono, VT323 } from 'next/font/google';
 import { SITE, SITE_URL } from '@/lib/site';
 import { shareImage } from '@/lib/og-cards';
 import './globals.css';
@@ -22,6 +22,14 @@ const toy = Fredoka({ variable: '--font-toy', subsets: ['latin'], weight: ['500'
 // Retro: a terminal font for reading, and blocky pixel capitals for logos, numbers and big headings.
 const pixel = VT323({ variable: '--font-pixel', subsets: ['latin'], weight: '400', preload: false });
 const pixelCaps = Silkscreen({ variable: '--font-pixel-caps', subsets: ['latin'], weight: ['400', '700'], preload: false });
+// Messages: the clean sans of a phone chat.
+const chat = Inter({ variable: '--font-chat', subsets: ['latin'], preload: false });
+// Comic: lettering for headlines and balloons.
+const comicDisplay = Bangers({ variable: '--font-comic-display', subsets: ['latin'], weight: '400', preload: false });
+const comic = Comic_Neue({ variable: '--font-comic', subsets: ['latin'], weight: ['400', '700'], preload: false });
+// Tarot: engraved capitals over an old-style serif.
+const tarotDisplay = Cinzel({ variable: '--font-tarot-display', subsets: ['latin'], weight: ['700'], preload: false });
+const tarot = Cormorant({ variable: '--font-tarot', subsets: ['latin'], weight: ['600', '700'], preload: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -42,7 +50,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, maxi
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable} ${pixel.variable} ${pixelCaps.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable} ${pixel.variable} ${pixelCaps.variable} ${chat.variable} ${comicDisplay.variable} ${comic.variable} ${tarotDisplay.variable} ${tarot.variable}`}>
       <body>
         {children}
         <Analytics />
