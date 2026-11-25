@@ -17,7 +17,7 @@ const steps = [
 const features: { title: string; body: string; tint: string; ink: string; icon: IconName }[] = [
   { title: 'AI writes your quiz', body: 'Pick a topic, how many questions and how hard. Claude drafts it; you tweak what you like.', tint: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'sparkle' },
   { title: 'Free, no sign-up', body: 'Hosting and playing are free. No accounts, no app, no ads between rounds.', tint: 'var(--sage)', ink: 'var(--sage-ink)', icon: 'smile' },
-  { title: 'Five themes', body: 'Classic, Doodlebug, Inkblot, Toybox or Glass, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
+  { title: 'Six themes', body: 'Classic, Doodlebug, Inkblot, Toybox, Glass or Retro, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
   { title: 'Speed scoring', body: '500 to 1,000 points per right answer, streak bonuses and double-points rounds.', tint: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'bolt' },
   { title: 'Pictures & grid reveal', body: 'Add a picture to any question, and reveal it tile by tile as the clock runs.', tint: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
   { title: 'Kahoot import', body: 'Bring a Kahoot-style spreadsheet, or share a quiz with a link.', tint: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'flame' },
@@ -30,6 +30,7 @@ const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: numbe
   inkblot: { q: 'Which element has the symbol Fe?', answers: ['Gold', 'Iron', 'Lead', 'Tin'], right: 1, note: 'Crisp and graphic. Suits offices, projectors and team socials.' },
   toybox: { q: 'How many sides does a cube have?', answers: ['Four', 'Six', 'Eight', 'Twelve'], right: 1, note: 'Soft and squishy, like modelling clay. Kids and party crowds love tapping it.' },
   glass: { q: 'Which gas makes up most of the air?', answers: ['Oxygen', 'Nitrogen', 'Argon', 'Helium'], right: 1, note: 'Glowing and dreamy. Looks stunning on a big screen in a dim room.' },
+  retro: { q: 'How many bits are in a byte?', answers: ['Four', 'Eight', 'Ten', 'Sixteen'], right: 1, note: 'Boots up like a 90s computer. Great for tech teams and nostalgia nights.' },
 };
 
 // Structured data for search engines and AI answer engines: the app itself, the site, and the FAQ below.
@@ -220,7 +221,7 @@ export default function Landing() {
                     ? <Scallop color="var(--pink)" size={120} rotate={-18} className={styles.themeDeco} />
                     : <Doodle theme={t.id} name="mascot" size={66} className={`bob ${styles.themeMascot}`} />}
                   <div className={`card ${styles.themeCard}`}>
-                    <div className={styles.liveTop}><span className="pill dark">Q {i + 2} / 10</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7][i]}</span></div>
+                    <div className={styles.liveTop}><span className="pill dark">Q {i + 2} / 10</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10][i]}</span></div>
                     <div className={styles.liveQ}>{ex.q}</div>
                     <div className={styles.liveTiles}>
                       {ex.answers.map((a, j) => <div key={a} className={`tile c${j} ${j === ex.right ? 'right' : ''}`}><Shape i={j} />{a}</div>)}

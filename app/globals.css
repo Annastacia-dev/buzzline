@@ -678,7 +678,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .phone[data-theme=doodlebug][data-mood=rank], .phone[data-theme=doodlebug][data-mood=end] { background: var(--bg); }
 
 /* Classic's blobs and round stickers make way for the doodles */
-:is(.stage:is([data-theme=doodlebug], [data-theme=inkblot]), :is([data-theme=doodlebug], [data-theme=inkblot]) :is(.countdown-overlay, .pinbox)) > :is(.shapebox, .sticker) { display: none; }
+:is(.stage:is([data-theme=doodlebug], [data-theme=inkblot], [data-theme=retro]), :is([data-theme=doodlebug], [data-theme=inkblot], [data-theme=retro]) :is(.countdown-overlay, .pinbox)) > :is(.shapebox, .sticker) { display: none; }
 .doodle { flex: none; color: var(--ink); pointer-events: none; }
 .doodle.float { position: absolute; z-index: 0; }
 .doodle.bob { animation: bob 2.8s ease-in-out infinite; }
@@ -712,7 +712,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 }
 .style-section { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
 .style-section legend { padding: 0; margin-bottom: 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.style-themes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.style-themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .style-theme { display: grid; justify-items: center; gap: 6px; padding: 8px 4px; border-radius: 16px; cursor: pointer; border: 1.5px solid transparent; font-size: 13px; text-align: center; }
 .style-theme:hover { border-color: var(--line); }
 .style-theme.on { border-color: var(--ink); background: var(--butter); }
@@ -737,7 +737,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
   /* On a phone the panel is a sheet along the bottom of the screen, wherever the button wrapped to. */
   .style-panel { position: fixed; top: auto; left: 12px; right: 12px; bottom: 12px; width: auto; max-height: 80vh; overflow-y: auto;
     transform-origin: bottom center; box-shadow: 0 0 0 1.5px var(--ink), 0 -10px 40px rgba(22, 22, 22, .25); }
-  .style-themes { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .style-themes { gap: 4px; }
   .style-theme { font-size: 11.5px; padding: 6px 2px; }
   .style-theme-sw { width: 36px; height: 36px; }
 }
@@ -843,7 +843,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -1254,6 +1254,191 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=toybox] .flash-deck::before { background: #fbe3a2; }
 .qstage[data-theme=toybox] .flash-deck::after { background: #d9cef5; }
 .phone[data-theme=toybox] footer { --shade: rgba(120, 100, 150, .32); background: var(--paper); color: var(--ink); box-shadow: var(--clay); }
+
+/* ---------- Retro: an old desktop. Grey windows with blue title bars, chunky bevelled buttons, pixel type ----------
+   --bevel is a raised face, --sunk a pressed one; --px is an edge of four shadows that leaves pixel-notched corners. */
+[data-theme=retro] {
+  --bg: #e9e7e1; --paper: #f4f3f0; --ink: #14161f; --muted: #565a64; --line: #b9babd;
+  --butter: #ffe79a; --butter-ink: #6b4c00;
+  --sage:   #bfe8c8; --sage-ink:   #14602c;
+  --olive:  #cfd6c4;
+  --lilac:  #dcd2f0; --lilac-ink:  #54308f;
+  --peri:   #c5d6f7; --peri-ink:   #1a3f9c;
+  --pink:   #f8c9cd; --pink-ink:   #a8202d;
+  --peach:  #f7d9b5; --peach-ink:  #8a4407;
+  --mint:   #c9ead0; --mint-ink:   #14602c;
+  --coral:  #f5b5b9; --coral-ink:  #a8202d;
+  --good: #1f8a3f; --bad: #c62f3c;
+  --title: #1f4bb8; --face: #d6d5d2;
+  --font-display: var(--font-pixel), ui-monospace, monospace;
+  --font-main: var(--font-pixel), ui-monospace, monospace;
+  --radius: 0px;
+  --bevel: inset 2px 2px 0 rgba(255, 255, 255, .75), inset -3px -3px 0 rgba(20, 22, 31, .22);
+  --sunk: inset 3px 3px 0 rgba(20, 22, 31, .2), inset -2px -2px 0 rgba(255, 255, 255, .7);
+  /* a title bar's minimise, maximise and close buttons */
+  --controls: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='74' height='22' shape-rendering='crispEdges'%3E%3Cpath fill='%2314161f' d='M0 0h22v22H0zM26 0h22v22H26zM52 0h22v22H52z'/%3E%3Cpath fill='%23d6d5d2' d='M2 2h18v18H2zM28 2h18v18H28zM54 2h18v18H54z'/%3E%3Cpath fill='%2314161f' d='M6 14h10v3H6zM32 6h10v10H32zM58 6h3v2h-3zM65 6h3v2h-3zM60 8h3v2h-3zM63 8h3v2h-3zM61 10h4v2h-4zM60 12h3v2h-3zM63 12h3v2h-3zM58 14h3v2h-3zM65 14h3v2h-3z'/%3E%3Cpath fill='%23d6d5d2' d='M34 9h6v5h-6z'/%3E%3C/svg%3E");
+  font-family: var(--font-main);
+  color: var(--ink);
+  font-synthesis: none;
+  font-variant-ligatures: none;
+  font-size-adjust: ex-height .52; /* VT323 runs small */
+}
+/* declared on every element, so it follows that element's own --ink */
+[data-theme=retro] .btn { --px: 0 -3px 0 var(--ink), 0 3px 0 var(--ink), -3px 0 0 var(--ink), 3px 0 0 var(--ink); }
+/* the desktop: a fine pixel grid */
+:is(.stage, .phone, .qstage, .join-page)[data-theme=retro] {
+  background: conic-gradient(rgba(20, 22, 31, .05) 25%, transparent 0 50%, rgba(20, 22, 31, .05) 0 75%, transparent 0) 0 0 / 8px 8px, var(--desk, var(--bg));
+}
+[data-theme=retro] .countdown-overlay {
+  background: conic-gradient(rgba(255, 255, 255, .05) 25%, transparent 0 50%, rgba(255, 255, 255, .05) 0 75%, transparent 0) 0 0 / 8px 8px, var(--title);
+}
+[data-theme=retro] .countdown-overlay :is(h1, .intro-sub) { color: #fff; opacity: 1; }
+.phone[data-theme=retro][data-mood=ready] { --desk: #a9c2f2; }
+.phone[data-theme=retro][data-mood=locked] { --desk: #ffe79a; }
+.phone[data-theme=retro][data-mood=good] { --desk: #9fdcae; }
+.phone[data-theme=retro][data-mood=bad] { --desk: #f3a9af; }
+.phone[data-theme=retro]:is([data-mood=rank], [data-mood=end]) { --desk: #c5d6f7; }
+.phone[data-theme=retro] { position: relative; }
+.phone[data-theme=retro] > :is(header, main, footer) { position: relative; z-index: 1; }
+
+/* a pixel mouse pointer on the big screen */
+.stage[data-theme=retro] { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='34' viewBox='0 0 12 17' shape-rendering='crispEdges'%3E%3Cpath fill='%2314161f' d='M0 0h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1H7v1h1v2h1v2H8v1H6v-1H5v-2H4v-1H2v1H1v1H0z'/%3E%3Cpath fill='%23fff' d='M1 2h1v1h1v1h1v1h1v1h1v1h1v1h1v1h1v1H6v1h1v2h1v2H6v-2H5v-2H4v-1H3v1H2v1H1z'/%3E%3C/svg%3E") 0 0, default; }
+
+/* type */
+[data-theme=retro] :is(h1, h2, h3, .bignum, .stage-q, .logo, .qtext) { font-weight: 700; letter-spacing: 0; }
+[data-theme=retro] :is(.logo, .bignum, .pin, .stat b, .ring span, .podium .m, h1), .join-page[data-theme=retro] .field[inputmode=numeric] { font-family: var(--font-pixel-caps), var(--font-main) !important; font-size-adjust: none; }
+[data-theme=retro][data-theme] .countdown-overlay:not(.intro) h1 { font-family: var(--font-main) !important; font-size-adjust: ex-height .52; } /* the question keeps its lower case */
+[data-theme=retro] h1 em { font-family: inherit; }
+[data-theme=retro] em, [data-theme=retro] .it { font-style: normal; font-weight: inherit; letter-spacing: inherit; color: var(--title); }
+[data-theme=retro] .logo .dot { border-radius: 0; background: var(--title); }
+
+/* nothing is round */
+[data-theme=retro] :is(.btn, .pill, .tile, .tile .shape, .tile .tick, .stage-q, .stat, .pinbox, .qr, .chip, .row, .row .r, .row .g, .card, .kpi, .tabs, .tabs button, .pans-tile, .qthumb,
+  .qthumb-n, .qthumb-ans span, .qnum, .field, .bar, .bar > div, .ring, .avatar, .podium .block, .bars .col, .flash, .q-img, .stage-img, .phone-img, .reveal, .team-col, .team-col small,
+  .solution-order li, .solution-order li b, .order-n, .order-move button, .locked-text, .type-prompt, .type-answer, .join-quiz-tag, .avatar-pick > div, .avatar-pick button,
+  .meter-track, .meter-fill, .alert-body, .ans-edit label, .ans-edit input[type=text], .qimg-edit, .qsel-btn, footer, .switch, .switch::after) { border-radius: 0 !important; }
+
+/* windows: a title bar across the top */
+[data-theme=retro] :is(.stage-q, .pinbox, .alert-body, .pcard.flash, .qcard.flash), .join-page[data-theme=retro] form.card, .phone[data-theme=retro] .msg {
+  position: relative; border: 3px solid var(--ink); box-shadow: var(--bevel), 6px 6px 0 rgba(20, 22, 31, .28);
+  background: var(--controls) right 6px top 6px no-repeat, linear-gradient(var(--title), var(--title)) 0 0 / 100% 34px no-repeat, var(--face) !important;
+  padding-top: 52px !important;
+}
+[data-theme=retro] :is(.stage-q, .pinbox, .alert-body, .pcard.flash, .qcard.flash)::after, .join-page[data-theme=retro] form.card::after, .phone[data-theme=retro] .msg::after {
+  content: 'Buzzline'; position: absolute; top: 0; left: 12px; font: 400 20px/34px var(--font-main); letter-spacing: 0; color: #fff; pointer-events: none;
+}
+[data-theme=retro][data-theme] .stage-q::after { content: 'Question'; }
+[data-theme=retro][data-theme] .pinbox::after { content: 'Join the game'; }
+[data-theme=retro][data-theme] .alert-body::after { content: 'Notice'; }
+[data-theme=retro] .flash::after { content: 'My quiz' !important; }
+.join-page[data-theme=retro] form.card::after { content: 'Join'; }
+.phone[data-theme=retro][data-mood=good] .msg::after { content: 'Correct'; }
+.phone[data-theme=retro][data-mood=bad] .msg::after { content: 'Error'; }
+.phone[data-theme=retro][data-mood=ready] .msg::after { content: 'Loading…'; }
+.phone[data-theme=retro][data-mood=locked] .msg::after { content: 'Please wait'; }
+.phone[data-theme=retro] .msg { padding: 52px 14px 14px; margin: 0 4px 6px; }
+[data-theme=retro] .pinbox > .doodle { display: none; }
+[data-theme=retro] .pinbox .pin { font-size: clamp(34px, 4.6vw, 62px); letter-spacing: -.06em; }
+[data-theme=retro] .pinbox .label { color: var(--muted); }
+[data-theme=retro] .qr { border: 3px solid var(--ink); rotate: 0deg; background: #fff; }
+[data-theme=retro] .qr span::before { border-radius: 0; background: var(--title); }
+
+/* grey panels */
+[data-theme=retro] :is(.stat, .row, .card, .kpi, .qcard, .join-quiz-tag, .type-prompt, .type-answer, .team-col) { border: 3px solid var(--ink); box-shadow: var(--bevel); }
+[data-theme=retro] :is(.stat, .kpi) { background: var(--face); }
+[data-theme=retro] .row .r { background: var(--face); box-shadow: var(--bevel); }
+[data-theme=retro] .row:nth-child(1) .r { background: #f2c530; }
+[data-theme=retro] .pill { box-shadow: inset 0 0 0 2px var(--ink); font-size: 16px; }
+[data-theme=retro] .pill.dark { background: var(--title); color: #fff; }
+[data-theme=retro] :is(.qthumb-n, .qcard-head .qnum) { background: var(--title); color: #fff; }
+/* a tooltip for each player */
+[data-theme=retro] .chip { background: #ffe79a !important; border: 2px solid var(--ink); rotate: 0deg !important; }
+[data-theme=retro] .chip:hover { background: #f5b5b9 !important; }
+[data-theme=retro] :is(.field, .tabs) { border: 2px solid var(--ink) !important; background: #fff; box-shadow: inset 2px 2px 0 rgba(20, 22, 31, .18); }
+[data-theme=retro] .field:focus { outline: 2px dotted var(--title); outline-offset: 3px; }
+[data-theme=retro] .tabs button.on { background: var(--title); color: #fff; }
+[data-theme=retro] .avatar { box-shadow: 0 0 0 2px var(--ink); }
+[data-theme=retro] .avatar-pick > div { background: #fff; box-shadow: var(--sunk); }
+[data-theme=retro] .avatar-pick button.on { box-shadow: 0 0 0 3px var(--title); }
+
+/* buttons: blue, bevelled, pressed in on click */
+[data-theme=retro] .btn { --edge: var(--bevel); margin: 3px; background: var(--title); color: #fff; font-weight: 600; box-shadow: var(--px), var(--edge); transition: none; }
+[data-theme=retro] .btn:is(.light, .ghost) { background: var(--face); color: var(--ink); }
+[data-theme=retro] .btn.ai { background: #dcd2f0; color: var(--ink); }
+[data-theme=retro] .btn:is(.danger, .danger-solid) { background: #c62f3c; color: #fff; }
+[data-theme=retro] .btn:hover { transform: none; }
+[data-theme=retro] .btn:active:not(:disabled) { --edge: inset 3px 3px 0 rgba(20, 22, 31, .35); transform: translate(1px, 1px); }
+[data-theme=retro] .btn:focus-visible { outline: 2px dotted currentColor; outline-offset: -8px; }
+[data-theme=retro] .btn:disabled { --ink: #83868d; opacity: 1; background: #c4c4c4; color: #62656d; }
+
+/* timers: a blocky progress bar and a square clock */
+[data-theme=retro] .bar { height: 20px; padding: 2px; background: #c9c9c9; border: 2px solid var(--ink); }
+[data-theme=retro] .bar > div { background: repeating-linear-gradient(90deg, var(--title) 0 10px, transparent 10px 13px); }
+[data-theme=retro] .ring { background: var(--face); box-shadow: 0 0 0 3px var(--ink), var(--bevel); }
+[data-theme=retro] .ring circle:last-child:not([stroke="var(--bad)"]) { stroke: var(--title); }
+
+/* answers: blue, red, yellow, green */
+[data-theme=retro] .c0 { background: #1f4bb8; color: #fff; --deep: #1f4bb8; }
+[data-theme=retro] .c1 { background: #c62f3c; color: #fff; --deep: #c62f3c; }
+[data-theme=retro] .c2 { background: #f2c530; color: var(--ink); --deep: #8a6400; }
+[data-theme=retro] .c3 { background: #55c273; color: var(--ink); --deep: #14602c; }
+[data-theme=retro] :is(.tile, .pans-tile, .pcard.flash .pans-tile) { border: 3px solid var(--ink); box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .4), inset -4px -4px 0 rgba(20, 22, 31, .25); }
+[data-theme=retro] .tile .shape { background: #fff; box-shadow: 0 0 0 2px var(--ink); }
+[data-theme=retro] .pans-tile > :first-child { color: inherit; fill: currentColor; }
+.phone[data-theme=retro] .tile:active { transform: none; box-shadow: inset 4px 4px 0 rgba(20, 22, 31, .35); }
+[data-theme=retro] .tile.right { box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .4), 0 0 0 4px #fff, 0 0 0 7px var(--ink); }
+[data-theme=retro] .tile .tick { background: #fff; color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+[data-theme=retro] .order-move button { background: var(--face); box-shadow: var(--bevel); }
+[data-theme=retro] .ans-edit .ans-tag { color: inherit; }
+[data-theme=retro] .ans-edit input[type=text] { color: var(--ink); background: #fff; }
+[data-theme=retro] .bars .col { border: 3px solid var(--ink); box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .4), inset -4px -4px 0 rgba(20, 22, 31, .25); transition-timing-function: steps(8); }
+[data-theme=retro] .podium .block { border: 3px solid var(--ink); border-bottom: 0; box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .5), inset -4px 0 0 rgba(20, 22, 31, .18); }
+[data-theme=retro] .podium > .first .block { background: #f2c530 !important; }
+[data-theme=retro] .auto-toggle .switch { box-shadow: 0 0 0 2px var(--ink); }
+
+/* Classic's blobs make way for pixel art; a countdown badge becomes a little panel */
+[data-theme=retro] .shapebox > svg { display: none; }
+[data-theme=retro] .shapebox:has(> div) { border: 3px solid var(--ink); background: var(--paper); box-shadow: var(--bevel), 5px 5px 0 rgba(20, 22, 31, .28); rotate: 0deg !important; }
+[data-theme=retro] .doodle { rotate: 0deg !important; }
+.stage[data-theme=retro] > .doodle.float { max-width: 118px; height: auto; }
+.stage[data-theme=retro] > .doodle-arrow { display: none; }
+.stage[data-theme=retro] .stage-mid .doodle { width: 130px; height: auto; }
+[data-theme=retro] .solution-order li { border: 3px solid var(--ink); }
+[data-theme=retro] .doodle:is(.bob, .wiggle) { animation: retro-hop 1.2s steps(2, jump-none) infinite alternate; }
+@keyframes retro-hop { to { translate: 0 -8px; } }
+@media (prefers-reduced-motion: reduce) { [data-theme=retro] .doodle:is(.bob, .wiggle) { animation: none; } }
+
+/* pictures and grid reveal */
+[data-theme=retro] :is(.stage-img, .reveal, .phone-img, .q-img) { box-shadow: 0 0 0 3px var(--ink); }
+[data-theme=retro] .reveal-tile { box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .45), inset -2px -2px 0 rgba(20, 22, 31, .3); }
+[data-theme=retro] .reveal-tile span { color: inherit; opacity: .7; }
+
+/* studio preview */
+.qstage[data-theme=retro] { padding: 14px 18px 18px; overflow-x: hidden; }
+.qstage[data-theme=retro] .flash { --tilt: 0deg !important; }
+.qstage[data-theme=retro] .flash-deck { padding-top: 48px; }
+.qstage[data-theme=retro] .flash-deck::before { inset: 48px 0 0; }
+.qstage[data-theme=retro] .deck-doodle { width: 54px; height: auto; top: -7px; right: 14px; }
+[data-theme=retro] .flash-deck::before { border-radius: 0; transform: translate(10px, 10px); background: var(--paper); }
+[data-theme=retro] .flash-deck::after { display: none; }
+.phone[data-theme=retro] footer { background: var(--face); color: var(--ink); border: 3px solid var(--ink); box-shadow: var(--bevel); }
+/* on phones the picture sits inside the window, and the lobby shrinks so the avatar picker fits */
+.phone[data-theme=retro] > .doodle { width: 48px; height: auto; top: 112px !important; right: 28px !important; z-index: 2; }
+.phone[data-theme=retro] .msg { overflow-y: auto; justify-content: safe center; min-height: 0; }
+.phone[data-theme=retro] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=retro] .msg h1 { font-size: 32px; }
+.phone[data-theme=retro] .bignum { font-family: var(--font-main) !important; font-size-adjust: ex-height .52; } /* the blocky # is hard to read */
+.phone[data-theme=retro][data-mood=lobby] .msg { gap: 8px; }
+.phone[data-theme=retro][data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone[data-theme=retro][data-mood=lobby] .msg p { font-size: 15px; }
+.phone[data-theme=retro][data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone[data-theme=retro][data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
+.join-page[data-theme=retro] .join-quiz-tag { rotate: 0deg; }
+@media (max-width: 700px) {
+  .join-page[data-theme=retro] > .doodle { width: 60px; height: auto; }
+  .join-page[data-theme=retro] > .doodle-sparkles { top: 2% !important; right: 4% !important; }
+  .join-page[data-theme=retro] > .doodle-mascot { display: none; }
+}
 
 /* ---------- Admin dashboard (/admin) ---------- */
 /* Series colors: validated for colorblind separation on white (dataviz validate_palette). Text never uses them. */

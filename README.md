@@ -126,6 +126,8 @@ all side by side.
   with drifting circles of light, thin bright rims, white text in the device's own system font, pill-shaped answers
   with round glass badges and tinted glass buttons. Each phone moment swaps the colours (teal for correct, pink for
   wrong, gold for the podium). The QR card stays white so it scans.
+- **Retro**: an old desktop. Grey windows with blue title bars, bevelled buttons, a blocky progress bar, VT323 and
+  Silkscreen pixel type, a pixel mouse pointer, and pixel-art illustrations (`lib/pixels.tsx`) with a computer mascot.
 
 ### Seasonal effects
 

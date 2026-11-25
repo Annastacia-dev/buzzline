@@ -1,8 +1,10 @@
-// Line illustrations for the illustrated quiz themes, as inline SVG inked in currentColor.
+// Illustrations for the illustrated quiz themes, as inline SVG (line art is inked in currentColor).
 // Every theme draws the same set of names in its own style:
 // - Doodlebug: pen sketches with a bee mascot, wobbled by a displacement filter.
 // - Inkblot: bold black line art with solid black accents on flat grey circles, and a buzzer mascot.
+// - Retro: pixel art with a computer mascot (lib/pixels.tsx).
 import { useId, type CSSProperties, type ReactNode } from 'react';
+import { PIXELS } from './pixels';
 import { hasDoodles, type ThemeId } from './themes';
 
 const ink = { fill: 'none', stroke: 'currentColor', strokeWidth: 3.6, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
@@ -243,9 +245,9 @@ export function Doodle({ theme, name, size = 120, rotate = 0, className = '', st
   const id = 'wob' + useId().replace(/[^\w-]/g, '');
   if (!hasDoodles(theme)) return null;
   const sketch = theme === 'doodlebug';
-  const { box, art } = (sketch ? DOODLES : INKS)[name];
+  const { box, art } = (sketch ? DOODLES : theme === 'retro' ? PIXELS : INKS)[name];
   return (
-    <svg viewBox={box.join(' ')} width={size} height={(size * box[3]) / box[2]} className={`doodle ${className}`}
+    <svg viewBox={box.join(' ')} width={size} height={(size * box[3]) / box[2]} className={`doodle doodle-${name} ${className}`}
       style={{ rotate: rotate ? `${rotate}deg` : undefined, ...style }} overflow="visible"
       {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}>
       {sketch ? <>

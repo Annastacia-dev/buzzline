@@ -7,6 +7,7 @@ export const THEMES = [
   { id: 'inkblot', name: 'Inkblot', blurb: 'Black and white line art, bold type, solid ink accents', swatch: ['#ffffff', '#111111', '#e4e4e2', '#111111'] },
   { id: 'toybox', name: 'Toybox', blurb: 'Soft pastel clay: puffy matte shapes with gentle light and soft shadows', swatch: ['#f9dfe6', '#c9bff3', '#a9e0cf', '#f8dc8c'] },
   { id: 'glass', name: 'Glass', blurb: 'Clear frosted glass floating over vivid, glowing bokeh', swatch: ['#3b1e80', '#ff7a35', '#3f7dff', '#ff3ea5'] },
+  { id: 'retro', name: 'Retro', blurb: 'An old desktop: grey windows, blue title bars, chunky buttons and pixel art', swatch: ['#d6d5d2', '#1f4bb8', '#f2c530', '#c62f3c'] },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -16,7 +17,7 @@ export const DEFAULT_THEME: ThemeId = 'classic';
 export const themeOf = (v: unknown): ThemeId => (THEMES.some(t => t.id === v) ? (v as ThemeId) : DEFAULT_THEME);
 
 /** The ink colour for things drawn outside CSS, such as the lobby QR code. */
-export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'toybox' ? '#3a3d6b' : '#161616');
+export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'retro' ? '#14161f' : t === 'toybox' ? '#3a3d6b' : '#161616');
 
-/** Themes with their own line drawings in lib/doodles.tsx (the others decorate with shapes or colour). */
-export const hasDoodles = (t: ThemeId) => t === 'doodlebug' || t === 'inkblot';
+/** Themes with their own drawings in lib/doodles.tsx (the others decorate with shapes or colour). */
+export const hasDoodles = (t: ThemeId) => t === 'doodlebug' || t === 'inkblot' || t === 'retro';
