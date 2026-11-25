@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { db } from './supabase-server';
 import { GameError } from './game';
 import { mergeLibraries, validSyncSecret, type Library, type Tombstone } from './sync';
+import { unionPlays } from './plays';
 import type { Quiz } from './types';
 
 const MAX_QUIZZES = 500;
@@ -26,6 +27,7 @@ function cleanLibrary(input: unknown): Library {
   ).slice(0, MAX_QUIZZES).map(q => ({
     id: q.id, title: String(q.title ?? '').slice(0, 120), questions: q.questions.slice(0, 100),
     ...(q.theme ? { theme: q.theme } : {}), ...(q.from ? { from: String(q.from).slice(0, 60) } : {}),
+    ...(q.plays ? { plays: unionPlays(q.plays) } : {}),
     updated: Number.isFinite(q.updated) ? Math.min(Number(q.updated), Date.now() + 60e3) : 0,
   }));
   const deleted = (Array.isArray(b.deleted) ? b.deleted : []).filter((t): t is Tombstone =>

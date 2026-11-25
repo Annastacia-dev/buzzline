@@ -7,6 +7,7 @@ import { Confetti } from '@/lib/confetti';
 import { podiumTimeline } from '@/lib/podium';
 import { useAlertDialog } from '@/lib/dialog';
 import { QuizSelect } from '@/lib/select';
+import { recordPlay } from '@/lib/plays';
 import Analytics from './Analytics';
 import { READY_MS, type HostView, type EndView, type Quiz } from '@/lib/types';
 import QRCode from 'qrcode';
@@ -20,7 +21,8 @@ import { SeasonalEffect } from '@/lib/effects';
 import type { TeamScore } from '@/lib/types';
 
 
-type HostSession = { pin: string; token: string };
+/** `quizId` and `playId`: which quiz this is and which game, to count the game on the quiz once it reaches the podium. */
+type HostSession = { pin: string; token: string; quizId?: string; playId?: string };
 
 export default function HostPage() {
   const [session, setSession] = useState<HostSession | null>(null);
@@ -37,7 +39,8 @@ export default function HostPage() {
   async function host(quiz: Quiz, teams = 0) {
     setError('');
     try {
-      const s = await api<HostSession>('/api/game', { quiz, teams });
+      const { pin, token } = await api<HostSession>('/api/game', { quiz, teams });
+      const s: HostSession = { pin, token, quizId: quiz.id, playId: `${pin}-${Date.now().toString(36)}` };
       sessionStorage.setItem('bz.host', JSON.stringify(s));
       setSession(s);
     } catch (e) { setError((e as Error).message); }
@@ -52,7 +55,8 @@ export default function HostPage() {
 }
 
 function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void }) {
-  const v = useGameStream<HostView | EndView>({ ...session, role: 'host' });
+  const { pin, token, quizId, playId } = session;
+  const v = useGameStream<HostView | EndView>({ pin, token, role: 'host' });
   const [err, setErr] = useState('');
   // The button that was just pressed, shown as pending until the screen moves on.
   const [busy, setBusy] = useState('');
@@ -72,6 +76,8 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
   const step = v && 'qIndex' in v ? `${v.state}:${v.qIndex}` : v?.state;
 
   useEffect(() => { if (v?.state === 'closed') onLeave(); }, [v?.state, onLeave]);
+  // The podium means the game was played to the end: ending one early closes it instead.
+  useEffect(() => { if (v?.state === 'end' && quizId && playId) recordPlay(quizId, playId); }, [v?.state, quizId, playId]);
   useEffect(() => { setBusy(''); }, [step]);
   useEffect(() => () => Music.stop(), []);
   // This question's picture, and the next one's ahead of time, so pictures show the moment a question opens.
@@ -86,7 +92,7 @@ function Stage({ session, onLeave }: { session: HostSession; onLeave: () => void
     setErr('');
     if (moves) { setBusy(action); Sound.lock(); }
     try {
-      await api('/api/host', { ...session, action, ...extra });
+      await api('/api/host', { pin, token, action, ...extra });
       refreshGame(); // don't wait for the realtime ping to show our own move
     } catch (e) { setErr((e as Error).message); setBusy(''); }
   };

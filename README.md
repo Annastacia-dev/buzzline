@@ -75,12 +75,17 @@ cities, science and animals (`lib/packs.ts`). Pages are static, carry `Quiz` JSO
 **Host this quiz** opens `/host?pack=<slug>`, which adds the quiz to the studio once, in its suggested theme.
 To add a quiz, add it to `PACKS`. Every question must pass the same checks as a hosted quiz.
 
+## Times hosted
+
+The studio shows how many times each quiz has been hosted. Only games that reach the podium count: a game ended early
+doesn't. Each finished game leaves its id on the quiz (`lib/plays.ts`), so refreshing the podium doesn't count twice.
+
 ## Sync link (quizzes on every device)
 
 **☁️ Sync devices** in the studio sidebar makes a private link, `/host?sync=<secret>`, shown with a QR code. Every browser
 that opens it shares one library, with no account or email. Each quiz carries the time it was last changed. Deletes are
 kept for 120 days as tombstones. Browsers send their changes a moment after each edit and pick up others' changes when
-the studio opens or the tab comes back into view. The newest copy of each quiz wins (`lib/sync.ts`). The server stores
+the studio opens or the tab comes back into view. The newest copy of each quiz wins, and games hosted on any of them are added up (`lib/sync.ts`). The server stores
 the library under a SHA-256 of the secret (`buzz_sync_libraries`), so the table alone can't open anyone's quizzes.
 Anyone with the link can change the quizzes, and the studio says so.
 
@@ -93,7 +98,7 @@ choice, true or false, type answer and put in order (all on to start with). Mult
 the biggest share. Picture questions are never put-in-order. Each difficulty is spelled out as who should be
 able to answer (`LEVELS`), and hard quizzes get more thinking time.
 
-**🖼 Questions with pictures** can be *None*, *Some* (about half, spread through the quiz) or *All* (also set by a 🖼 topic
+**🖼 Questions with pictures** can be *None*, *Some* (a percentage you set, spread through the quiz) or *All* (also set by a 🖼 topic
 idea such as *Flags of the world*). Claude writes each picture question about the picture ("Which country's flag is this?") without naming the answer, plus the words of a
 Wikimedia Commons file name for it. `lib/pictures.ts` looks that up on Commons (exact file name first, then titles that
 contain every key word, then a close match; a wrong picture is worse than none), and each picture goes through the same

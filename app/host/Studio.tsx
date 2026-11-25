@@ -17,19 +17,20 @@ import { KINDS, kindOf, orderShown } from '@/lib/kinds';
 import { validTeams } from '@/lib/teams';
 import type { QuestionKind } from '@/lib/types';
 import { mergeLibraries, newSyncSecret, validSyncSecret, type Library, type Tombstone } from '@/lib/sync';
+import { QUIZZES_KEY, hostedLabel, timesHosted, unionPlays } from '@/lib/plays';
 import SyncDialog from './SyncDialog';
 import { StylePicker, TeamSwitch } from './StylePicker';
 import { SeasonalEffect, effectsOf, type EffectId, type FallId } from '@/lib/effects';
 
-const KEY = 'bz.quizzes';
+const KEY = QUIZZES_KEY;
 const THEME_KEY = 'bz.theme';
 const TEAMS_KEY = 'bz.teams';
 const EFFECT_KEY = 'bz.effect';
 const FALL_KEY = 'bz.fall';
 const SYNC_KEY = 'bz.sync';
 const DELETED_KEY = 'bz.deleted';
-/** A short fingerprint of a library: which quizzes, at which versions. Same fingerprint, nothing to sync. */
-const fingerprint = (l: Library) => l.quizzes.map(q => `${q.id}:${q.updated ?? 0}`).join(',') + '|' + l.deleted.length;
+/** A short fingerprint of a library: which quizzes, at which versions, hosted how often. Same fingerprint, nothing to sync. */
+const fingerprint = (l: Library) => l.quizzes.map(q => `${q.id}:${q.updated ?? 0}:${timesHosted(q)}`).join(',') + '|' + l.deleted.length;
 const ORD = ['1st', '2nd', '3rd', '4th'];
 
 /** Changes a question to another kind, keeping what still makes sense. */
@@ -303,7 +304,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     const have = new Set(quizzes.map(q => q.id));
     const add = list.filter((q): q is Quiz => !!q && typeof q === 'object' && Array.isArray((q as Quiz).questions) && (q as Quiz).questions.length > 0)
       .filter(q => !q.id || !have.has(q.id))
-      .map(q => ({ ...q, id: q.id || uid(), title: String(q.title || 'Untitled quiz') }));
+      .map(q => ({ ...q, id: q.id || uid(), title: String(q.title || 'Untitled quiz'), plays: unionPlays(q.plays) }));
     if (add.length) { commit(l => [...add, ...l]); setSelId(add[0].id!); setCur(0); setTab('preview'); }
     const skipped = list.length - add.length;
     ask({
@@ -431,7 +432,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
         <div className="qlist">
           {quizzes.map(q => (
             <button key={q.id} className={q.id === selId ? 'on' : ''} onClick={() => { setSelId(q.id!); setCur(0); setTab('preview'); }}>
-              {q.title || 'Untitled'}<small>{q.questions.length} question{q.questions.length === 1 ? '' : 's'}</small>
+              {q.title || 'Untitled'}<small>{q.questions.length} question{q.questions.length === 1 ? '' : 's'}{timesHosted(q) > 0 && ` · ${hostedLabel(q)}`}</small>
             </button>
           ))}
         </div>
@@ -453,7 +454,11 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
             <input className="field" value={quiz.title} onChange={e => update(z => ({ ...z, title: e.target.value }))} placeholder="Quiz title" aria-label="Quiz title" title="Click to rename" maxLength={120} />
             <StylePicker theme={theme} effect={effect} fall={fall} onTheme={setTheme} onEffect={setEffect} onFall={setFall} />
             <TeamSwitch teams={teams} onChange={setTeams} />
-            <button className="btn" onClick={() => onHost({ ...quiz, theme, effect, fall }, teams)}>Host this quiz <span aria-hidden>→</span></button>
+            <button className="btn" onClick={() => {
+              // Saved first (an untouched sample isn't yet), so the finished game has a quiz to be counted on.
+              commit(l => l);
+              onHost({ ...quiz, theme, effect, fall }, teams);
+            }}>Host this quiz <span aria-hidden>→</span></button>
           </div>
           <div className="editor-bar">
             <div className="tabs" role="tablist" aria-label="Quiz view">
@@ -464,6 +469,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
             </div>
             <span className="muted quiz-meta">
               {quiz.questions.length} question{quiz.questions.length === 1 ? '' : 's'} · about {Math.max(1, Math.round(quiz.questions.reduce((t, q) => t + q.time + 15, 0) / 60))} min
+              {timesHosted(quiz) > 0 && <span title="Games that reached the podium. Games ended early don’t count."> · {hostedLabel(quiz)}</span>}
             </span>
             <span className="spacer" />
             <button className="btn small" onClick={addQuestion}>+ Add question</button>

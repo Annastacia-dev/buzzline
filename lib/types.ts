@@ -22,7 +22,8 @@ export interface Question { q: string; answers: string[]; correct: number; time:
  * `from`: the share id or pack this quiz was opened from, so opening the same link twice doesn't add it twice.
  * `updated`: when it was last changed in the studio (ms), so sync links keep the newest copy.
  */
-export interface Quiz { id?: string; title: string; questions: Question[]; theme?: ThemeId; effect?: EffectId; fall?: FallId; from?: string; updated?: number }
+/** `plays`: the ids of this quiz's games that were hosted to the end (lib/plays.ts). */
+export interface Quiz { id?: string; plays?: string[]; title: string; questions: Question[]; theme?: ThemeId; effect?: EffectId; fall?: FallId; from?: string; updated?: number }
 
 /** A team in team mode: its number (0–3), name, and score, the average of its players' scores. */
 export interface TeamScore { team: number; name: string; emoji: string; score: number; players: number }

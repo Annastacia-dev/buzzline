@@ -20,6 +20,10 @@ export type AiKind = (typeof AI_KINDS)[number]['id'];
 /** Kinds that can be asked about a picture. */
 export const PICTURE_KINDS: AiKind[] = ['choice', 'truefalse', 'type'];
 
+/** How many of `count` AI questions get a picture at `percent`: at least one, and (when there are two or more) not all. */
+export const pictureShare = (count: number, percent: number) =>
+  Math.max(1, Math.min(Math.max(1, count - 1), Math.round((count * percent) / 100)));
+
 export const kindOf = (q: Pick<Question, 'kind'>): QuestionKind => q.kind ?? 'choice';
 /** Kinds the server marks right (0) or wrong (1) itself, from typed text or an order. */
 export const checkedKinds: QuestionKind[] = ['type', 'order'];

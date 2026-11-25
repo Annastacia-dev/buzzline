@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Quiz } from '@/lib/types';
 import { Sticker, type IconName } from '@/lib/deco';
 import { QuizSelect } from '@/lib/select';
-import { AI_KINDS, PICTURE_KINDS, type AiKind } from '@/lib/kinds';
+import { AI_KINDS, PICTURE_KINDS, pictureShare, type AiKind } from '@/lib/kinds';
 
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90];
 const COUNTS = [5, 8, 10, 12, 15, 20];
@@ -11,7 +11,7 @@ const DIFFICULTIES = [['mixed', 'Mixed'], ['easy', 'Easy'], ['medium', 'Medium']
 const IDEAS = ['90s pop music', 'The solar system', 'World capitals', 'Football World Cup', 'Ancient Egypt'];
 const PICTURES = [
   ['none', 'None', 'Text questions only.'],
-  ['some', 'Some', 'A mix: about half the questions are asked about a picture, the rest are text only.'],
+  ['some', 'Some', ''],
   ['all', 'All', 'Every question is asked about a picture, like “Which country’s flag is this?”. Best for flags, landmarks, animals and paintings.'],
 ] as const;
 type PictureMode = (typeof PICTURES)[number][0];
@@ -26,6 +26,9 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
   const [time, setTime] = useState(10);
   const [difficulty, setDifficulty] = useState('mixed');
   const [pictures, setPictures] = useState<PictureMode>('none');
+  const [percent, setPercent] = useState('50'); // with "Some": how many questions get a picture; text, so it can be cleared while typing
+  const pct = Number(percent);
+  const withPictures = pct >= 1 && pct <= 99 ? pictureShare(count, pct) : 0;
   const [kinds, setKinds] = useState<AiKind[]>(['choice', 'truefalse', 'type', 'order']);
   // Put in order isn't asked about a picture, so it doesn't apply when every question has one.
   const usable = (k: AiKind) => pictures !== 'all' || PICTURE_KINDS.includes(k);
@@ -51,7 +54,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
     try {
       const r = await fetch('/api/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: abort.current.signal,
-        body: JSON.stringify({ topic, count, time, difficulty, pictures, kinds: picked }),
+        body: JSON.stringify({ topic, count, time, difficulty, pictures, picturePercent: pct, kinds: picked }),
       });
       const j = await r.json().catch(() => ({ error: 'The server returned an unexpected reply' }));
       if (!r.ok) throw new Error(j.error || 'Could not generate the quiz');
@@ -70,17 +73,18 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
       onClick={e => { if (e.target === e.currentTarget && !busy) close(); }}>
       <form className="alert-body" onSubmit={submit} aria-busy={busy}>
         <h2 id="gen-title">✨ Generate with AI</h2>
-        <p>Pick a topic and Claude writes the questions. You can edit everything afterwards.</p>
+        {!busy && <p>Pick a topic and Claude writes the questions. You can edit everything afterwards.</p>}
 
         <label className="gen-field">
           <span>Topic</span>
           <input className="field" value={topic} onChange={e => setTopic(e.target.value)} maxLength={200} required minLength={2}
             placeholder="e.g. The solar system" disabled={busy} />
         </label>
-        <div className="gen-ideas" aria-label="Topic ideas">
+        {/* Out of the way while generating, to make room for the loader. */}
+        {!busy && <div className="gen-ideas" aria-label="Topic ideas">
           {IDEAS.map(t => <button key={t} type="button" className="pill" disabled={busy} onClick={() => setTopic(t)}>{t}</button>)}
           {PICTURE_IDEAS.map(t => <button key={t} type="button" className="pill" disabled={busy} onClick={() => { setTopic(t); setPictures('all'); }}>🖼 {t}</button>)}
-        </div>
+        </div>}
 
         <div className="gen-row">
           <div className="gen-field">
@@ -100,6 +104,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
           </div>
         </div>
 
+        <div className="gen-pair">
         <fieldset className="gen-pictures" disabled={busy} aria-describedby="gen-kinds-hint">
           <legend>Question types</legend>
           <div className="style-chips">
@@ -119,6 +124,7 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
 
         <fieldset className="gen-pictures" disabled={busy} aria-describedby="gen-pictures-hint">
           <legend>🖼 Questions with pictures</legend>
+          <div className="gen-mix">
           <div className="seg">
             {PICTURES.map(([v, name]) => (
               <label key={v} className={pictures === v ? 'on' : ''}>
@@ -126,8 +132,17 @@ export default function GenerateDialog({ onDone, onClose }: { onDone: (q: Quiz) 
               </label>
             ))}
           </div>
-          <small id="gen-pictures-hint">{PICTURES.find(([v]) => v === pictures)![2]}</small>
+          {pictures === 'some' && (
+            <label className="gen-percent">
+              <input type="number" className="field" aria-label="Percentage of questions with a picture" min={1} max={99} step={1} required
+                value={percent} onChange={e => setPercent(e.target.value)} />%
+            </label>
+          )}
+          </div>
+          <small id="gen-pictures-hint" role="status">{pictures !== 'some' ? PICTURES.find(([v]) => v === pictures)![2]
+            : withPictures ? `${withPictures} of ${count} questions asked about a picture, the rest text only.` : 'Enter a percentage from 1 to 99.'}</small>
         </fieldset>
+        </div>
 
         {error && <p className="error" role="alert" ref={show}>{error}</p>}
         {busy && <GenLoader topic={topic.trim()} count={count} time={time} pictures={pictures !== 'none'} />}
@@ -184,7 +199,7 @@ function GenLoader({ topic, count, time, pictures }: { topic: string; count: num
     <div className="gen-loader" ref={show}>
       <span className="sr-only" role="status">Generating {count} questions about {topic}. This can take up to a minute.</span>
       <div className="gen-sticker" key={`s${i % STICKERS.length}`} aria-hidden>
-        <Sticker {...st} size={96} />
+        <Sticker {...st} size={64} />
       </div>
       <div aria-hidden>
         <p className="gen-line" key={`l${i}`}>{all[i % all.length]}</p>

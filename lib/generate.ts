@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { z } from 'zod';
 import { GameError, validateQuiz } from './game';
-import { AI_KINDS, PICTURE_KINDS, kindError, normalize, type AiKind } from './kinds';
+import { AI_KINDS, PICTURE_KINDS, kindError, normalize, pictureShare, type AiKind } from './kinds';
 import { storeImage } from './library';
 import { findPicture } from './pictures';
 import type { Question, QuestionKind, Quiz } from './types';
@@ -11,7 +11,7 @@ import type { Question, QuestionKind, Quiz } from './types';
 export const TIMES = [5, 10, 15, 20, 30, 45, 60, 90];
 export const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'] as const;
 export const MAX_QUESTIONS = 20;
-/** Which questions get a picture: none, about half (mixed), or all of them. */
+/** Which questions get a picture: none, a share of them (mixed), or all. */
 export type PictureMode = 'none' | 'some' | 'all';
 const MAX_TOPIC = 200;
 
@@ -121,7 +121,9 @@ export async function generateQuiz(body: Record<string, unknown>, ip: string): P
   // `true` is what studios opened before mixed pictures existed still send.
   const mode: PictureMode = body.pictures === true || body.pictures === 'all' ? 'all' : body.pictures === 'some' ? 'some' : 'none';
   const pictures = mode !== 'none';
-  const wanted = mode === 'all' ? count : mode === 'some' ? Math.ceil(count / 2) : 0; // questions with a picture
+  const asked = Number(body.picturePercent);
+  const percent = asked >= 1 && asked <= 99 ? asked : 50;
+  const wanted = mode === 'all' ? count : mode === 'some' ? pictureShare(count, percent) : 0; // questions with a picture
   const askPictures = pictures ? wanted + PICTURE_SPARES : 0;
   const askPlain = mode === 'some' ? count - wanted + PLAIN_SPARES : count - wanted;
   const ask = askPictures + askPlain;
