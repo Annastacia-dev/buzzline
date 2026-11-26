@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BarChart, LineChart, RankBars, type Row, type Series } from './Charts';
+import RangePicker, { presets, todayLocal, type Range } from './RangePicker';
 
 type Totals = {
   visits: number; visitors: number; quizzes: number; creators: number; hosted: number; hosts: number;
@@ -22,7 +23,6 @@ type GoogleId = {
 declare global { interface Window { google?: { accounts: { id: GoogleId } } } }
 
 const C = { 1: 'var(--c1)', 2: 'var(--c2)', 3: 'var(--c3)', 4: 'var(--c4)', 5: 'var(--c5)', 6: 'var(--c6)' } as const;
-const PERIODS = [{ d: 7, name: '7 days' }, { d: 30, name: '30 days' }, { d: 90, name: '90 days' }, { d: 365, name: '12 months' }];
 const SOURCE_NAMES: Record<string, string> = {
   blank: 'Written from scratch', ai: 'Generated with AI', import: 'Imported spreadsheet', pack: 'Ready-made quiz', shared: 'Opened a shared link', sample: 'Sample quiz',
 };
@@ -135,24 +135,24 @@ function Kpi({ name, value, before, note }: { name: string; value: number; befor
 }
 
 function Dashboard({ email, onSignOut, onExpired }: { email: string; onSignOut: () => void; onExpired: () => void }) {
-  const [days, setDays] = useState(30);
+  const [range, setRange] = useState<Range>(() => presets(todayLocal()).find(p => p.id === '30')!.range);
   const [s, setS] = useState<Stats | null>(null);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
-  const load = useCallback(async (d: number) => {
+  const load = useCallback(async (r: Range) => {
     setLoading(true); setErr('');
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-      setS(await call<Stats>(`/api/admin/stats?days=${d}&tz=${encodeURIComponent(tz)}`));
+      setS(await call<Stats>(`/api/admin/stats?from=${r.from}&to=${r.to}&tz=${encodeURIComponent(tz)}`));
     } catch (e) {
       if ((e as { status?: number }).status === 401) onExpired();
       else setErr((e as Error).message);
     } finally { setLoading(false); }
   }, [onExpired]);
-  useEffect(() => { void load(days); }, [days, load]);
+  useEffect(() => { void load(range); }, [range, load]);
 
   const t = s?.totals, p = s?.previous;
-  const weekly = days > 90;
+  const weekly = (s?.days ?? 0) > 90;
   const rows = s ? toRows(s.daily, weekly) : [];
   const per = weekly ? 'per week' : 'per day';
   const visits: Series[] = [{ key: 'visits', name: 'Page views', color: C[1] }, { key: 'visitors', name: 'Unique visitors', color: C[2] }];
@@ -166,20 +166,14 @@ function Dashboard({ email, onSignOut, onExpired }: { email: string; onSignOut: 
           <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
           <span className="pill">Admin</span>
         </div>
-        <div className="seg adm-period" role="radiogroup" aria-label="Period">
-          {PERIODS.map(x => (
-            <label key={x.d} className={days === x.d ? 'on' : ''}>
-              <input type="radio" name="adm-period" checked={days === x.d} onChange={() => setDays(x.d)} />{x.name}
-            </label>
-          ))}
-        </div>
+        <RangePicker value={range} onChange={setRange} />
         <div className="adm-who">
           <span title={email}>{email}</span>
           <button type="button" className="btn ghost small" onClick={onSignOut}>Sign out</button>
         </div>
       </header>
 
-      {err && <p className="error" role="alert">{err} <button type="button" className="adm-link" onClick={() => load(days)}>Try again</button></p>}
+      {err && <p className="error" role="alert">{err} <button type="button" className="adm-link" onClick={() => load(range)}>Try again</button></p>}
       {!s && !err && <p className="adm-empty">Loading…</p>}
 
       {s && t && p && (

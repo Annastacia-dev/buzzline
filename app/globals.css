@@ -3678,9 +3678,55 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .adm-brand { display: flex; align-items: center; gap: 10px; }
 .adm-who { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); min-width: 0; }
 .adm-who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px; }
-.adm-period label { font-size: 14px; padding: 7px 12px; }
-.adm-period input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-.adm-period label:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; }
+/* Period picker: ‹ [dates] › with a popover of presets beside a two-month calendar */
+.rp { position: relative; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
+.rp button { font: inherit; color: var(--ink); cursor: pointer; }
+.rp button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.rp-step { width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; font-size: 22px !important; line-height: 1; display: grid; place-items: center; padding-bottom: 3px; }
+.rp-step:hover:not(:disabled) { background: var(--cream, #fbf6ec); }
+.rp-step:disabled { opacity: .3; cursor: default; }
+.rp-trigger { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--butter); box-shadow: inset 0 0 0 1.5px var(--ink); padding: 8px 16px; font-size: 14px !important; font-weight: 700; white-space: nowrap; }
+.rp-trigger .rp-dates { font-weight: 600; }
+.rp-trigger .rp-name + .rp-dates { color: var(--muted); }
+.rp-trigger .rp-name + .rp-dates::before { content: '·'; margin-right: 8px; }
+.rp-pop { position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0; z-index: 50; display: flex; border-radius: 22px; background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--ink), 0 24px 50px rgba(22, 22, 22, .22); animation: pop .2s cubic-bezier(.3, 1.4, .5, 1); transform-origin: top center; }
+.rp-presets { display: grid; align-content: start; gap: 2px; padding: 12px; border-right: 1.5px solid var(--line); min-width: 150px; }
+.rp-presets button { border: 0; background: transparent; text-align: left; font-size: 14px; font-weight: 600; padding: 9px 12px; border-radius: 12px; white-space: nowrap; }
+.rp-presets button:hover { background: var(--cream, #fbf6ec); }
+.rp-presets button.on { background: var(--ink); color: #fff; }
+.rp-cal { position: relative; padding: 14px 18px 12px; }
+.rp-nav { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; pointer-events: none; }
+.rp-nav button { pointer-events: auto; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; font-size: 22px; line-height: 1; padding-bottom: 3px; }
+.rp-nav button:hover:not(:disabled) { background: var(--cream, #fbf6ec); }
+.rp-nav button:disabled { opacity: .25; cursor: default; }
+.rp-months { display: flex; gap: 24px; }
+.rp-month h3 { margin: 4px 0 10px; text-align: center; font-size: 15px; font-weight: 800; }
+.rp-grid { display: grid; gap: 2px; }
+.rp-row { display: grid; grid-template-columns: repeat(7, 38px); }
+.rp-wd { text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); padding: 4px 0 6px; }
+.rp-row > [role=gridcell] { display: block; height: 36px; }
+.rp-row > [role=gridcell][aria-selected=true] { background: var(--butter); }
+.rp-row > [role=gridcell]:has(.lo) { border-radius: 10px 0 0 10px; }
+.rp-row > [role=gridcell]:has(.hi) { border-radius: 0 10px 10px 0; }
+.rp-row > [role=gridcell]:has(.lo.hi) { border-radius: 10px; }
+.rp-day { width: 100%; height: 100%; border: 0; border-radius: 10px; background: transparent; font-size: 14px !important; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rp-day:hover:not(:disabled):not(.edge) { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.rp-day.edge { background: var(--ink); color: #fff !important; }
+.rp-day.today:not(.edge) { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.rp-day:disabled { color: var(--line) !important; cursor: default; }
+.rp-hint { margin: 10px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+.rp-hint b { color: var(--ink); }
+@media (max-width: 760px) {
+  .rp-pop { position: fixed; top: auto; bottom: 12px; left: 12px; right: 12px; translate: none; flex-direction: column; max-height: calc(100dvh - 24px); overflow-y: auto; }
+  .rp-presets { display: flex; flex-wrap: wrap; gap: 6px; border-right: 0; border-bottom: 1.5px solid var(--line); }
+  .rp-presets button { padding: 7px 11px; box-shadow: inset 0 0 0 1.5px var(--line); border-radius: 999px; font-size: 13px; }
+  .rp-month:first-child { display: none; }
+  .rp-row { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .rp-months, .rp-month { width: 100%; }
+}
+@media (max-width: 520px) { .rp-trigger .rp-name { display: none; } .rp-trigger .rp-name + .rp-dates::before { content: none; } }
+@media (prefers-reduced-motion: reduce) { .rp-pop { animation: none; } }
 .adm-body { display: grid; gap: 20px; transition: opacity .2s; }
 .adm-body.loading { opacity: .55; }
 .adm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
