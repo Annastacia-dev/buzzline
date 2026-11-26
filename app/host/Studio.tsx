@@ -5,7 +5,8 @@ import { blankQuestion, sampleQuiz } from '@/lib/sample';
 import type { Quiz, Question } from '@/lib/types';
 import { useAlertDialog } from '@/lib/dialog';
 import GenerateDialog from './GenerateDialog';
-import { importSpreadsheet, TIMES } from '@/lib/spreadsheet';
+import { TIMES } from '@/lib/spreadsheet';
+import ImportDialog from './ImportDialog';
 import { downloadTemplate } from '@/lib/template';
 import { QuizSelect } from '@/lib/select';
 import { api, beacon, Shape } from '@/lib/client';
@@ -59,6 +60,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
   const railRef = useRef<HTMLOListElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
   // The theme is a studio-wide choice, remembered in this browser: switching quizzes keeps it, and hosting uses it.
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   useEffect(() => { setThemeState(themeOf(localStorage.getItem(THEME_KEY))); }, []);
@@ -391,29 +393,16 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     setSelId(rest[0]?.id ?? '');
   }
 
-  /** A Kahoot-format spreadsheet (.xlsx) becomes a new quiz; older Buzzline .json files still work too. */
-  async function importQuiz(f: File | undefined) {
+  /** "Restore a backup": a Buzzline .json backup adds its quizzes; spreadsheets go through the import dialog. */
+  async function restoreFile(f: File | undefined) {
     if (!f) return;
-    // "fashion_brands_15_kahoot_import.xlsx" → "Fashion brands": drop the extension, Kahoot/import words and a trailing question count.
-    const title = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').replace(/\b(kahoot|import|v\d+)\b/gi, ' ').replace(/\s+/g, ' ').trim().replace(/\s+\d+$/, '');
     try {
-      if (/\.json$/i.test(f.name)) {
-        const q = JSON.parse(await f.text());
-        if (Array.isArray(q.quizzes) || Array.isArray(q)) { restore(Array.isArray(q) ? q : q.quizzes); return; }
-        if (!Array.isArray(q.questions)) throw new Error('Pick a Kahoot-style .xlsx spreadsheet or a Buzzline backup.');
-        addQuiz({ title: q.title || title, questions: q.questions }, 'import');
-        return;
-      }
-      const { questions, skipped } = await importSpreadsheet(f);
-      if (!questions.length) throw new Error(skipped.length ? `No usable questions. ${skipped.slice(0, 3).join('; ')}` : 'The spreadsheet has no questions under the header row.');
-      addQuiz({ title: title ? title[0].toUpperCase() + title.slice(1) : 'Imported quiz', questions }, 'import');
-      if (skipped.length) ask({
-        title: `Imported ${questions.length} question${questions.length === 1 ? '' : 's'}, skipped ${skipped.length}`,
-        message: skipped.slice(0, 6).join('\n') + (skipped.length > 6 ? `\n…and ${skipped.length - 6} more` : ''),
-        confirm: 'OK', cancel: null,
-      });
+      const q = JSON.parse(await f.text());
+      if (Array.isArray(q) || Array.isArray(q.quizzes)) { restore(Array.isArray(q) ? q : q.quizzes); return; }
+      if (!Array.isArray(q.questions)) throw new Error('That file isn’t a Buzzline backup.');
+      addQuiz({ title: q.title || 'Imported quiz', questions: q.questions }, 'import');
     } catch (e) {
-      ask({ title: "Couldn't import that file", message: (e as Error).message || 'Pick a Kahoot-style .xlsx spreadsheet.', confirm: 'OK', cancel: null });
+      ask({ title: "Couldn't restore that file", message: e instanceof SyntaxError ? 'Pick a Buzzline backup (.json). To import a spreadsheet, use Import spreadsheet.' : (e as Error).message, confirm: 'OK', cancel: null });
     }
   }
 
@@ -421,12 +410,13 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
     <div className="studio">
       {dialog}
       {syncOpen && <SyncDialog secret={syncSecret} status={syncStatus} onEnable={enableSync} onDisable={disableSync} onClose={() => setSyncOpen(false)} />}
+      {importing && <ImportDialog onClose={() => setImporting(false)} onImport={q => addQuiz(q, 'import')} onRestore={list => { setImporting(false); restore(list); }} />}
       {generating && <GenerateDialog onClose={() => setGenerating(false)} onDone={q => { setGenerating(false); addQuiz(q, 'ai'); }} />}
       <aside className="side">
         <Link href="/" className="logo">Buzzline<span className="dot" /></Link>
         <button className="btn small" onClick={() => addQuiz(undefined, 'blank')}>+ New quiz</button>
         <button className="btn small ai" onClick={() => setGenerating(true)}>✨ Generate with AI</button>
-        <button className="btn ghost small" onClick={() => fileRef.current?.click()} title="Kahoot-format .xlsx: Question, Answer 1–4, Time limit, Correct answer(s)">⇪ Import spreadsheet</button>
+        <button className="btn ghost small" onClick={() => setImporting(true)} title="Kahoot-format .xlsx: Question, Answer 1–4, Time limit, Correct answer(s)">⇪ Import spreadsheet</button>
         <button type="button" className="linkbtn" onClick={downloadTemplate}>Download spreadsheet template</button>
         <h3>Your quizzes</h3>
         <div className="qlist">
@@ -444,7 +434,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
             ☁️ {syncSecret ? 'Synced' : 'Sync devices'}
           </button>
           <button type="button" className="linkbtn side-restore" onClick={() => fileRef.current?.click()}>Restore a backup</button>
-          <input ref={fileRef} type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.json,application/json" hidden onChange={e => { importQuiz(e.target.files?.[0]); e.target.value = ''; }} />
+          <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={e => { restoreFile(e.target.files?.[0]); e.target.value = ''; }} />
         </div>
       </aside>
 
