@@ -522,6 +522,39 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .quiz-meta { font-size: 14px; font-weight: 600; min-width: 0; flex: 0 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .editor-bar .btn, .editor-bar .tabs { white-space: nowrap; flex-shrink: 0; }
 @media (min-width: 960px) { .editor-bar { flex-wrap: nowrap; } }
+.bar-actions { display: flex; gap: 12px; flex-shrink: 0; }
+/* "⋯" menu: phones only, holding Share, Challenge link and Delete quiz */
+.more-menu { display: none; position: relative; flex-shrink: 0; }
+.more-btn { width: 44px; height: 44px; padding: 0; justify-content: center; font-size: 22px; line-height: 1; }
+.more-list { position: absolute; top: calc(100% + 8px); right: 0; z-index: 40; min-width: 200px; display: grid; padding: 6px; border-radius: 18px;
+  background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1.5px var(--ink), 0 16px 34px rgba(22, 22, 22, .2); animation: pop .2s cubic-bezier(.3, 1.4, .5, 1); transform-origin: top right; }
+.more-list button { border: 0; background: transparent; font: inherit; font-weight: 700; font-size: 15px; color: inherit; text-align: left; padding: 11px 14px; border-radius: 12px; cursor: pointer; }
+.more-list button:is(:hover, :focus-visible) { background: var(--cream, #fbf6ec); outline: none; }
+.more-list button.danger { color: var(--bad); }
+.more-list button[aria-busy=true] { opacity: .6; }
+@media (prefers-reduced-motion: reduce) { .more-list { animation: none; } }
+
+/* Phones: title and theme on one row, Solo/Teams and Host below; the tabs share a row with the "⋯" menu. */
+@media (max-width: 760px) {
+  .editor { padding-top: 18px; gap: 12px; }
+  .editor-top { gap: 10px; }
+  .editor-top .field { flex: 1 1 100%; min-width: 0; font-size: 24px; padding-block: 8px; }
+  .editor-top > .btn { flex: 1 1 170px; justify-content: center; }
+  .editor-top .seg label { padding: 7px 12px; font-size: 14px; }
+  .editor-bar { gap: 8px; flex-wrap: nowrap; padding-block: 4px; }
+  .editor-bar .tabs { flex: 1; min-width: 0; }
+  .editor-bar .tabs button { flex: 1; padding: 9px 10px; }
+  .editor-bar .spacer, .bar-add, .bar-actions { display: none; }
+  .more-menu { display: block; }
+  .qrail-add { width: 44px; height: 44px; padding: 0; border-radius: 50%; justify-content: center; font-size: 22px; line-height: 1; }
+  .qrail-add-label { display: none; }
+}
+/* Narrow phones: the title gets the whole row; the theme picker shrinks to its swatch beside Solo/Teams. */
+@media (max-width: 560px) {
+  .editor-top .style-pick .qsel-val { display: none; }
+  .editor-top .style-pick .qsel-btn { min-width: 0; padding: 9px 12px; }
+  .editor-top > .btn { flex-basis: 100%; }
+}
 .tabs { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
 .tabs button { border: 0; background: transparent; font: inherit; font-weight: 700; font-size: 15px; color: var(--ink); padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
 .tabs button:hover:not(.on) { background: var(--cream, #fbf6ec); }

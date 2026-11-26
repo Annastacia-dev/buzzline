@@ -7,6 +7,7 @@ import { useAlertDialog } from '@/lib/dialog';
 import GenerateDialog from './GenerateDialog';
 import { TIMES } from '@/lib/spreadsheet';
 import ImportDialog from './ImportDialog';
+import MoreMenu from './MoreMenu';
 import { downloadTemplate } from '@/lib/template';
 import { QuizSelect } from '@/lib/select';
 import { api, beacon, Shape } from '@/lib/client';
@@ -462,10 +463,18 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
               {timesHosted(quiz) > 0 && <span title="Games that reached the podium. Games ended early don’t count."> · {hostedLabel(quiz)}</span>}
             </span>
             <span className="spacer" />
-            <button className="btn small" onClick={addQuestion}>+ Add question</button>
-            <button className="btn ghost small" onClick={share} aria-busy={sharing} title="Copy a link that opens a copy of this quiz in anyone's studio">🔗 Share</button>
-            <button className="btn ghost small" onClick={challenge} aria-busy={challenging} title="A link anyone can play alone on their phone, any time, with a shared leaderboard">🏁 Challenge link</button>
-            <button className="btn ghost small" onClick={remove}>Delete quiz</button>
+            <button className="btn small bar-add" onClick={addQuestion}>+ Add question</button>
+            <div className="bar-actions">
+              <button className="btn ghost small" onClick={share} aria-busy={sharing} title="Copy a link that opens a copy of this quiz in anyone's studio">🔗 Share</button>
+              <button className="btn ghost small" onClick={challenge} aria-busy={challenging} title="A link anyone can play alone on their phone, any time, with a shared leaderboard">🏁 Challenge link</button>
+              <button className="btn ghost small" onClick={remove}>Delete quiz</button>
+            </div>
+            {/* Phones: the same three actions, folded into a menu. */}
+            <MoreMenu items={[
+              { label: '🔗 Share', onClick: share, busy: sharing },
+              { label: '🏁 Challenge link', onClick: challenge, busy: challenging },
+              { label: '🗑 Delete quiz', onClick: remove, danger: true },
+            ]} />
           </div>
           {error && <div className="card error" style={{ padding: 14 }}>{error}</div>}
 
@@ -505,7 +514,7 @@ export default function Studio({ onHost, error }: { onHost: (q: Quiz, teams?: nu
                   );
                 })}
               </ol>
-              <button type="button" className="btn ghost small qrail-add" onClick={addQuestion}>+ Add question</button>
+              <button type="button" className="btn ghost small qrail-add" onClick={addQuestion} aria-label="Add question"><span aria-hidden>+</span><span className="qrail-add-label" aria-hidden> Add question</span></button>
             </nav>
 
             <div id="quiz-panel" role="tabpanel" aria-labelledby={tab === 'edit' ? 'tab-edit' : 'tab-preview'} className="qstage" ref={stageRef} data-theme={theme}>
