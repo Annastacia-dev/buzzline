@@ -3,6 +3,7 @@ import { Shape } from '@/lib/client';
 import { Icon, Scallop, type IconName } from '@/lib/deco';
 import { Avatar } from '@/lib/avatars';
 import QuickJoin from './QuickJoin';
+import Reel from './Reel';
 import styles from './landing.module.css';
 import { FAQ, FEATURES, SITE, SITE_URL } from '@/lib/site';
 import { Doodle } from '@/lib/doodles';
@@ -17,7 +18,7 @@ const steps = [
 const features: { title: string; body: string; tint: string; ink: string; icon: IconName }[] = [
   { title: 'AI writes your quiz', body: 'Pick a topic, how many questions and how hard. Claude drafts it; you tweak what you like.', tint: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'sparkle' },
   { title: 'Free, no sign-up', body: 'Hosting and playing are free. No accounts, no app, no ads between rounds.', tint: 'var(--sage)', ink: 'var(--sage-ink)', icon: 'smile' },
-  { title: 'Thirteen themes', body: 'From Classic pastels to Glass, Polaroid, Messages, Comic, Tarot, Postcard and Chalkboard, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
+  { title: 'Sixteen themes', body: 'From Classic pastels to Glass, Polaroid, Comic, Tarot, Chalkboard, Typewriter, Concert ticket and Recipe card, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
   { title: 'Speed scoring', body: '500 to 1,000 points per right answer, streak bonuses and double-points rounds.', tint: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'bolt' },
   { title: 'Pictures & grid reveal', body: 'Add a picture to any question, and reveal it tile by tile as the clock runs.', tint: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
   { title: 'Kahoot import', body: 'Bring a Kahoot-style spreadsheet, or share a quiz with a link.', tint: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'flame' },
@@ -38,6 +39,9 @@ const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: numbe
   tarot: { q: 'Which sign is a pair of twins?', answers: ['Leo', 'Virgo', 'Gemini', 'Aries'], right: 2, note: 'Moody and magical. Made for Halloween, astrology and late-night quizzes.' },
   postcard: { q: 'Which city is home to the Colosseum?', answers: ['Athens', 'Rome', 'Cairo', 'Madrid'], right: 1, note: 'Wish you were here. Lovely for travel nights, geography rounds and holidays.' },
   chalkboard: { q: 'What is 7 × 8?', answers: ['54', '56', '63', '48'], right: 1, note: 'Back to school. Made for classrooms, times tables and teacher nights.' },
+  typewriter: { q: 'Who wrote “Pride and Prejudice”?', answers: ['Jane Austen', 'Emily Brontë', 'Mary Shelley', 'George Eliot'], right: 0, note: 'Yours sincerely. Lovely for book clubs, history rounds and literary nights.' },
+  ticket: { q: 'Which band sang “Bohemian Rhapsody”?', answers: ['The Beatles', 'Queen', 'ABBA', 'Oasis'], right: 1, note: 'Tonight only. Made for music rounds, festivals and big nights out.' },
+  recipe: { q: 'Which spice gives paella its colour?', answers: ['Paprika', 'Cumin', 'Saffron', 'Turmeric'], right: 2, note: 'Home cooking. Great for food quizzes, family dinners and bake-off nights.' },
 };
 
 // Structured data for search engines and AI answer engines: the app itself, the site, and the FAQ below.
@@ -61,14 +65,35 @@ const jsonLd = {
 };
 
 /** The hero's moving column: real game screens, each in a different theme. Rendered twice so the loop is seamless. */
-function Screens({ copy = false }: { copy?: boolean }) {
+// One theme's sample question, as a screen in the hero reel.
+function ThemeScreen({ id, n }: { id: ThemeId; n: number }) {
+  const ex = themeSamples[id];
+  const name = THEMES.find(t => t.id === id)!.name;
+  return (
+    <figure className={styles.screen}>
+      <div className={styles.screenStage} data-theme={id}>
+        <div className={`card ${styles.themeCard}`}>
+          <div className={styles.liveTop}><span className="pill dark">Q {n} / 10</span><span className={styles.liveTimer}>{8 + (n * 5) % 11}</span></div>
+          <div className={styles.liveQ}>{ex.q}</div>
+          <div className={styles.liveTiles}>
+            {ex.answers.map((a, j) => <div key={a} className={`tile c${j} ${j === ex.right ? 'right' : ''}`}><Shape i={j} />{a}</div>)}
+          </div>
+        </div>
+      </div>
+      <figcaption>A question · {name}</figcaption>
+    </figure>
+  );
+}
+
+// The hero reel: game moments in different themes, one at a time.
+function Screens() {
   const board = [
     { name: 'Maya', avatar: 3, score: 4820, gained: 940 },
     { name: 'Theo', avatar: 9, score: 4310, gained: 720 },
     { name: 'Priya', avatar: 13, score: 3975, gained: 610 },
   ];
   return (
-    <div className={styles.screens} aria-hidden={copy || undefined}>
+    <Reel>
       <figure className={styles.screen}>
         <div className={`${styles.screenStage} ${styles.flashScreen}`} data-theme="classic">
           <div className="flash-deck preview">
@@ -84,6 +109,8 @@ function Screens({ copy = false }: { copy?: boolean }) {
         <figcaption>The question · Classic</figcaption>
       </figure>
 
+      <ThemeScreen id="chalkboard" n={4} />
+
       <figure className={styles.screen}>
         <div className={`${styles.screenStage} ${styles.joinScreen}`} data-theme="glass">
           <span className="pill">Join at buzzline.click</span>
@@ -96,6 +123,8 @@ function Screens({ copy = false }: { copy?: boolean }) {
         </div>
         <figcaption>Countdown to start · Glass</figcaption>
       </figure>
+
+      <ThemeScreen id="typewriter" n={2} />
 
       <figure className={styles.screen}>
         <div className={styles.screenStage} data-theme="toybox">
@@ -112,6 +141,10 @@ function Screens({ copy = false }: { copy?: boolean }) {
         <figcaption>Scoreboard · Toybox</figcaption>
       </figure>
 
+      <ThemeScreen id="ticket" n={6} />
+      <ThemeScreen id="recipe" n={3} />
+      <ThemeScreen id="postcard" n={7} />
+
       <figure className={styles.screen}>
         <div className={styles.screenStage} data-theme="doodlebug">
           <div className={styles.miniTitle}>And the winner <em>is…</em></div>
@@ -126,7 +159,11 @@ function Screens({ copy = false }: { copy?: boolean }) {
         </div>
         <figcaption>The podium · Doodlebug</figcaption>
       </figure>
-    </div>
+
+      <ThemeScreen id="tarot" n={9} />
+      <ThemeScreen id="comic" n={5} />
+      <ThemeScreen id="messages" n={8} />
+    </Reel>
   );
 }
 
@@ -151,30 +188,16 @@ export default function Landing() {
       {/* ---------- hero: one message, one main button, the game moving beside it ---------- */}
       <header className={styles.hero}>
         <div className={styles.heroText}>
-          <span className={styles.freeTag}>100% free · no sign-up · no app</span>
           <h1>Type a topic.<br /><em>Play in a minute.</em></h1>
           <p>AI writes the questions, you pick a theme, and everyone plays live from their phones.</p>
           <div className={styles.ctaRow}>
             <Link href="/host?ai" className={`btn ${styles.mainCta}`}>✨ Create a free quiz with AI</Link>
             <Link href="/host" className={styles.textLink}>or write your own →</Link>
           </div>
-          <ul className={styles.points}>
-            <li><Icon name="smile" size={18} stroke={7} />Free for everyone</li>
-            <li><Icon name="sparkle" size={18} stroke={7} />AI quiz maker</li>
-            <li>
-              <span className={styles.swatches} aria-hidden>{THEMES.map(t => <i key={t.id} style={{ background: t.swatch[1] }} />)}</span>
-              <a href="#themes">{THEMES.length} themes</a>
-            </li>
-          </ul>
           <div className={styles.joinRow}><span>Got a game PIN?</span><QuickJoin /></div>
         </div>
 
-        <div className={styles.reel}>
-          <div className={styles.reelTrack}>
-            <Screens />
-            <Screens copy />
-          </div>
-        </div>
+        <Screens />
       </header>
 
       {/* ---------- how it works ---------- */}
@@ -228,7 +251,7 @@ export default function Landing() {
                     ? <Scallop color="var(--pink)" size={120} rotate={-18} className={styles.themeDeco} />
                     : <Doodle theme={t.id} name="mascot" size={66} className={`bob ${styles.themeMascot}`} />}
                   <div className={`card ${styles.themeCard}`}>
-                    <div className={styles.liveTop}><span className="pill dark">Q {i + 1} / 12</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10, 14, 8, 13, 6, 16, 11, 9][i]}</span></div>
+                    <div className={styles.liveTop}><span className="pill dark">Q {i + 1} / 12</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10, 14, 8, 13, 6, 16, 11, 9, 12, 7, 15][i]}</span></div>
                     <div className={styles.liveQ}>{ex.q}</div>
                     <div className={styles.liveTiles}>
                       {ex.answers.map((a, j) => <div key={a} className={`tile c${j} ${j === ex.right ? 'right' : ''}`}><Shape i={j} />{a}</div>)}

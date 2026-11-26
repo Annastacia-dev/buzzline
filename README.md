@@ -142,6 +142,12 @@ all side by side.
   of a postcard with a stamp and postmark, answers carry perforated stamps, and cards have airmail-striped edges.
 - **Chalkboard**: chalk on a green board in a wooden frame, written in Schoolbell with Cabin Sketch headings. Headings
   and the question get wavy underlines, answers are boxes drawn in coloured chalk, and the phone's footer is the chalk ledge.
+- **Typewriter**: a typed letter on cream paper in Special Elite and Courier Prime, with uneven ink. The host screen has a
+  letterhead dated today, the question opens "Dear players," and ends in a blinking cursor, and badges are rubber stamps.
+- **Concert ticket**: bright tickets under stage spotlights, set in Bebas Neue and Barlow Condensed. The question is a
+  ticket with an ADMIT ONE stub, answers are tickets with punched notches and perforations, and phones tear off a stub.
+- **Recipe card**: lined index cards with a red header rule on a gingham tablecloth, set in Playfair Display and Lora.
+  Answers are ingredients with checkboxes, and the right one gets ticked.
 
 ### Seasonal effects
 

@@ -10,7 +10,6 @@
 /* hero: a calm text column and a moving column of game screens */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; padding: 30px 0 60px; }
 .heroText { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
-.freeTag { font-size: 14px; font-weight: 700; padding: 7px 14px; border-radius: 999px; background: var(--sage); color: var(--sage-ink); }
 .heroText h1 { font-size: clamp(46px, 6.2vw, 84px); line-height: .96; font-weight: 800; letter-spacing: -0.05em; }
 .heroText h1 em { font-weight: 300; letter-spacing: -0.05em; }
 .heroText p { font-size: 20px; line-height: 1.5; margin: 0; max-width: 460px; color: #4a4538; }
@@ -18,12 +17,6 @@
 .mainCta { font-size: 18px; padding: 18px 28px; }
 .textLink { font-weight: 700; color: var(--ink); text-decoration: none; }
 .textLink:hover { text-decoration: underline; }
-.points { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; font-weight: 600; font-size: 15px; }
-.points li { display: inline-flex; align-items: center; gap: 8px; }
-.points a { color: inherit; }
-.swatches { display: inline-flex; }
-.swatches i { width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 2px var(--bg); }
-.swatches i + i { margin-left: -5px; }
 .joinRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 8px; color: var(--muted); font-size: 15px; font-weight: 600; }
 .quickJoin { display: flex; gap: 4px; background: var(--paper); padding: 4px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--line); }
 .quickJoin input {
@@ -32,20 +25,16 @@
 }
 .quickJoin :global(.btn) { padding: 9px 18px; font-size: 15px; }
 
-/* the reel: screens drift slowly upwards and loop; hover pauses it, reduced motion makes it a plain scroller */
-.reel {
-  height: 620px; overflow: hidden; border-radius: 36px;
-  mask-image: linear-gradient(180deg, transparent, #000 10%, #000 90%, transparent);
-}
-.reelTrack { display: grid; animation: reel 40s linear infinite; }
-.reel:hover .reelTrack, .reel:focus-within .reelTrack { animation-play-state: paused; }
-@keyframes reel { to { transform: translateY(-50%); } }
-@media (prefers-reduced-motion: reduce) {
-  .reel { overflow-y: auto; }
-  .reelTrack { animation: none; }
-  .reelTrack > :last-child { display: none; }
-}
-.screens { display: grid; gap: 22px; padding-bottom: 22px; }
+/* the reel: one screen at a time, sliding sideways to the next every 3 seconds; hover pauses it */
+.reel { position: relative; overflow: hidden; border-radius: 30px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.reelTrack { display: flex; transition: transform .7s cubic-bezier(.65, 0, .25, 1); }
+.reelSlide { flex: 0 0 100%; min-width: 0; padding: 0 2px; }
+.reelSlide .screenStage { min-height: 480px; }
+@media (min-width: 981px) { .reelSlide .themeCard { zoom: 1.2; } }
+.reelDots { display: flex; justify-content: center; gap: 7px; }
+.reelDots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 99px; background: var(--line); cursor: pointer; transition: width .3s, background .3s; }
+.reelDots button[aria-current=true] { width: 26px; background: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .reelTrack { transition: none; } }
 .screen { margin: 0; display: grid; gap: 8px; }
 .screen figcaption { font-size: 13px; font-weight: 600; color: var(--muted); padding-left: 8px; }
 .screenStage {
@@ -122,17 +111,11 @@
   .nav { grid-template-columns: 1fr auto; }
   .navLinks { display: none; }
   .hero { grid-template-columns: 1fr; gap: 36px; }
-  /* on narrow screens the screens sit side by side and swipe */
-  .reel { height: auto; mask-image: none; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 0; margin: 0 -28px; padding: 0 28px 8px; scrollbar-width: none; }
-  .reelTrack { animation: none; display: block; }
-  .reelTrack > :last-child { display: none; }
-  .screens { grid-auto-flow: column; grid-auto-columns: min(340px, 82vw); padding-bottom: 0; }
-  .screen { scroll-snap-align: center; }
   .steps, .features { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 640px) {
+  .reelSlide .screenStage { min-height: 400px; }
   .page { padding: 0 18px; }
-  .reel { margin: 0 -18px; padding: 0 18px 8px; }
   .navCta :global(.ghost) { display: none; }
   .steps, .features { grid-template-columns: 1fr; }
   .mainCta { width: 100%; justify-content: center; }
@@ -172,7 +155,7 @@
 @media (max-width: 640px) { .themes { grid-template-columns: 1fr; } }
 .themeStage[data-theme=glass] { background: var(--glass-wash); }
 .themeStage[data-theme=toybox] { background: var(--clay-wash); }
-.themeStage[data-theme=chalkboard] {
+:is(.themeStage, .screenStage)[data-theme=chalkboard] {
   border: 14px solid transparent; border-radius: 24px; padding: 54px 8px 12px;
   background: radial-gradient(ellipse at 25% 18%, rgba(255, 255, 255, .09), transparent 55%) padding-box, linear-gradient(#2c4a3b, #2c4a3b) padding-box, var(--wood) border-box;
   box-shadow: inset 0 0 0 2px #5a3a1c, inset 0 6px 14px rgba(0, 0, 0, .45);

@@ -27,7 +27,7 @@ export const FEATURES = [
   'AI quiz generator: type a topic and get up to 20 questions',
   'Import Kahoot-format spreadsheets (.xlsx) and download a ready-made template',
   'Auto mode that moves through the game on a timer',
-  'Thirteen quiz themes (Classic, Doodlebug, Inkblot, Toybox, Glass, Retro, Receipt, Polaroid, Messages, Comic, Tarot, Postcard and Chalkboard) that style the host screen, the join page and every player’s phone',
+  'Sixteen quiz themes (Classic, Doodlebug, Inkblot, Toybox, Glass, Retro, Receipt, Polaroid, Messages, Comic, Tarot, Postcard, Chalkboard, Typewriter, Concert ticket and Recipe card) that style the host screen, the join page and every player’s phone',
   'Seasonal effects on top of any theme: Christmas lights or fireworks, plus falling snow, autumn leaves, confetti, stars or hearts',
   'Picture questions, including grid reveal: the picture starts hidden behind tiles that clear as the timer runs',
   'Share a quiz with a link, and back up or restore all your quizzes as one file',
@@ -65,7 +65,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Can I change how a quiz looks?',
-    a: 'Yes. Pick a theme in the studio: Classic (bright pastel blocks), Doodlebug (blue ink on beige paper with handwriting and doodles), Inkblot (black and white line art), Toybox (soft pastel clay), Glass (frosted glass over glowing colour), Retro (old desktop windows and pixel art), Receipt (till receipts with torn edges and barcodes), Polaroid (a photo album with handwritten captions), Messages (text bubbles in a phone chat), Comic (inked panels, halftone dots and speech bubbles), Tarot (gilded cards on a midnight cloth), Postcard (airmail stripes, stamps and postmarks) or Chalkboard (chalk on a green board in a wooden frame). On top you can add Christmas lights or fireworks, and something falling: snow, autumn leaves, confetti, stars or hearts. The host screen, the join page and every player’s phone show them all.',
+    a: 'Yes. Pick a theme in the studio: Classic (bright pastel blocks), Doodlebug (blue ink on beige paper with handwriting and doodles), Inkblot (black and white line art), Toybox (soft pastel clay), Glass (frosted glass over glowing colour), Retro (old desktop windows and pixel art), Receipt (till receipts with torn edges and barcodes), Polaroid (a photo album with handwritten captions), Messages (text bubbles in a phone chat), Comic (inked panels, halftone dots and speech bubbles), Tarot (gilded cards on a midnight cloth), Postcard (airmail stripes, stamps and postmarks), Chalkboard (chalk on a green board in a wooden frame), Typewriter (a typed letter with a dated letterhead), Concert ticket (bright tickets with stubs and perforations) or Recipe card (lined index cards with ingredient checkboxes). On top you can add Christmas lights or fireworks, and something falling: snow, autumn leaves, confetti, stars or hearts. The host screen, the join page and every player’s phone show them all.',
   },
   {
     q: 'Can I add pictures to questions?',

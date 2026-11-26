@@ -108,6 +108,21 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     blobs: ['#3a5a46', '#335240'], pills: ['#3a5a46', '#4f5a34', '#35506a'], deck: ['#3a5a46', '#335240'],
     tiles: [['#35506a', '#f3f1e7'], ['#5a4148', '#f3f1e7'], ['#3d5e3f', '#f3f1e7'], ['#5a5530', '#f3f1e7']],
   },
+  typewriter: {
+    bg: '#f5eedb', paper: '#fbf6e8', ink: '#26221d', muted: '#6b6253', accent: '#b3261e',
+    blobs: ['#ece2c6', '#efd2cc'], pills: ['#fbf6e8', '#efd2cc', '#d5dcea'], deck: ['#efe5cc', '#fbf6e8'],
+    tiles: [['#26221d', '#fbf6e8'], ['#b3261e', '#ffffff'], ['#2c4a8a', '#ffffff'], ['#8a5a1c', '#ffffff']],
+  },
+  ticket: {
+    bg: '#17112a', paper: '#fff4dc', ink: '#f8f1e4', muted: '#c9bedf', accent: '#ff4f8b',
+    blobs: ['#3a1d4d', '#14304d'], pills: ['#fff4dc', '#ffd1e2', '#cfe9ff'], deck: ['#3a1d4d', '#14304d'],
+    tiles: [['#ff4f8b', '#1d1530'], ['#3fb8ff', '#1d1530'], ['#b6f24a', '#1d1530'], ['#ffb02e', '#1d1530']],
+  },
+  recipe: {
+    bg: '#fbf5ec', paper: '#fffdf6', ink: '#2b2420', muted: '#6e6258', accent: '#d9534f',
+    blobs: ['#f6d3cf', '#d3e0f2'], pills: ['#fffdf6', '#f6d3cf', '#d6e6c9'], deck: ['#f6efe2', '#fffdf6'],
+    tiles: [['#d9483b', '#ffffff'], ['#3d5fa8', '#ffffff'], ['#3f8a4a', '#ffffff'], ['#d49a14', '#ffffff']],
+  },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
     blobs: ['#e4e4e2', '#ececea'], pills: ['#ececea', '#e2e2e0', '#ffffff'], deck: ['#ececea', '#e2e2e0'],
