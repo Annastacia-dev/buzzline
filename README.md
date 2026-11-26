@@ -140,6 +140,8 @@ all side by side.
   cards numbered I to IV, and each phone moment is a card of the major arcana (The Sun for a right answer).
 - **Postcard**: postcards on a sky-blue desk, written in Kalam with Alfa Slab One headings. The question is the back
   of a postcard with a stamp and postmark, answers carry perforated stamps, and cards have airmail-striped edges.
+- **Chalkboard**: chalk on a green board in a wooden frame, written in Schoolbell with Cabin Sketch headings. Headings
+  and the question get wavy underlines, answers are boxes drawn in coloured chalk, and the phone's footer is the chalk ledge.
 
 ### Seasonal effects
 

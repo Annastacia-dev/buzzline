@@ -14,6 +14,7 @@ export const THEMES = [
   { id: 'comic', name: 'Comic', blurb: 'A comic book: inked panels, halftone dots, speech bubbles and starbursts', swatch: ['#ffe066', '#d8291f', '#1666c4', '#14110f'] },
   { id: 'tarot', name: 'Tarot', blurb: 'Gilded tarot cards dealt on a midnight cloth full of gold stars', swatch: ['#1c1438', '#f7ecd0', '#c79a3a', '#962a4a'] },
   { id: 'postcard', name: 'Postcard', blurb: 'Postcards on a sky-blue desk: airmail stripes, perforated stamps and postmarks', swatch: ['#fffaf0', '#b9d0dc', '#c23b32', '#2b5aa8'] },
+  { id: 'chalkboard', name: 'Chalkboard', blurb: 'Chalk handwriting on a green board in a wooden frame, with wavy underlines', swatch: ['#2c4a3b', '#f3f1e7', '#f5dc6e', '#a5703e'] },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -23,7 +24,7 @@ export const DEFAULT_THEME: ThemeId = 'classic';
 export const themeOf = (v: unknown): ThemeId => (THEMES.some(t => t.id === v) ? (v as ThemeId) : DEFAULT_THEME);
 
 /** The ink colour for things drawn outside CSS, such as the lobby QR code. */
-export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'postcard' ? '#24324f' : t === 'messages' ? '#111114' : t === 'comic' ? '#14110f' : t === 'tarot' ? '#2b1c46' : t === 'polaroid' ? '#35291f' : t === 'receipt' ? '#27282b' : t === 'retro' ? '#14161f' : t === 'toybox' ? '#3a3d6b' : '#161616');
+export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'chalkboard' ? '#1f3a2c' : t === 'postcard' ? '#24324f' : t === 'messages' ? '#111114' : t === 'comic' ? '#14110f' : t === 'tarot' ? '#2b1c46' : t === 'polaroid' ? '#35291f' : t === 'receipt' ? '#27282b' : t === 'retro' ? '#14161f' : t === 'toybox' ? '#3a3d6b' : '#161616');
 
 /** Themes with their own drawings in lib/doodles.tsx (the others decorate with shapes or colour). */
 export const hasDoodles = (t: ThemeId) => t === 'doodlebug' || t === 'inkblot' || t === 'retro';

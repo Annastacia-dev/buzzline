@@ -845,7 +845,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -2272,12 +2272,154 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 [data-theme=postcard] .pcard.flash { padding-right: 24px; }
 [data-theme=postcard] .flash-deck::before, [data-theme=postcard] .flash-deck::after { border: 0; border-radius: 6px; background: #f3ecdc; box-shadow: var(--card); }
 
-/* Messages, Comic, Tarot and Postcard: the phone lobby shrinks so the avatar picker fits */
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .msg { gap: 8px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .msg > .avatar { zoom: .6; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .msg p { font-size: 15px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .avatar-pick { justify-items: center; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
+/* ---------- Chalkboard: chalk handwriting on a green board in a wooden frame, with wavy underlines ----------
+   The whole theme is dark: --paper is a slightly lighter patch of board and --ink is white chalk.
+   --sketch is a hand-drawn box's wobbly corners; --wood the frame's grain; --wave a chalk squiggle (it takes --chalk as its colour via mask). */
+[data-theme=chalkboard] {
+  --bg: #2c4a3b; --paper: #34543f; --ink: #f3f1e7; --muted: #b8c9bc; --line: rgba(243, 241, 231, .5);
+  --yellow: #f5dc6e; --pinkc: #f39bb0; --bluec: #8ec9ef; --greenc: #a9df8f;
+  --butter: #4f5a34; --butter-ink: #f5dc6e;
+  --sage:   #3d5e3f; --sage-ink:   #c4ecb0;
+  --olive:  #4d5a3a;
+  --lilac:  #4a4a62; --lilac-ink:  #d8cdf5;
+  --peri:   #35506a; --peri-ink:   #b9dcf5;
+  --pink:   #5a4148; --pink-ink:   #f8bccb;
+  --peach:  #5c4a36; --peach-ink:  #f6cfa3;
+  --mint:   #2f5a4e; --mint-ink:   #b4ead8;
+  --coral:  #5e3f3a; --coral-ink:  #f6b4a6;
+  --good: #a9df8f; --bad: #f39b8f;
+  --font-display: var(--font-chalk-display), var(--font-chalk), cursive;
+  --font-main: var(--font-chalk), cursive;
+  --radius: 10px;
+  --sketch: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  --dust: 0 0 1px rgba(243, 241, 231, .55), 0 0 7px rgba(243, 241, 231, .18);
+  --wood: repeating-linear-gradient(92deg, rgba(60, 30, 8, .28) 0 2px, transparent 2px 9px, rgba(255, 220, 170, .08) 9px 11px, transparent 11px 23px),
+    repeating-linear-gradient(88deg, transparent 0 37px, rgba(60, 30, 8, .25) 37px 39px, transparent 39px 61px), linear-gradient(#a5703e, #8a5a2e 50%, #7b4f27);
+  --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 12'%3E%3Cpath d='M0 6q5-6 10 0t10 0t10 0t10 0' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") 0 50% / 40px 12px repeat-x;
+  font-family: var(--font-main); color: var(--ink); text-shadow: var(--dust);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=chalkboard], .phone[data-theme=chalkboard][data-mood], [data-theme=chalkboard] .countdown-overlay {
+  --board: radial-gradient(ellipse at 25% 18%, rgba(255, 255, 255, .09), transparent 55%), radial-gradient(ellipse at 80% 85%, rgba(255, 255, 255, .06), transparent 50%),
+    repeating-linear-gradient(172deg, rgba(255, 255, 255, .022) 0 46px, transparent 46px 110px), linear-gradient(var(--page, #2c4a3b), var(--page, #2c4a3b));
+  background: var(--board);
+}
+/* the wooden frame: a grained border with a shadow where it meets the board */
+:is(.stage, .phone, .join-page)[data-theme=chalkboard], .phone[data-theme=chalkboard][data-mood] {
+  border: 16px solid transparent; background: var(--board) padding-box, var(--wood) border-box;
+  box-shadow: inset 0 0 0 2px #5a3a1c, inset 0 8px 18px rgba(0, 0, 0, .45), inset 0 -2px 10px rgba(0, 0, 0, .3);
+}
+.phone[data-theme=chalkboard], .phone[data-theme=chalkboard][data-mood] { border-width: 10px; }
+.qstage[data-theme=chalkboard] { border: 12px solid transparent; background: var(--board) padding-box, var(--wood) border-box; box-shadow: inset 0 0 0 2px #5a3a1c, inset 0 6px 14px rgba(0, 0, 0, .45); }
+.phone[data-theme=chalkboard][data-mood=ready], [data-theme=chalkboard] .countdown-overlay { --page: #2b4648; }
+.phone[data-theme=chalkboard][data-mood=locked] { --page: #2f4545; }
+.phone[data-theme=chalkboard][data-mood=good] { --page: #2b5236; }
+.phone[data-theme=chalkboard][data-mood=bad] { --page: #44403a; }
+.phone[data-theme=chalkboard]:is([data-mood=rank], [data-mood=end]) { --page: #3b4a32; }
+
+[data-theme=chalkboard] :is(h1, h2, h3, .bignum, .logo, .pin, .name, .stat b, .ring span, .podium .m) { font-weight: 700; letter-spacing: .01em; }
+[data-theme=chalkboard] :is(.stage-q, .qtext, .tile, .btn, .row, .chip) { font-weight: 400; }
+[data-theme=chalkboard] em, [data-theme=chalkboard] .it { font: inherit; letter-spacing: inherit; color: var(--yellow); }
+[data-theme=chalkboard] .logo .dot { background: var(--pinkc); box-shadow: var(--dust); }
+/* headings get a teacher's wavy underline */
+[data-theme=chalkboard] :is(h1, h2) { text-decoration: underline wavy var(--yellow) 2px; text-underline-offset: .2em; text-decoration-skip-ink: none; }
+[data-theme=chalkboard] :is(.muted, .order-hint, .bar-label, .team-note) { color: var(--muted); }
+[data-theme=chalkboard] a { color: var(--ink); }
+
+/* chalk-drawn boxes */
+[data-theme=chalkboard] :is(.pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=chalkboard] form.card, .phone[data-theme=chalkboard] .msg {
+  background: rgba(255, 255, 255, .035); color: var(--ink); box-shadow: none; border: 3px solid rgba(243, 241, 231, .82); border-radius: var(--sketch);
+}
+/* the question is written straight on the board, with a wavy line under it */
+[data-theme=chalkboard] .stage-q { position: relative; background: none; color: var(--ink); box-shadow: none; border: 0; padding: 6px 30px 26px; }
+[data-theme=chalkboard] .stage-q::after { content: ''; position: absolute; left: 50%; bottom: 4px; translate: -50% 0; width: min(60%, 520px); height: 12px; background: var(--yellow); mask: var(--wave); opacity: .9; }
+[data-theme=chalkboard] .pinbox .label { color: var(--muted); }
+[data-theme=chalkboard] .pinbox .pin { color: var(--yellow); }
+[data-theme=chalkboard] .pinbox > .sticker { display: none; }
+[data-theme=chalkboard] .qr { background: #fff; border-radius: 6px; rotate: -1.5deg; }
+[data-theme=chalkboard] .join-quiz-tag { rotate: -1.5deg; }
+[data-theme=chalkboard] :is(.stage-img, .phone-img, .reveal, .q-img) { border: 3px solid rgba(243, 241, 231, .85); border-radius: var(--sketch); box-shadow: none; }
+
+/* answers: boxes drawn in coloured chalk, each shape filled in */
+[data-theme=chalkboard] .c0 { --chalk: var(--bluec); }
+[data-theme=chalkboard] .c1 { --chalk: var(--pinkc); }
+[data-theme=chalkboard] .c2 { --chalk: var(--greenc); }
+[data-theme=chalkboard] .c3 { --chalk: var(--yellow); }
+[data-theme=chalkboard] .tile { background: rgba(255, 255, 255, .035); color: var(--ink); border: 3px solid var(--chalk, var(--ink)); border-radius: var(--sketch); box-shadow: none; overflow: visible; }
+[data-theme=chalkboard] .tile .shape { fill: var(--chalk, var(--ink)); background: none; filter: drop-shadow(0 0 3px rgba(255, 255, 255, .2)); }
+[data-theme=chalkboard] .answers .tile:nth-child(4n+2), [data-theme=chalkboard] .answers .tile:nth-child(4n+3) { border-radius: 18px 225px 18px 255px / 255px 18px 225px 18px; }
+[data-theme=chalkboard] .tile.right { background: color-mix(in srgb, var(--chalk, var(--good)) 22%, transparent); outline: 3px solid var(--chalk, var(--good)); outline-offset: 4px; }
+[data-theme=chalkboard] .tile.right :is(.label, span):not(.tick) { text-decoration: underline wavy var(--chalk, var(--good)) 2px; text-underline-offset: .2em; text-decoration-skip-ink: none; }
+[data-theme=chalkboard] .tile .tick { background: var(--good); color: #1f3a2c; text-shadow: none; }
+.stage[data-theme=chalkboard] .answers { gap: 18px 24px; }
+.stage[data-theme=chalkboard] .answers .tile { min-height: 100px; }
+[data-theme=chalkboard] .pans-tile { background: color-mix(in srgb, var(--chalk) 25%, transparent) !important; color: var(--ink); border: 2px solid var(--chalk); border-radius: 10px; }
+[data-theme=chalkboard] .pans-tile > :first-child { fill: var(--chalk); }
+[data-theme=chalkboard] .order-n, [data-theme=chalkboard] .solution-order li b { background: var(--yellow); color: #23392d; text-shadow: none; }
+[data-theme=chalkboard] .order-items .tile { --chalk: rgba(243, 241, 231, .82); }
+[data-theme=chalkboard] .order-move button { background: rgba(255, 255, 255, .06); color: var(--ink); box-shadow: 0 0 0 2px var(--line); }
+[data-theme=chalkboard] .solution-order li { background: rgba(255, 255, 255, .035); color: var(--ink); border: 2px solid var(--line); border-radius: var(--sketch); box-shadow: none; }
+/* answer counts are hatched in chalk */
+[data-theme=chalkboard] .bars .col { border-radius: 4px 4px 0 0; color: var(--ink); box-shadow: none; border: 3px solid var(--chalk, var(--ink)); border-bottom: 0;
+  background: repeating-linear-gradient(-55deg, color-mix(in srgb, var(--chalk, var(--ink)) 70%, transparent) 0 3px, transparent 3px 9px) !important; }
+[data-theme=chalkboard] .bars > div:nth-child(1) { --chalk: var(--bluec); } [data-theme=chalkboard] .bars > div:nth-child(2) { --chalk: var(--pinkc); }
+[data-theme=chalkboard] .bars > div:nth-child(3) { --chalk: var(--greenc); } [data-theme=chalkboard] .bars > div:nth-child(4) { --chalk: var(--yellow); }
+[data-theme=chalkboard] .bars .shape { fill: var(--chalk); }
+[data-theme=chalkboard] .reveal-tile span { color: var(--ink); opacity: .9; }
+[data-theme=chalkboard] .ans-edit label { border-radius: 10px; }
+[data-theme=chalkboard] .ans-edit input[type=text] { color: var(--ink); background: rgba(0, 0, 0, .2); border-radius: 6px; }
+[data-theme=chalkboard] .ans-edit .ans-tag { color: var(--ink); }
+
+/* players and the scoreboard */
+[data-theme=chalkboard] .chip:hover { background: rgba(243, 155, 176, .2); }
+[data-theme=chalkboard] .row:nth-child(odd) { rotate: -.3deg; } [data-theme=chalkboard] .row:nth-child(even) { rotate: .3deg; }
+[data-theme=chalkboard] .row:first-child { border-color: var(--yellow); }
+[data-theme=chalkboard] .podium .block { background: rgba(255, 255, 255, .04) !important; color: var(--ink); box-shadow: none; border: 3px solid rgba(243, 241, 231, .82); border-bottom: 0; border-radius: 14px 14px 0 0; }
+[data-theme=chalkboard] .podium > .first .block { border-color: var(--yellow); background: repeating-linear-gradient(-55deg, rgba(245, 220, 110, .22) 0 3px, transparent 3px 10px) !important; }
+[data-theme=chalkboard] .podium .block * { color: var(--ink) !important; }
+
+/* controls */
+[data-theme=chalkboard] .pill { background: rgba(255, 255, 255, .05); color: var(--ink); box-shadow: 0 0 0 2px var(--line); border-radius: 999px; }
+[data-theme=chalkboard] .pill.dark { background: var(--ink); color: #23392d; text-shadow: none; }
+[data-theme=chalkboard] .field { color: var(--ink); background: rgba(0, 0, 0, .18) !important; border: 2px solid var(--line) !important; border-radius: 10px; font-family: var(--font-main); }
+[data-theme=chalkboard] .field::placeholder { color: rgba(243, 241, 231, .5); }
+[data-theme=chalkboard] .field:focus { outline: 2px solid var(--yellow); outline-offset: 2px; }
+/* a button is a stick of chalk rubbed in */
+[data-theme=chalkboard] .btn { background: var(--ink); color: #23392d; text-shadow: none; border-radius: var(--sketch); font-size: 1.1em; box-shadow: 0 0 6px rgba(243, 241, 231, .25); }
+[data-theme=chalkboard] :is(.btn.light, .btn.ghost) { background: transparent; color: var(--ink); text-shadow: var(--dust); box-shadow: inset 0 0 0 2.5px rgba(243, 241, 231, .82); }
+[data-theme=chalkboard] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #3a1612; }
+[data-theme=chalkboard] .bar { height: 10px; border-radius: 99px; background: rgba(0, 0, 0, .25); }
+[data-theme=chalkboard] .bar > div { border-radius: 99px; background: var(--yellow); box-shadow: var(--dust); }
+[data-theme=chalkboard] .ring { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 3px rgba(243, 241, 231, .82); }
+[data-theme=chalkboard] .avatar-pick > div { background: rgba(0, 0, 0, .16); border-radius: 12px; }
+[data-theme=chalkboard] .avatar { text-shadow: none; }
+
+/* Classic's blobs go; a badge is a chalk circle with the number written inside */
+[data-theme=chalkboard] .shapebox > svg { display: none; }
+[data-theme=chalkboard] .shapebox:has(> div) { background: transparent; border: 5px solid var(--yellow); border-radius: 50% 46% 52% 44% / 48% 52% 46% 54%; box-shadow: 0 0 8px rgba(245, 220, 110, .3), inset 0 0 8px rgba(245, 220, 110, .2); rotate: -4deg !important; }
+[data-theme=chalkboard] .shapebox:has(> div) :is(.bignum, .result) { color: var(--ink); }
+.phone[data-theme=chalkboard][data-mood=bad] .shapebox:has(> div) { border-color: var(--pinkc); }
+.phone[data-theme=chalkboard][data-mood=good] .shapebox:has(> div) { border-color: var(--greenc); }
+
+/* phones: each moment is a box drawn on the board; the footer is the chalk ledge */
+.phone[data-theme=chalkboard] header { background: none; }
+.phone[data-theme=chalkboard] .msg { margin: 8px 6px; padding: 24px 16px 22px; }
+.phone[data-theme=chalkboard] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=chalkboard] .msg h1 { font-size: 36px; }
+.phone[data-theme=chalkboard] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=chalkboard] footer { background: var(--wood); color: #fff6e4; text-shadow: 0 1px 0 rgba(60, 30, 8, .6); border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, .35), inset 0 2px 0 rgba(255, 230, 190, .25); }
+.phone[data-theme=chalkboard][data-mood=end] .msg { gap: 7px; padding-block: 20px 14px; }
+.phone[data-theme=chalkboard][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=chalkboard] { padding: 14px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=chalkboard] .flash-deck::before, [data-theme=chalkboard] .flash-deck::after { border: 2px solid var(--line); border-radius: var(--sketch); background: #2f4d3b; box-shadow: none; }
+
+/* Messages, Comic, Tarot, Postcard and Chalkboard: the phone lobby shrinks so the avatar picker fits */
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard])[data-mood=lobby] .msg { gap: 8px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard])[data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard])[data-mood=lobby] .msg p { font-size: 15px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard])[data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
 
 /* ---------- Admin dashboard (/admin) ---------- */
 /* Series colors: validated for colorblind separation on white (dataviz validate_palette). Text never uses them. */
