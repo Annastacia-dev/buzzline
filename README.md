@@ -148,6 +148,14 @@ all side by side.
   ticket with an ADMIT ONE stub, answers are tickets with punched notches and perforations, and phones tear off a stub.
 - **Recipe card**: lined index cards with a red header rule on a gingham tablecloth, set in Playfair Display and Lora.
   Answers are ingredients with checkboxes, and the right one gets ticked.
+- **Christmas**: gold-framed cream cards on a snowy red night, set in Mountains of Christmas and Nunito. The question has
+  a candy-cane edge and holly, answers are wrapped presents with ribbons, and badges are glass baubles.
+- **Fall**: stitched patches on flannel plaid in pumpkin, mustard, rust and olive, set in Fraunces and Work Sans.
+  Answer shapes sit on leaves, and a maple leaf is caught on the question's corner.
+- **Easter**: white cards on a pastel polka-dot cloth, set in Baloo 2 and Nunito. Answer shapes are painted on eggs,
+  badges are banded eggs, and spring grass grows along the question and phone cards.
+- **Valentine's**: lace doilies with scalloped edges on a pink cloth of little hearts, set in Dancing Script and
+  Quicksand. Answers are pastel candy hearts printed in red, and badges are big hearts.
 
 ### Seasonal effects
 

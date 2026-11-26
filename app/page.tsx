@@ -18,7 +18,7 @@ const steps = [
 const features: { title: string; body: string; tint: string; ink: string; icon: IconName }[] = [
   { title: 'AI writes your quiz', body: 'Pick a topic, how many questions and how hard. Claude drafts it; you tweak what you like.', tint: 'var(--lilac)', ink: 'var(--lilac-ink)', icon: 'sparkle' },
   { title: 'Free, no sign-up', body: 'Hosting and playing are free. No accounts, no app, no ads between rounds.', tint: 'var(--sage)', ink: 'var(--sage-ink)', icon: 'smile' },
-  { title: 'Sixteen themes', body: 'From Classic pastels to Glass, Polaroid, Comic, Tarot, Chalkboard, Typewriter, Concert ticket and Recipe card, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
+  { title: 'Twenty themes', body: 'From Classic pastels to Chalkboard, Typewriter and Concert ticket, plus Christmas, Fall, Easter and Valentine’s for the seasons, matched across every screen.', tint: 'var(--pink)', ink: 'var(--pink-ink)', icon: 'star' },
   { title: 'Speed scoring', body: '500 to 1,000 points per right answer, streak bonuses and double-points rounds.', tint: 'var(--butter)', ink: 'var(--butter-ink)', icon: 'bolt' },
   { title: 'Pictures & grid reveal', body: 'Add a picture to any question, and reveal it tile by tile as the clock runs.', tint: 'var(--peri)', ink: 'var(--peri-ink)', icon: 'cursor' },
   { title: 'Kahoot import', body: 'Bring a Kahoot-style spreadsheet, or share a quiz with a link.', tint: 'var(--peach)', ink: 'var(--peach-ink)', icon: 'flame' },
@@ -42,6 +42,10 @@ const themeSamples: Record<ThemeId, { q: string; answers: string[]; right: numbe
   typewriter: { q: 'Who wrote “Pride and Prejudice”?', answers: ['Jane Austen', 'Emily Brontë', 'Mary Shelley', 'George Eliot'], right: 0, note: 'Yours sincerely. Lovely for book clubs, history rounds and literary nights.' },
   ticket: { q: 'Which band sang “Bohemian Rhapsody”?', answers: ['The Beatles', 'Queen', 'ABBA', 'Oasis'], right: 1, note: 'Tonight only. Made for music rounds, festivals and big nights out.' },
   recipe: { q: 'Which spice gives paella its colour?', answers: ['Paprika', 'Cumin', 'Saffron', 'Turmeric'], right: 2, note: 'Home cooking. Great for food quizzes, family dinners and bake-off nights.' },
+  christmas: { q: 'Which reindeer has a red nose?', answers: ['Dasher', 'Rudolph', 'Comet', 'Blitzen'], right: 1, note: 'Festive and glowing. Made for office parties, family Christmas and December rounds.' },
+  fall: { q: 'Which month has Halloween?', answers: ['September', 'October', 'November', 'August'], right: 1, note: 'Warm and cosy. Great for Thanksgiving, harvest fairs and Halloween nights.' },
+  easter: { q: 'What hides the eggs at Easter?', answers: ['A bunny', 'A fox', 'A duck', 'A mole'], right: 0, note: 'Soft and springy. Lovely for egg hunts, Sunday school and spring breaks.' },
+  valentine: { q: 'Which flower means love?', answers: ['Daisy', 'Tulip', 'Red rose', 'Lily'], right: 2, note: 'Sweet and romantic. Made for date nights, Galentine’s and February rounds.' },
 };
 
 // Structured data for search engines and AI answer engines: the app itself, the site, and the FAQ below.
@@ -194,7 +198,7 @@ export default function Landing() {
             <Link href="/host?ai" className={`btn ${styles.mainCta}`}>✨ Create a free quiz with AI</Link>
             <Link href="/host" className={styles.textLink}>or write your own →</Link>
           </div>
-          <div className={styles.joinRow}><span>Got a game PIN?</span><QuickJoin /></div>
+          <div className={styles.joinRow}><QuickJoin /></div>
         </div>
 
         <Screens />
@@ -251,7 +255,7 @@ export default function Landing() {
                     ? <Scallop color="var(--pink)" size={120} rotate={-18} className={styles.themeDeco} />
                     : <Doodle theme={t.id} name="mascot" size={66} className={`bob ${styles.themeMascot}`} />}
                   <div className={`card ${styles.themeCard}`}>
-                    <div className={styles.liveTop}><span className="pill dark">Q {i + 1} / 12</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10, 14, 8, 13, 6, 16, 11, 9, 12, 7, 15][i]}</span></div>
+                    <div className={styles.liveTop}><span className="pill dark">Q {i + 1} / 12</span><span className={styles.liveTimer}>{[12, 9, 15, 11, 7, 10, 14, 8, 13, 6, 16, 11, 9, 12, 7, 15, 10, 14, 8, 12][i]}</span></div>
                     <div className={styles.liveQ}>{ex.q}</div>
                     <div className={styles.liveTiles}>
                       {ex.answers.map((a, j) => <div key={a} className={`tile c${j} ${j === ex.right ? 'right' : ''}`}><Shape i={j} />{a}</div>)}

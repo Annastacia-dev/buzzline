@@ -845,7 +845,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -2816,12 +2816,510 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=recipe] { padding: 14px 24px 24px; border-radius: 16px; overflow-x: hidden; }
 [data-theme=recipe] .flash-deck::before, [data-theme=recipe] .flash-deck::after { border: 0; border-radius: 4px; background: #f6efe2; box-shadow: var(--card); }
 
-/* Messages, Comic, Tarot, Postcard, Chalkboard, Typewriter, Concert ticket and Recipe card: the phone lobby shrinks so the avatar picker fits */
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe])[data-mood=lobby] .msg { gap: 8px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe])[data-mood=lobby] .msg > .avatar { zoom: .6; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe])[data-mood=lobby] .msg p { font-size: 15px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe])[data-mood=lobby] .avatar-pick { justify-items: center; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
+/* ---------- Christmas: cream cards with gold frames on a snowy red night, candy-cane edges, holly and gift-wrapped answers ----------
+   The theme's variables describe the cards (cream, dark ink); text lying straight on the red takes --snow instead.
+   --cane is the red and white striped edge; --holly a sprig for card corners; --gilt a double gold frame. */
+[data-theme=christmas] {
+  --bg: #8f1d22; --paper: #fff8ec; --ink: #2a1a14; --muted: #6f5a4e; --line: #e8d5b8; --snow: #fff3e0;
+  --red: #c8202c; --green: #1f6b3a; --gold: #d9a326; --blue: #2a5ba8;
+  --butter: #f7e3a8; --butter-ink: #6b4b00;
+  --sage:   #cfe3d2; --sage-ink:   #1f5a32;
+  --olive:  #d6cf9c;
+  --lilac:  #e4d8ec; --lilac-ink:  #5a3a7a;
+  --peri:   #d3def2; --peri-ink:   #24478a;
+  --pink:   #f6d0d0; --pink-ink:   #9a1620;
+  --peach:  #f7dcc0; --peach-ink:  #84400f;
+  --mint:   #d0e8dc; --mint-ink:   #1f5a44;
+  --coral:  #f2bcb6; --coral-ink:  #9a1620;
+  --good: #1f6b3a; --bad: #c8202c;
+  --font-display: var(--font-xmas-display), Georgia, serif;
+  --font-main: var(--font-xmas), system-ui, sans-serif;
+  --radius: 12px;
+  --cane: repeating-linear-gradient(-45deg, #c8202c 0 10px, #fff8ec 10px 20px);
+  --gilt: inset 0 0 0 3px #d9a326, inset 0 0 0 6px #fff8ec, inset 0 0 0 7px #d9a326, 0 14px 30px -12px rgba(40, 0, 0, .7);
+  --holly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cg fill='%231f6b3a'%3E%3Cellipse cx='17' cy='21' rx='16' ry='7' transform='rotate(-22 17 21)'/%3E%3Cellipse cx='43' cy='21' rx='16' ry='7' transform='rotate(22 43 21)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23164f2b' stroke-width='1.4'%3E%3Cpath d='M4 26L30 17M56 26L30 17'/%3E%3C/g%3E%3Cg fill='%23c8202c'%3E%3Ccircle cx='26' cy='14' r='5'/%3E%3Ccircle cx='35' cy='15' r='5'/%3E%3Ccircle cx='30' cy='22' r='5'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+  font-family: var(--font-main); font-weight: 600; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=christmas], .phone[data-theme=christmas][data-mood], [data-theme=christmas] .countdown-overlay {
+  color: var(--snow);
+  background: radial-gradient(circle, rgba(255, 255, 255, .6) 1.6px, transparent 2.1px) 0 0 / 64px 64px, radial-gradient(circle, rgba(255, 255, 255, .35) 1.1px, transparent 1.6px) 30px 34px / 46px 46px,
+    radial-gradient(ellipse at 50% -10%, rgba(255, 214, 150, .3), transparent 60%), linear-gradient(var(--page, #8f1d22), var(--page, #8f1d22));
+}
+.phone[data-theme=christmas][data-mood=good] { --page: #1d5a34; }
+.phone[data-theme=christmas][data-mood=locked] { --page: #24406e; }
+.phone[data-theme=christmas]:is([data-mood=rank], [data-mood=end]) { --page: #6e1a1e; }
+
+[data-theme=christmas] :is(h1, h2, h3, .bignum, .logo, .pin, .name, .stat b, .ring span, .podium .m) { font-weight: 700; letter-spacing: 0; }
+[data-theme=christmas] :is(.stage-q, .qtext) { font-family: var(--font-main); font-weight: 800; letter-spacing: -.01em; }
+[data-theme=christmas] em, [data-theme=christmas] .it { font: inherit; letter-spacing: inherit; color: var(--red); }
+:is(.stage, .join-page, .phone)[data-theme=christmas] :is(h1, h2) em { color: #ffd36b; }
+[data-theme=christmas] :is(.msg, .card, .flash, .stage-q) :is(h1, h2) em { color: var(--red); }
+[data-theme=christmas] .logo .dot { background: #ffd36b; }
+[data-theme=christmas] :is(.order-hint, .order-prompt > p, .bar-label, .team-note), :is(.qstage, .stage)[data-theme=christmas] .muted:not(:is(.flash, .card, .stat, .row, .type-answer, .pinbox) .muted), .join-page[data-theme=christmas] > :is(p, .muted) { color: #f3d9c8; }
+.join-page[data-theme=christmas] > :not(form) a { color: var(--snow) !important; }
+
+/* Christmas cards in gold frames */
+[data-theme=christmas] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=christmas] form.card, .phone[data-theme=christmas] .msg {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 12px; box-shadow: var(--gilt);
+}
+/* the question has a candy-cane edge and a sprig of holly */
+[data-theme=christmas] .stage-q { position: relative; border: 10px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--cane) border-box; box-shadow: 0 14px 30px -12px rgba(40, 0, 0, .7); padding: 20px 36px; }
+[data-theme=christmas] .stage-q::before { content: ''; position: absolute; top: -26px; left: -24px; width: 76px; height: 52px; background: var(--holly); rotate: -14deg; }
+[data-theme=christmas] .pinbox { position: relative; }
+[data-theme=christmas] .pinbox::before { content: ''; position: absolute; top: -20px; right: 24px; width: 64px; height: 44px; background: var(--holly); rotate: 10deg; }
+[data-theme=christmas] .pinbox .label { color: var(--muted); }
+[data-theme=christmas] .pinbox .pin { color: var(--red); }
+[data-theme=christmas] .pinbox > .sticker { display: none; }
+[data-theme=christmas] .qr { background: #fff; border-radius: 8px; }
+[data-theme=christmas] .join-quiz-tag { rotate: -2deg; }
+[data-theme=christmas] :is(.stage-img, .phone-img, .reveal, .q-img) { border-radius: 10px; box-shadow: var(--gilt); border: 8px solid var(--paper); }
+
+/* answers: wrapped presents, each with a ribbon running past its shape */
+[data-theme=christmas] .c0 { --wrap: #c8202c; --ribbon: #f2cd5c; }
+[data-theme=christmas] .c1 { --wrap: #1f6b3a; --ribbon: #f2cd5c; }
+[data-theme=christmas] .c2 { --wrap: #2a5ba8; --ribbon: #f6f0e4; }
+[data-theme=christmas] .c3 { --wrap: #c8901c; --ribbon: #c8202c; }
+[data-theme=christmas] .tile { color: #fff; border: 0; border-radius: 10px; overflow: visible; font-weight: 800; text-shadow: 0 1px 2px rgba(0, 0, 0, .3); box-shadow: 0 12px 24px -12px rgba(30, 0, 0, .7);
+  background: linear-gradient(90deg, transparent 66px, var(--ribbon, transparent) 66px 78px, transparent 78px), radial-gradient(circle, rgba(255, 255, 255, .2) 2px, transparent 2.6px) 0 0 / 18px 18px, linear-gradient(var(--wrap, var(--paper)), var(--wrap, var(--paper))); }
+[data-theme=christmas] .tile .shape { fill: #fff; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .3)); }
+.stage[data-theme=christmas] .answers .tile { min-height: 100px; padding-left: 18px; gap: 46px; }
+.stage[data-theme=christmas] .answers .tile .shape { width: 36px; height: 36px; flex: none; }
+.stage[data-theme=christmas] .answers { gap: 16px 22px; }
+.stage[data-theme=christmas] .answers .tile:not(:has(> .shape)) { padding-left: 96px; }
+.phone[data-theme=christmas] .answers .tile { background: linear-gradient(transparent 22px, var(--ribbon, transparent) 22px 32px, transparent 32px), radial-gradient(circle, rgba(255, 255, 255, .2) 2px, transparent 2.6px) 0 0 / 18px 18px, linear-gradient(var(--wrap, var(--paper)), var(--wrap, var(--paper))); }
+[data-theme=christmas] .tile.right { box-shadow: 0 0 0 4px var(--snow), 0 0 28px 6px rgba(255, 211, 107, .8); }
+[data-theme=christmas] .tile .tick { background: var(--good); color: #fff; text-shadow: none; }
+[data-theme=christmas] .order-items .tile { --wrap: var(--paper); --ribbon: transparent; color: var(--ink); text-shadow: none; }
+[data-theme=christmas] .pans-tile { background: var(--wrap) !important; color: #fff; border-radius: 8px; }
+[data-theme=christmas] .pans-tile > :first-child { fill: #fff; }
+[data-theme=christmas] .order-n, [data-theme=christmas] .solution-order li b { background: var(--red); color: #fff; text-shadow: none; }
+[data-theme=christmas] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=christmas] :where(.solution-order li) { background: var(--paper); color: var(--ink); border-radius: 10px; box-shadow: var(--gilt); }
+[data-theme=christmas] .bars .col { border-radius: 6px 6px 0 0; color: #fff; box-shadow: 0 0 0 3px var(--snow); }
+[data-theme=christmas] .bars > div:nth-child(1) .col { background: #c8202c !important; } [data-theme=christmas] .bars > div:nth-child(2) .col { background: #1f6b3a !important; }
+[data-theme=christmas] .bars > div:nth-child(3) .col { background: #2a5ba8 !important; } [data-theme=christmas] .bars > div:nth-child(4) .col { background: #c8901c !important; }
+[data-theme=christmas] .bars .shape { fill: var(--snow); }
+[data-theme=christmas] .reveal-tile span { color: #fff; opacity: .9; }
+[data-theme=christmas] .ans-edit label { border-radius: 10px; }
+[data-theme=christmas] .ans-edit input[type=text] { color: var(--ink); background: var(--paper); border-radius: 6px; }
+
+/* players are gift tags; the podium is a stack of presents */
+[data-theme=christmas] .chip { box-shadow: inset 0 0 0 2px #d9a326, 0 6px 14px -8px rgba(30, 0, 0, .6); }
+[data-theme=christmas] .chip:hover { background: var(--pink) !important; }
+[data-theme=christmas] .row { border-left: 10px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--cane) border-box; box-shadow: 0 10px 22px -12px rgba(30, 0, 0, .7); }
+[data-theme=christmas] .podium .block { color: #fff; border-radius: 8px 8px 0 0; box-shadow: 0 12px 24px -12px rgba(30, 0, 0, .7);
+  background: linear-gradient(90deg, transparent calc(50% - 8px), #f2cd5c calc(50% - 8px) calc(50% + 8px), transparent calc(50% + 8px)), linear-gradient(transparent calc(100% - 44px), #f2cd5c calc(100% - 44px) calc(100% - 30px), transparent calc(100% - 30px)), linear-gradient(#1f6b3a, #1f6b3a) !important; }
+[data-theme=christmas] .podium > :last-child .block { background: linear-gradient(90deg, transparent calc(50% - 8px), #f2cd5c calc(50% - 8px) calc(50% + 8px), transparent calc(50% + 8px)), linear-gradient(transparent calc(100% - 44px), #f2cd5c calc(100% - 44px) calc(100% - 30px), transparent calc(100% - 30px)), linear-gradient(#2a5ba8, #2a5ba8) !important; }
+[data-theme=christmas] .podium > .first .block { background: linear-gradient(90deg, transparent calc(50% - 9px), #c8202c calc(50% - 9px) calc(50% + 9px), transparent calc(50% + 9px)), linear-gradient(transparent calc(100% - 46px), #c8202c calc(100% - 46px) calc(100% - 30px), transparent calc(100% - 30px)), linear-gradient(#e8b53a, #e8b53a) !important; }
+[data-theme=christmas] .podium .block * { color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .45); }
+
+/* controls */
+[data-theme=christmas] .pill { background: rgba(255, 243, 224, .14); color: var(--snow); box-shadow: 0 0 0 1.5px rgba(255, 243, 224, .55); border-radius: 999px; }
+[data-theme=christmas] :is(.card, .flash, .msg, .pinbox, form, .stage-q) .pill { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=christmas] .pill.dark { background: var(--green); color: #fff; box-shadow: inset 0 0 0 2px #d9a326; }
+[data-theme=christmas] .field { color: var(--ink); background: #fff !important; border: 2px solid var(--line) !important; border-radius: 10px; font-weight: 700; }
+[data-theme=christmas] .field:focus { outline: 3px solid var(--gold); outline-offset: 2px; }
+[data-theme=christmas] .btn { background: var(--green); color: #fff; border-radius: 12px; font-weight: 800; box-shadow: inset 0 0 0 2px #e8c15a, 0 8px 18px -8px rgba(0, 0, 0, .5); }
+[data-theme=christmas] :is(.btn.light, .btn.ghost) { background: transparent; color: var(--snow); box-shadow: inset 0 0 0 2px rgba(255, 243, 224, .75); }
+[data-theme=christmas] :is(.card, .flash, .msg, form) :is(.btn.light, .btn.ghost) { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+[data-theme=christmas] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; box-shadow: none; }
+[data-theme=christmas] .bar { height: 12px; border-radius: 99px; background: rgba(255, 255, 255, .2); }
+[data-theme=christmas] .bar > div { border-radius: 99px; background: var(--cane); }
+[data-theme=christmas] .ring { background: var(--paper); color: var(--ink); box-shadow: var(--gilt); }
+[data-theme=christmas] .avatar-pick > div { background: #f6ead6; border-radius: 10px; }
+
+/* Classic's blobs go; a badge is a glass bauble */
+[data-theme=christmas] .shapebox > svg { display: none; }
+[data-theme=christmas] .shapebox:has(> div) { border-radius: 50%; background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .75) 0 6%, transparent 18%), radial-gradient(circle at 50% 45%, #f04a52, #c8202c 50%, #6e0c12); box-shadow: 0 0 0 4px #e8c15a, 0 14px 26px -8px rgba(0, 0, 0, .55); }
+.phone[data-theme=christmas][data-mood=good] .shapebox:has(> div) { background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .75) 0 6%, transparent 18%), radial-gradient(circle at 50% 45%, #3aa063, #1f6b3a 50%, #0c3a1c); }
+[data-theme=christmas] .shapebox:has(> div) :is(.bignum, .result) { color: #fff; }
+
+/* phones: each moment is a Christmas card with holly in the corner */
+.phone[data-theme=christmas] .msg { position: relative; margin: 14px 6px 8px; padding: 24px 16px 22px; }
+.phone[data-theme=christmas] .msg::before { content: ''; position: absolute; top: -16px; left: -10px; width: 64px; height: 44px; background: var(--holly); rotate: -14deg; z-index: 1; }
+.phone[data-theme=christmas] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=christmas] .msg h1 { font-size: 38px; }
+.phone[data-theme=christmas] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=christmas] header { background: none; }
+.phone[data-theme=christmas] footer { background: var(--paper); color: var(--ink); box-shadow: var(--gilt); border-radius: 12px; }
+.phone[data-theme=christmas][data-mood=end] .msg { gap: 7px; padding-block: 18px 14px; }
+.phone[data-theme=christmas][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=christmas] { padding: 26px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=christmas] .flash-deck::before, [data-theme=christmas] .flash-deck::after { border: 0; border-radius: 12px; background: #f3e6d0; box-shadow: none; }
+
+/* ---------- Fall: cosy stitched cards on flannel plaid, in pumpkin, mustard, rust and olive, with falling leaves ----------
+   --stitch is the dashed sewn line inside a card; --leaf a leaf drawn for corners. */
+[data-theme=fall] {
+  --bg: #efd4a8; --paper: #fdf4e3; --ink: #3b2416; --muted: #77604a; --line: #dcc39b;
+  --pumpkin: #d0611f; --mustard: #c99016; --rust: #9c3220; --olive: #6f7a2e;
+  --butter: #f6dfa4; --butter-ink: #6b4500;
+  --sage:   #dfe3bf; --sage-ink:   #4a5418;
+  --lilac:  #ead5d2; --lilac-ink:  #6e2f3a;
+  --peri:   #d9dccd; --peri-ink:   #3e4a2a;
+  --pink:   #f3cdb9; --pink-ink:   #8a2d16;
+  --peach:  #f6d3ae; --peach-ink:  #84400f;
+  --mint:   #d9e2c6; --mint-ink:   #42521b;
+  --coral:  #efbca4; --coral-ink:  #8a2d16;
+  --good: #4f6b1c; --bad: #a3301c; --red: #b8461c;
+  --font-display: var(--font-fall-display), Georgia, serif;
+  --font-main: var(--font-fall), system-ui, sans-serif;
+  --radius: 16px;
+  --card: 0 2px 2px rgba(80, 40, 10, .15), 0 14px 26px -12px rgba(80, 40, 10, .5);
+  --leaf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4l5 12 9-6-1 12 13-2-7 11 9 5-12 5 4 11-12-4-2 12-6-10-6 10-2-12-12 4 4-11-12-5 9-5-7-11 13 2-1-12 9 6z' fill='%23d0611f'/%3E%3Cpath d='M32 14v46M32 34l-12-10M32 34l12-10M32 44l-9-4M32 44l9-4' stroke='%239c3220' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  font-family: var(--font-main); font-weight: 500; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=fall], .phone[data-theme=fall][data-mood], [data-theme=fall] .countdown-overlay {
+  background: repeating-linear-gradient(90deg, rgba(156, 50, 32, .13) 0 38px, transparent 38px 76px), repeating-linear-gradient(0deg, rgba(156, 50, 32, .13) 0 38px, transparent 38px 76px),
+    repeating-linear-gradient(90deg, transparent 0 17px, rgba(59, 36, 22, .08) 17px 21px, transparent 21px 76px), repeating-linear-gradient(0deg, transparent 0 17px, rgba(59, 36, 22, .08) 17px 21px, transparent 21px 76px),
+    linear-gradient(var(--page, #efd4a8), var(--page, #efd4a8));
+}
+.phone[data-theme=fall][data-mood=good] { --page: #dfdcaa; }
+.phone[data-theme=fall][data-mood=bad] { --page: #eec3a8; }
+.phone[data-theme=fall]:is([data-mood=rank], [data-mood=end]) { --page: #f1cf8f; }
+
+[data-theme=fall] :is(h1, h2, h3, .bignum, .logo, .pin, .name, .stat b, .ring span, .podium .m) { font-weight: 700; letter-spacing: -.02em; }
+[data-theme=fall] :is(.stage-q, .qtext) { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; }
+[data-theme=fall] em, [data-theme=fall] .it { font-style: italic; color: var(--pumpkin); }
+[data-theme=fall] .logo .dot { background: var(--pumpkin); border-radius: 0 70% 0 70%; }
+
+/* stitched flannel patches */
+[data-theme=fall] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=fall] form.card, .phone[data-theme=fall] .msg {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 16px; box-shadow: var(--card); outline: 2px dashed rgba(156, 50, 32, .38); outline-offset: -8px;
+}
+[data-theme=fall] :is(.chip, .row) { outline-offset: -5px; outline-width: 1.5px; }
+/* the question has a maple leaf caught on its corner */
+[data-theme=fall] .stage-q { position: relative; padding: 24px 40px; }
+[data-theme=fall] .stage-q::after { content: ''; position: absolute; top: -22px; right: -14px; width: 64px; height: 64px; background: var(--leaf); rotate: 24deg; filter: drop-shadow(0 4px 4px rgba(80, 40, 10, .3)); }
+[data-theme=fall] .pinbox .label { color: var(--muted); }
+[data-theme=fall] .pinbox .pin { color: var(--rust); }
+[data-theme=fall] .pinbox > .sticker { display: none; }
+[data-theme=fall] .qr { background: #fff; border-radius: 10px; }
+[data-theme=fall] .join-quiz-tag { rotate: -2deg; }
+[data-theme=fall] :is(.stage-img, .phone-img, .reveal, .q-img) { border-radius: 14px; border: 8px solid var(--paper); box-shadow: var(--card); }
+
+/* answers: patches, each shape on a leaf */
+[data-theme=fall] .c0 { --leafc: var(--pumpkin); }
+[data-theme=fall] .c1 { --leafc: var(--rust); }
+[data-theme=fall] .c2 { --leafc: var(--olive); }
+[data-theme=fall] .c3 { --leafc: var(--mustard); }
+[data-theme=fall] .tile { background: var(--paper); color: var(--ink); border: 0; border-radius: 16px; overflow: visible; font-weight: 600; box-shadow: var(--card); outline: 2px dashed var(--leafc, var(--rust)); outline-offset: -7px; }
+[data-theme=fall] .tile .shape { box-sizing: border-box; width: 52px; height: 52px; padding: 13px; flex: none; border-radius: 0 70% 0 70%; background: var(--leafc, var(--rust)); fill: #fdf4e3; rotate: -8deg; }
+.stage[data-theme=fall] .answers { gap: 16px 22px; }
+.stage[data-theme=fall] .answers .tile { min-height: 100px; }
+.stage[data-theme=fall] .answers .tile .shape { width: 58px; height: 58px; padding: 15px; }
+[data-theme=fall] .tile.right { background: #fbf0c8; box-shadow: 0 0 0 4px var(--good), var(--card); }
+[data-theme=fall] .tile .tick { background: var(--good); color: #fff; }
+[data-theme=fall] .pans-tile { background: var(--paper) !important; color: var(--ink); border-radius: 10px; outline: 1.5px dashed var(--leafc); outline-offset: -4px; }
+[data-theme=fall] .pans-tile > :first-child { fill: var(--leafc); }
+[data-theme=fall] .order-n, [data-theme=fall] .solution-order li b { background: var(--rust); color: #fff; }
+[data-theme=fall] .order-items .tile { --leafc: var(--rust); }
+[data-theme=fall] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=fall] :where(.solution-order li) { background: var(--paper); border-radius: 12px; box-shadow: var(--card); }
+[data-theme=fall] .bars .col { border-radius: 10px 10px 0 0; color: #fff; box-shadow: var(--card); outline: 1.5px dashed rgba(255, 255, 255, .6); outline-offset: -5px; }
+[data-theme=fall] .bars > div:nth-child(1) .col { background: var(--pumpkin) !important; } [data-theme=fall] .bars > div:nth-child(2) .col { background: var(--rust) !important; }
+[data-theme=fall] .bars > div:nth-child(3) .col { background: var(--olive) !important; } [data-theme=fall] .bars > div:nth-child(4) .col { background: var(--mustard) !important; }
+[data-theme=fall] .bars > div:nth-child(1) .shape { fill: var(--pumpkin); } [data-theme=fall] .bars > div:nth-child(2) .shape { fill: var(--rust); }
+[data-theme=fall] .bars > div:nth-child(3) .shape { fill: var(--olive); } [data-theme=fall] .bars > div:nth-child(4) .shape { fill: var(--mustard); }
+[data-theme=fall] .ans-edit label { border-radius: 12px; }
+[data-theme=fall] .ans-edit input[type=text] { color: var(--ink); background: #fffaf0; border-radius: 8px; }
+
+/* the podium is three stitched patches */
+[data-theme=fall] .chip:hover { background: var(--peach) !important; }
+[data-theme=fall] .podium .block { color: #fff; border-radius: 14px 14px 0 0; box-shadow: var(--card); outline: 2px dashed rgba(255, 244, 220, .7); outline-offset: -8px; background: var(--rust) !important; }
+[data-theme=fall] .podium > .first .block { background: var(--mustard) !important; }
+[data-theme=fall] .podium > :last-child .block { background: var(--olive) !important; }
+[data-theme=fall] .podium .block * { color: #fff !important; }
+
+/* controls */
+[data-theme=fall] .pill { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1.5px var(--line); border-radius: 999px; font-weight: 600; }
+[data-theme=fall] .pill.dark { background: var(--ink); color: var(--paper); box-shadow: none; }
+[data-theme=fall] .field { color: var(--ink); background: #fffaf0 !important; border: 2px solid var(--line) !important; border-radius: 12px; font-weight: 600; }
+[data-theme=fall] .field:focus { outline: 3px solid var(--pumpkin); outline-offset: 2px; }
+[data-theme=fall] .btn { background: var(--rust); color: #fff; border-radius: 14px; font-weight: 700; outline: 1.5px dashed rgba(255, 240, 220, .7); outline-offset: -5px; }
+[data-theme=fall] :is(.btn.light, .btn.ghost) { background: var(--paper); color: var(--ink); box-shadow: var(--card); outline-color: rgba(156, 50, 32, .35); }
+[data-theme=fall] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; }
+[data-theme=fall] .bar { height: 12px; border-radius: 99px; background: rgba(59, 36, 22, .12); }
+[data-theme=fall] .bar > div { border-radius: 99px; background: linear-gradient(90deg, var(--mustard), var(--pumpkin), var(--rust)); }
+[data-theme=fall] .ring { background: var(--paper); box-shadow: var(--card), inset 0 0 0 3px var(--pumpkin); }
+[data-theme=fall] .avatar-pick > div { background: #f4e4c6; border-radius: 12px; }
+
+/* Classic's blobs go; a badge is a big leaf */
+[data-theme=fall] .shapebox > svg { display: none; }
+[data-theme=fall] .shapebox:has(> div) { border-radius: 0 72% 0 72%; background: linear-gradient(135deg, #e2852f, var(--pumpkin) 50%, #a8461a); rotate: -6deg !important; box-shadow: var(--card); outline: 2px dashed rgba(255, 240, 220, .7); outline-offset: -9px; }
+.phone[data-theme=fall][data-mood=good] .shapebox:has(> div) { background: linear-gradient(135deg, #95a33f, var(--olive) 50%, #4c5518); }
+.phone[data-theme=fall][data-mood=bad] .shapebox:has(> div) { background: linear-gradient(135deg, #c4512f, var(--rust) 50%, #6e1f12); }
+[data-theme=fall] .shapebox:has(> div) :is(.bignum, .result) { color: #fff; }
+
+/* phones: each moment is a stitched patch with a leaf in the corner */
+.phone[data-theme=fall] .msg { position: relative; margin: 10px 6px 8px; padding: 24px 16px 22px; }
+.phone[data-theme=fall] .msg::after { content: ''; position: absolute; top: -12px; right: -6px; width: 50px; height: 50px; background: var(--leaf); rotate: 24deg; filter: drop-shadow(0 3px 3px rgba(80, 40, 10, .3)); }
+.phone[data-theme=fall] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=fall] .msg h1 { font-size: 36px; }
+.phone[data-theme=fall] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=fall] header { background: none; }
+.phone[data-theme=fall] footer { background: var(--paper); color: var(--ink); box-shadow: var(--card); border-radius: 14px; outline: 1.5px dashed rgba(156, 50, 32, .38); outline-offset: -5px; }
+.phone[data-theme=fall][data-mood=end] .msg { gap: 7px; padding-block: 18px 14px; }
+.phone[data-theme=fall][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=fall] { padding: 20px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=fall] .flash-deck::before, [data-theme=fall] .flash-deck::after { border: 0; border-radius: 16px; background: #f4e4c6; box-shadow: var(--card); }
+
+/* ---------- Easter: painted eggs on a pastel polka-dot cloth, with grass along the bottom of each card ----------
+   Each answer's shape sits on an egg in its own colour (--egg), banded in white; --grass is a zigzag of spring grass. */
+[data-theme=easter] {
+  --bg: #e4f3ea; --paper: #ffffff; --ink: #3c3350; --muted: #7a7290; --line: #e2dcef;
+  --lav: #8e6fd6;
+  --butter: #fff0b8; --butter-ink: #6b5200;
+  --sage:   #d6efd2; --sage-ink:   #2f6a36;
+  --olive:  #e2e6b8;
+  --lilac:  #e6dcfa; --lilac-ink:  #5b3fb0;
+  --peri:   #d7e8fb; --peri-ink:   #2b5a9a;
+  --pink:   #fcd9e3; --pink-ink:   #a62b56;
+  --peach:  #ffe2cc; --peach-ink:  #8a4a12;
+  --mint:   #d2f2e4; --mint-ink:   #23664c;
+  --coral:  #ffd0c6; --coral-ink:  #a3332a;
+  --good: #2f8a4c; --bad: #c8435a;
+  --font-display: var(--font-easter-display), system-ui, sans-serif;
+  --font-main: var(--font-xmas), system-ui, sans-serif;
+  --radius: 26px;
+  --card: 0 2px 0 rgba(120, 100, 170, .12), 0 14px 28px -12px rgba(120, 100, 170, .45);
+  --grass: linear-gradient(135deg, #9fd98c 25%, transparent 25%) -9px 0 / 18px 18px, linear-gradient(225deg, #9fd98c 25%, transparent 25%) -9px 0 / 18px 18px, linear-gradient(transparent 9px, #9fd98c 9px);
+  font-family: var(--font-main); font-weight: 700; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=easter], .phone[data-theme=easter][data-mood], [data-theme=easter] .countdown-overlay {
+  background: radial-gradient(circle, rgba(255, 255, 255, .85) 6px, transparent 6.5px) 0 0 / 48px 48px, radial-gradient(circle, rgba(200, 182, 239, .4) 6px, transparent 6.5px) 24px 24px / 48px 48px,
+    linear-gradient(var(--page, #e4f3ea), var(--page, #e4f3ea));
+}
+.phone[data-theme=easter][data-mood=locked] { --page: #e9e4fa; }
+.phone[data-theme=easter][data-mood=good] { --page: #dcf3d6; }
+.phone[data-theme=easter][data-mood=bad] { --page: #fde2e8; }
+.phone[data-theme=easter]:is([data-mood=rank], [data-mood=end]) { --page: #fff2c2; }
+
+[data-theme=easter] :is(h1, h2, h3, .bignum, .logo, .pin, .name, .stat b, .ring span, .podium .m) { font-weight: 800; letter-spacing: -.01em; }
+[data-theme=easter] :is(.stage-q, .qtext) { font-family: var(--font-display); font-weight: 700; letter-spacing: 0; }
+[data-theme=easter] em, [data-theme=easter] .it { font: inherit; letter-spacing: inherit; color: var(--lav); }
+[data-theme=easter] .logo .dot { background: #f59ab4; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; width: 12px; height: 15px; }
+
+/* soft white cards; the question and phone cards have grass along the bottom */
+[data-theme=easter] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=easter] form.card, .phone[data-theme=easter] .msg {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 26px; box-shadow: var(--card);
+}
+[data-theme=easter] .stage-q { position: relative; overflow: hidden; padding: 22px 40px 38px; }
+[data-theme=easter] .stage-q::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: var(--grass); }
+[data-theme=easter] .pinbox .label { color: var(--muted); }
+[data-theme=easter] .pinbox .pin { color: var(--lav); }
+[data-theme=easter] .pinbox > .sticker { display: none; }
+[data-theme=easter] .qr { background: #fff; border-radius: 14px; box-shadow: 0 0 0 3px #f7c6d5; }
+[data-theme=easter] .join-quiz-tag { rotate: -2deg; }
+[data-theme=easter] :is(.stage-img, .phone-img, .reveal, .q-img) { border-radius: 22px; border: 6px solid #fff; box-shadow: var(--card); }
+
+/* answers: each shape is painted on an egg */
+[data-theme=easter] .c0 { --egg: #f7a8bf; }
+[data-theme=easter] .c1 { --egg: #9fc8f2; }
+[data-theme=easter] .c2 { --egg: #b5e09c; }
+[data-theme=easter] .c3 { --egg: #ffd76a; }
+[data-theme=easter] .tile { background: var(--paper); color: var(--ink); border: 3px solid var(--egg, var(--line)); border-radius: 24px; overflow: visible; font-weight: 800; box-shadow: var(--card); }
+[data-theme=easter] .tile .shape { box-sizing: border-box; width: 50px; height: 62px; padding: 19px 14px 17px; flex: none; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; fill: var(--ink);
+  background: linear-gradient(transparent 0 22%, rgba(255, 255, 255, .7) 22% 28%, transparent 28% 72%, rgba(255, 255, 255, .7) 72% 78%, transparent 78%), linear-gradient(var(--egg, var(--line)), var(--egg, var(--line))); }
+.stage[data-theme=easter] .answers { gap: 16px 22px; }
+.stage[data-theme=easter] .answers .tile { min-height: 100px; }
+.stage[data-theme=easter] .answers .tile .shape { width: 56px; height: 70px; padding: 22px 16px 20px; }
+[data-theme=easter] .tile.right { background: #f2fbee; box-shadow: 0 0 0 4px var(--good), var(--card); }
+[data-theme=easter] .tile .tick { background: var(--good); color: #fff; }
+[data-theme=easter] .pans-tile { background: var(--paper) !important; color: var(--ink); border: 2px solid var(--egg); border-radius: 16px; }
+[data-theme=easter] .pans-tile > :first-child { fill: var(--ink); }
+[data-theme=easter] .order-n, [data-theme=easter] .solution-order li b { background: var(--lav); color: #fff; }
+[data-theme=easter] .order-items .tile { --egg: #c9b6ef; }
+[data-theme=easter] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=easter] :where(.solution-order li) { background: var(--paper); border-radius: 20px; box-shadow: var(--card); }
+[data-theme=easter] .bars .col { border-radius: 14px 14px 0 0; color: var(--ink); box-shadow: var(--card); }
+[data-theme=easter] .bars > div:nth-child(1) .col { background: #f7a8bf !important; } [data-theme=easter] .bars > div:nth-child(2) .col { background: #9fc8f2 !important; }
+[data-theme=easter] .bars > div:nth-child(3) .col { background: #b5e09c !important; } [data-theme=easter] .bars > div:nth-child(4) .col { background: #ffd76a !important; }
+[data-theme=easter] .bars > div:nth-child(1) .shape { fill: #e0789a; } [data-theme=easter] .bars > div:nth-child(2) .shape { fill: #5f9cd8; }
+[data-theme=easter] .bars > div:nth-child(3) .shape { fill: #6fb84e; } [data-theme=easter] .bars > div:nth-child(4) .shape { fill: #d9a520; }
+[data-theme=easter] .ans-edit label { border-radius: 18px; }
+[data-theme=easter] .ans-edit input[type=text] { color: var(--ink); background: #fff; border-radius: 10px; }
+
+/* the podium is three pastel eggs' colours */
+[data-theme=easter] .chip { box-shadow: var(--card), inset 0 0 0 2px #f7c6d5; }
+[data-theme=easter] .chip:nth-child(4n+2) { box-shadow: var(--card), inset 0 0 0 2px #bcd9f6; }
+[data-theme=easter] .chip:nth-child(4n+3) { box-shadow: var(--card), inset 0 0 0 2px #c9e9b8; }
+[data-theme=easter] .chip:nth-child(4n+4) { box-shadow: var(--card), inset 0 0 0 2px #ffe08a; }
+[data-theme=easter] .chip:hover { background: var(--pink) !important; }
+[data-theme=easter] .podium .block { color: var(--ink); border-radius: 22px 22px 0 0; box-shadow: var(--card);
+  background: linear-gradient(to top, transparent 16px, rgba(255, 255, 255, .65) 16px 24px, transparent 24px 34px, rgba(255, 255, 255, .65) 34px 42px, transparent 42px), linear-gradient(#9fc8f2, #9fc8f2) !important; }
+[data-theme=easter] .podium > .first .block { background: linear-gradient(to top, transparent 16px, rgba(255, 255, 255, .65) 16px 24px, transparent 24px 34px, rgba(255, 255, 255, .65) 34px 42px, transparent 42px), linear-gradient(#ffd76a, #ffd76a) !important; }
+[data-theme=easter] .podium > :last-child .block { background: linear-gradient(to top, transparent 16px, rgba(255, 255, 255, .65) 16px 24px, transparent 24px 34px, rgba(255, 255, 255, .65) 34px 42px, transparent 42px), linear-gradient(#f7a8bf, #f7a8bf) !important; }
+[data-theme=easter] .podium .block * { color: var(--ink) !important; }
+
+/* controls */
+[data-theme=easter] .pill { background: #fff; color: var(--ink); box-shadow: 0 0 0 2px var(--line); border-radius: 999px; }
+[data-theme=easter] .pill.dark { background: var(--lav); color: #fff; box-shadow: none; }
+[data-theme=easter] .field { color: var(--ink); background: #fff !important; border: 2px solid var(--line) !important; border-radius: 18px; font-weight: 700; }
+[data-theme=easter] .field:focus { outline: 3px solid #f59ab4; outline-offset: 2px; }
+[data-theme=easter] .btn { background: var(--lav); color: #fff; border-radius: 999px; font-weight: 800; box-shadow: 0 4px 0 #6a4fb3; }
+[data-theme=easter] :is(.btn.light, .btn.ghost) { background: #fff; color: var(--ink); box-shadow: 0 0 0 2px var(--line), 0 4px 0 var(--line); }
+[data-theme=easter] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; box-shadow: none; }
+[data-theme=easter] .bar { height: 12px; border-radius: 99px; background: rgba(60, 51, 80, .1); }
+[data-theme=easter] .bar > div { border-radius: 99px; background: linear-gradient(90deg, #f7a8bf, #c9b6ef, #9fc8f2, #b5e09c, #ffd76a); }
+[data-theme=easter] .ring { background: #fff; box-shadow: var(--card), inset 0 0 0 3px #c9b6ef; }
+[data-theme=easter] .avatar-pick > div { background: #f6f2fd; border-radius: 18px; }
+
+/* Classic's blobs go; a badge is a painted egg */
+[data-theme=easter] .shapebox > svg { display: none; }
+[data-theme=easter] .shapebox:has(> div) { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; aspect-ratio: 4 / 5; box-shadow: var(--card);
+  background: linear-gradient(transparent 0 14%, rgba(255, 255, 255, .7) 14% 19%, transparent 19% 81%, rgba(255, 255, 255, .7) 81% 86%, transparent 86%), linear-gradient(160deg, #cdb8f6, #a98ae6); }
+.phone[data-theme=easter][data-mood=good] .shapebox:has(> div) { background: linear-gradient(transparent 0 14%, rgba(255, 255, 255, .7) 14% 19%, transparent 19% 81%, rgba(255, 255, 255, .7) 81% 86%, transparent 86%), linear-gradient(160deg, #c3eaa9, #85c96a); }
+.phone[data-theme=easter][data-mood=bad] .shapebox:has(> div) { background: linear-gradient(transparent 0 14%, rgba(255, 255, 255, .7) 14% 19%, transparent 19% 81%, rgba(255, 255, 255, .7) 81% 86%, transparent 86%), linear-gradient(160deg, #fbc0d0, #ef8aa8); }
+.phone[data-theme=easter]:is([data-mood=rank], [data-mood=end]) .shapebox:has(> div) { background: linear-gradient(transparent 0 14%, rgba(255, 255, 255, .7) 14% 19%, transparent 19% 81%, rgba(255, 255, 255, .7) 81% 86%, transparent 86%), linear-gradient(160deg, #ffe28f, #f5c040); }
+[data-theme=easter] .shapebox:has(> div) :is(.bignum, .result) { color: var(--ink); }
+
+/* phones: each moment is a card with grass growing along the bottom */
+.phone[data-theme=easter] .msg { position: relative; overflow: hidden; margin: 8px 6px; padding: 22px 16px 36px; }
+.phone[data-theme=easter] .msg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 20px; background: var(--grass); }
+.phone[data-theme=easter] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=easter] .msg h1 { font-size: 36px; }
+.phone[data-theme=easter] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=easter] header { background: none; }
+.phone[data-theme=easter] footer { background: #fff; color: var(--ink); box-shadow: var(--card); border-radius: 22px; }
+.phone[data-theme=easter][data-mood=end] .msg { gap: 7px; padding-block: 16px 30px; }
+.phone[data-theme=easter][data-mood=end] .msg > .shapebox { zoom: .55; }
+
+/* studio preview */
+.qstage[data-theme=easter] { padding: 14px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=easter] .flash-deck::before, [data-theme=easter] .flash-deck::after { border: 0; border-radius: 26px; background: #f6f2fd; box-shadow: var(--card); }
+
+/* ---------- Valentine's: lace doilies and candy hearts on a pink cloth scattered with little hearts ----------
+   A card's scalloped lace edge is a row of circles in its border; --heart is a heart for corners and badges. */
+[data-theme=valentine] {
+  --bg: #ffe1e9; --paper: #fffafb; --ink: #5a1530; --muted: #9a5a72; --line: #f4c3d0;
+  --rose: #e23d6d; --berry: #b0174a; --blush: #ffb3c6;
+  --butter: #ffeab0; --butter-ink: #7a4d00;
+  --sage:   #d5f0e0; --sage-ink:   #23664a;
+  --olive:  #f0dcc0;
+  --lilac:  #ead8f8; --lilac-ink:  #6a2f9a;
+  --peri:   #dde3fa; --peri-ink:   #3a4a9a;
+  --pink:   #ffd3df; --pink-ink:   #a8164a;
+  --peach:  #ffdcc8; --peach-ink:  #8a3a12;
+  --mint:   #d2f2e4; --mint-ink:   #23664c;
+  --coral:  #ffc2c6; --coral-ink:  #a8163a;
+  --good: #2a8a5a; --bad: #c21e48;
+  --font-display: var(--font-love-display), cursive;
+  --font-main: var(--font-love), system-ui, sans-serif;
+  --radius: 20px;
+  --card: 0 2px 2px rgba(176, 23, 74, .1), 0 14px 28px -12px rgba(176, 23, 74, .4);
+  --heart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.3s-7.6-4.7-10-9.4C.4 8.6 2.4 4.5 6.3 4.5c2.2 0 3.9 1.2 5.7 3.4 1.8-2.2 3.5-3.4 5.7-3.4 3.9 0 5.9 4.1 4.3 7.4-2.4 4.7-10 9.4-10 9.4z' fill='%23000'/%3E%3C/svg%3E") center / contain no-repeat;
+  font-family: var(--font-main); font-weight: 600; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=valentine], .phone[data-theme=valentine][data-mood], [data-theme=valentine] .countdown-overlay {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cg fill='%23e23d6d' opacity='.14'%3E%3Cpath d='M15 22s-6-3.7-8-7.5C5.7 11.9 7.3 8.6 10.4 8.6c1.8 0 3.1 1 4.6 2.7 1.5-1.7 2.8-2.7 4.6-2.7 3.1 0 4.7 3.3 3.4 5.9-2 3.8-8 7.5-8 7.5z'/%3E%3Cpath d='M45 52s-4.5-2.8-6-5.6c-1-2 .2-4.4 2.5-4.4 1.4 0 2.3.7 3.5 2 1.2-1.3 2.1-2 3.5-2 2.3 0 3.5 2.4 2.5 4.4-1.5 2.8-6 5.6-6 5.6z'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 60px 60px,
+    radial-gradient(ellipse at 50% 0, rgba(255, 255, 255, .6), transparent 60%), linear-gradient(var(--page, #ffe1e9), var(--page, #ffe1e9));
+}
+.phone[data-theme=valentine][data-mood=locked] { --page: #f3dff5; }
+.phone[data-theme=valentine][data-mood=good] { --page: #dff3e6; }
+.phone[data-theme=valentine][data-mood=bad] { --page: #ffd4da; }
+.phone[data-theme=valentine]:is([data-mood=rank], [data-mood=end]) { --page: #ffd0de; }
+
+[data-theme=valentine] :is(h1, h2, h3, .bignum, .logo, .pin, .name, .podium .m) { font-weight: 700; letter-spacing: 0; }
+[data-theme=valentine] :is(.stat b, .ring span, .bignum, .pin) { font-family: var(--font-main); }
+[data-theme=valentine] :is(.stage-q, .qtext) { font-family: var(--font-main); font-weight: 700; letter-spacing: -.01em; }
+[data-theme=valentine] em, [data-theme=valentine] .it { font: inherit; letter-spacing: inherit; color: var(--rose); }
+[data-theme=valentine] .logo .dot { width: 14px; height: 14px; border-radius: 0; background: var(--rose); mask: var(--heart); }
+
+/* lace doilies: a scalloped edge round each card */
+[data-theme=valentine] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .team-bar, .team-col), .join-page[data-theme=valentine] form.card, .phone[data-theme=valentine] .msg {
+  color: var(--ink); border: 9px solid transparent; border-radius: 22px; box-shadow: none; filter: drop-shadow(0 10px 14px rgba(176, 23, 74, .22));
+  background: linear-gradient(var(--paper), var(--paper)) padding-box, radial-gradient(circle, var(--paper) 7.5px, transparent 8px) -1px -1px / 18px 18px round border-box;
+}
+.join-page[data-theme=valentine] form.card { background: linear-gradient(var(--paper), var(--paper)) padding-box, radial-gradient(circle, var(--paper) 7.5px, transparent 8px) -1px -1px / 18px 18px round border-box !important; }
+[data-theme=valentine] :is(.stat, .locked-text, .join-quiz-tag) { border-width: 6px; background: linear-gradient(var(--paper), var(--paper)) padding-box, radial-gradient(circle, var(--paper) 5px, transparent 5.5px) -1px -1px / 12px 12px round border-box; }
+/* the question is a love note with a heart pinned to its corner */
+[data-theme=valentine] .stage-q { position: relative; padding: 20px 40px; }
+[data-theme=valentine] .stage-q::after { content: ''; position: absolute; top: -26px; right: -18px; width: 58px; height: 58px; background: var(--rose); mask: var(--heart); rotate: 14deg; }
+[data-theme=valentine] .pinbox .label { color: var(--muted); }
+[data-theme=valentine] .pinbox .pin { color: var(--rose); }
+[data-theme=valentine] .pinbox > .sticker { display: none; }
+[data-theme=valentine] .qr { background: #fff; border-radius: 12px; }
+[data-theme=valentine] .join-quiz-tag { rotate: -2deg; }
+[data-theme=valentine] :is(.stage-img, .phone-img, .reveal, .q-img) { border-radius: 18px; border: 6px solid #fff; box-shadow: var(--card); }
+
+/* answers: candy hearts in pastel sugar, printed in red */
+[data-theme=valentine] .c0 { --candy: #ffc2d4; }
+[data-theme=valentine] .c1 { --candy: #dcc6f6; }
+[data-theme=valentine] .c2 { --candy: #c4efd8; }
+[data-theme=valentine] .c3 { --candy: #ffe2a6; }
+[data-theme=valentine] .tile { background: var(--candy, var(--paper)); color: var(--berry); border: 0; border-radius: 22px; overflow: visible; font-weight: 700; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .07), var(--card); }
+[data-theme=valentine] .tile .shape { fill: var(--berry); }
+.stage[data-theme=valentine] .answers { gap: 16px 22px; }
+.stage[data-theme=valentine] .answers .tile { min-height: 100px; }
+[data-theme=valentine] .tile.right { box-shadow: 0 0 0 4px var(--rose), 0 0 26px 4px rgba(226, 61, 109, .45); }
+[data-theme=valentine] .tile .tick { background: var(--rose); color: #fff; }
+[data-theme=valentine] .pans-tile { background: var(--candy) !important; color: var(--berry); border-radius: 14px; }
+[data-theme=valentine] .pans-tile > :first-child { fill: var(--berry); }
+[data-theme=valentine] .order-n, [data-theme=valentine] .solution-order li b { background: var(--rose); color: #fff; }
+[data-theme=valentine] .order-items .tile { --candy: var(--paper); }
+[data-theme=valentine] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=valentine] :where(.solution-order li) { background: var(--paper); border-radius: 16px; box-shadow: var(--card); }
+[data-theme=valentine] .bars .col { border-radius: 14px 14px 0 0; color: var(--berry); box-shadow: var(--card); }
+[data-theme=valentine] .bars > div:nth-child(1) .col { background: #ffc2d4 !important; } [data-theme=valentine] .bars > div:nth-child(2) .col { background: #dcc6f6 !important; }
+[data-theme=valentine] .bars > div:nth-child(3) .col { background: #c4efd8 !important; } [data-theme=valentine] .bars > div:nth-child(4) .col { background: #ffe2a6 !important; }
+[data-theme=valentine] .bars .shape { fill: var(--berry); }
+[data-theme=valentine] .ans-edit label { border-radius: 16px; }
+[data-theme=valentine] .ans-edit input[type=text] { color: var(--ink); background: #fff; border-radius: 10px; }
+
+/* players and the scoreboard */
+[data-theme=valentine] :is(.chip, .row) { background: var(--paper); color: var(--ink); border: 0; border-radius: 999px; box-shadow: var(--card); }
+[data-theme=valentine] .row { border-radius: 20px; }
+[data-theme=valentine] .row:first-child { box-shadow: 0 0 0 3px var(--rose), var(--card); }
+[data-theme=valentine] .chip:hover { background: var(--pink) !important; }
+[data-theme=valentine] .podium .block { color: var(--berry); border-radius: 20px 20px 0 0; box-shadow: var(--card); background: #ffd3df !important; }
+[data-theme=valentine] .podium > .first .block { background: linear-gradient(var(--rose), var(--berry)) !important; }
+[data-theme=valentine] .podium > .first .block * { color: #fff !important; }
+
+/* controls */
+[data-theme=valentine] .pill { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1.5px var(--line); border-radius: 999px; }
+[data-theme=valentine] .pill.dark { background: var(--rose); color: #fff; box-shadow: none; }
+[data-theme=valentine] .field { color: var(--ink); background: #fff !important; border: 2px solid var(--line) !important; border-radius: 16px; font-weight: 700; }
+[data-theme=valentine] .field:focus { outline: 3px solid var(--rose); outline-offset: 2px; }
+[data-theme=valentine] .btn { background: var(--rose); color: #fff; border-radius: 999px; font-weight: 700; box-shadow: 0 8px 18px -8px rgba(176, 23, 74, .6); }
+[data-theme=valentine] :is(.btn.light, .btn.ghost) { background: #fff; color: var(--ink); box-shadow: 0 0 0 1.5px var(--line), var(--card); }
+[data-theme=valentine] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; }
+[data-theme=valentine] .bar { height: 12px; border-radius: 99px; background: rgba(176, 23, 74, .1); }
+[data-theme=valentine] .bar > div { border-radius: 99px; background: linear-gradient(90deg, var(--blush), var(--rose)); }
+[data-theme=valentine] .ring { background: #fff; box-shadow: var(--card), inset 0 0 0 3px var(--rose); }
+[data-theme=valentine] .avatar-pick > div { background: #fff0f4; border-radius: 16px; }
+
+/* Classic's blobs go; a badge is a big heart */
+[data-theme=valentine] .shapebox > svg { display: none; }
+[data-theme=valentine] .shapebox:has(> div) { border-radius: 0; background: radial-gradient(circle at 30% 30%, #ff7ea0, var(--rose) 45%, var(--berry)); mask: var(--heart); mask-size: 100% 100%; padding-bottom: 12%; }
+.phone[data-theme=valentine][data-mood=good] .shapebox:has(> div) { background: radial-gradient(circle at 30% 30%, #6fd3a0, #2a8a5a 55%, #1a5c3c); }
+.phone[data-theme=valentine][data-mood=locked] .shapebox:has(> div) { background: radial-gradient(circle at 30% 30%, #d9b2f5, #9a5ad6 55%, #6a2f9a); }
+[data-theme=valentine] .shapebox:has(> div) :is(.bignum, .result) { color: #fff; }
+
+/* phones: each moment is a lace doily with a heart in the corner */
+.phone[data-theme=valentine] .msg { position: relative; margin: 12px 6px 8px; padding: 22px 14px 20px; }
+.phone[data-theme=valentine] .msg::after { content: ''; position: absolute; top: -18px; right: -10px; width: 42px; height: 42px; background: var(--rose); mask: var(--heart); rotate: 14deg; }
+.phone[data-theme=valentine] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=valentine] .msg h1 { font-size: 42px; }
+.phone[data-theme=valentine] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=valentine] header { background: none; }
+.phone[data-theme=valentine] footer { background: #fff; color: var(--ink); box-shadow: var(--card); border-radius: 999px; }
+.phone[data-theme=valentine][data-mood=end] .msg { gap: 7px; padding-block: 16px 12px; }
+.phone[data-theme=valentine][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=valentine] { padding: 22px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=valentine] .flash-deck::before, [data-theme=valentine] .flash-deck::after { border: 0; border-radius: 22px; background: #ffeef3; box-shadow: none; }
+
+/* Messages to Recipe card, and the seasonal themes: the phone lobby shrinks so the avatar picker fits */
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .msg { gap: 8px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .msg p { font-size: 15px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
 
 /* ---------- Admin dashboard (/admin) ---------- */
 /* Series colors: validated for colorblind separation on white (dataviz validate_palette). Text never uses them. */

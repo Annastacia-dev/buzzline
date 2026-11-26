@@ -123,6 +123,26 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     blobs: ['#f6d3cf', '#d3e0f2'], pills: ['#fffdf6', '#f6d3cf', '#d6e6c9'], deck: ['#f6efe2', '#fffdf6'],
     tiles: [['#d9483b', '#ffffff'], ['#3d5fa8', '#ffffff'], ['#3f8a4a', '#ffffff'], ['#d49a14', '#ffffff']],
   },
+  christmas: {
+    bg: '#8f1d22', paper: '#fff8ec', ink: '#fff3e0', muted: '#f3d9c8', accent: '#ffd36b',
+    blobs: ['#a8262c', '#7a1519'], pills: ['#fff8ec', '#cfe3d2', '#f7e3a8'], deck: ['#a8262c', '#7a1519'],
+    tiles: [['#c8202c', '#ffffff'], ['#1f6b3a', '#ffffff'], ['#2a5ba8', '#ffffff'], ['#c8901c', '#ffffff']],
+  },
+  fall: {
+    bg: '#efd4a8', paper: '#fdf4e3', ink: '#3b2416', muted: '#77604a', accent: '#d0611f',
+    blobs: ['#f3cdb9', '#f6dfa4'], pills: ['#fdf4e3', '#f6d3ae', '#dfe3bf'], deck: ['#f4e4c6', '#fdf4e3'],
+    tiles: [['#d0611f', '#ffffff'], ['#9c3220', '#ffffff'], ['#6f7a2e', '#ffffff'], ['#c99016', '#ffffff']],
+  },
+  easter: {
+    bg: '#e4f3ea', paper: '#ffffff', ink: '#3c3350', muted: '#7a7290', accent: '#8e6fd6',
+    blobs: ['#fcd9e3', '#d7e8fb'], pills: ['#ffffff', '#fcd9e3', '#e6dcfa'], deck: ['#f6f2fd', '#ffffff'],
+    tiles: [['#f7a8bf', '#3c3350'], ['#9fc8f2', '#3c3350'], ['#b5e09c', '#3c3350'], ['#ffd76a', '#3c3350']],
+  },
+  valentine: {
+    bg: '#ffe1e9', paper: '#fffafb', ink: '#5a1530', muted: '#9a5a72', accent: '#e23d6d',
+    blobs: ['#ffc2d4', '#ead8f8'], pills: ['#fffafb', '#ffd3df', '#ead8f8'], deck: ['#ffeef3', '#fffafb'],
+    tiles: [['#ffc2d4', '#b0174a'], ['#dcc6f6', '#b0174a'], ['#c4efd8', '#b0174a'], ['#ffe2a6', '#b0174a']],
+  },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
     blobs: ['#e4e4e2', '#ececea'], pills: ['#ececea', '#e2e2e0', '#ffffff'], deck: ['#ececea', '#e2e2e0'],

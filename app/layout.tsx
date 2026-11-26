@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bangers, Barlow_Condensed, Bebas_Neue, Courier_Prime, Lora, Playfair_Display, Special_Elite, Bricolage_Grotesque, Cabin_Sketch, Caveat_Brush, Cinzel, Comic_Neue, Alfa_Slab_One, Kalam, Cormorant, DM_Sans, Fredoka, Inter, Patrick_Hand, Schoolbell, Silkscreen, Space_Grotesk, Space_Mono, VT323 } from 'next/font/google';
+import { Baloo_2, Dancing_Script, Fraunces, Mountains_of_Christmas, Nunito, Quicksand, Work_Sans, Bangers, Barlow_Condensed, Bebas_Neue, Courier_Prime, Lora, Playfair_Display, Special_Elite, Bricolage_Grotesque, Cabin_Sketch, Caveat_Brush, Cinzel, Comic_Neue, Alfa_Slab_One, Kalam, Cormorant, DM_Sans, Fredoka, Inter, Patrick_Hand, Schoolbell, Silkscreen, Space_Grotesk, Space_Mono, VT323 } from 'next/font/google';
 import { SITE, SITE_URL } from '@/lib/site';
 import { shareImage } from '@/lib/og-cards';
 import './globals.css';
@@ -46,6 +46,14 @@ const ticket = Barlow_Condensed({ variable: '--font-ticket', subsets: ['latin'],
 // Recipe card: a cookbook serif pair.
 const recipeDisplay = Playfair_Display({ variable: '--font-recipe-display', subsets: ['latin'], weight: ['700'], style: ['normal', 'italic'], preload: false });
 const recipe = Lora({ variable: '--font-recipe', subsets: ['latin'], weight: ['400', '600', '700'], preload: false });
+// Seasonal themes.
+const xmasDisplay = Mountains_of_Christmas({ variable: '--font-xmas-display', subsets: ['latin'], weight: '700', preload: false });
+const xmas = Nunito({ variable: '--font-xmas', subsets: ['latin'], weight: ['600', '700', '800'], preload: false });
+const fallDisplay = Fraunces({ variable: '--font-fall-display', subsets: ['latin'], weight: ['600', '700'], style: ['normal', 'italic'], preload: false });
+const fall = Work_Sans({ variable: '--font-fall', subsets: ['latin'], weight: ['500', '600', '700'], preload: false });
+const easterDisplay = Baloo_2({ variable: '--font-easter-display', subsets: ['latin'], weight: ['700', '800'], preload: false });
+const love = Quicksand({ variable: '--font-love', subsets: ['latin'], weight: ['500', '600', '700'], preload: false });
+const loveDisplay = Dancing_Script({ variable: '--font-love-display', subsets: ['latin'], weight: '700', preload: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -66,7 +74,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, maxi
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable} ${pixel.variable} ${pixelCaps.variable} ${chat.variable} ${comicDisplay.variable} ${comic.variable} ${tarotDisplay.variable} ${tarot.variable} ${postDisplay.variable} ${post.variable} ${chalkDisplay.variable} ${chalk.variable} ${typeDisplay.variable} ${type.variable} ${ticketDisplay.variable} ${ticket.variable} ${recipeDisplay.variable} ${recipe.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable} ${pixel.variable} ${pixelCaps.variable} ${chat.variable} ${comicDisplay.variable} ${comic.variable} ${tarotDisplay.variable} ${tarot.variable} ${postDisplay.variable} ${post.variable} ${chalkDisplay.variable} ${chalk.variable} ${typeDisplay.variable} ${type.variable} ${ticketDisplay.variable} ${ticket.variable} ${recipeDisplay.variable} ${recipe.variable} ${xmasDisplay.variable} ${xmas.variable} ${fallDisplay.variable} ${fall.variable} ${easterDisplay.variable} ${loveDisplay.variable} ${love.variable}`}>
       <body>
         {children}
         <Today />
