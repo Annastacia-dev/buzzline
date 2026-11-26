@@ -156,6 +156,10 @@ all side by side.
   badges are banded eggs, and spring grass grows along the question and phone cards.
 - **Valentine's**: lace doilies with scalloped edges on a pink cloth of little hearts, set in Dancing Script and
   Quicksand. Answers are pastel candy hearts printed in red, and badges are big hearts.
+- **Music**: cream album sleeves on a dark record-shop wall, set in Righteous and Outfit. The question has a stave and a
+  note across the top, each answer's shape sits on a vinyl record, the answer bars are an equaliser and badges are records.
+- **Sports**: a mowed, striped pitch with chalk lines, set in Graduate and Barlow Condensed. The question is an LED
+  scoreboard, answers are team jerseys with a sash, badges are match balls and the podium is gold, silver and bronze.
 
 ### Seasonal effects
 

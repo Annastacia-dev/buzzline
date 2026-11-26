@@ -882,7 +882,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine], [data-theme=music], [data-theme=sports]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -3351,12 +3351,291 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=valentine] { padding: 22px 24px 24px; border-radius: 16px; overflow-x: hidden; }
 [data-theme=valentine] .flash-deck::before, [data-theme=valentine] .flash-deck::after { border: 0; border-radius: 22px; background: #ffeef3; box-shadow: none; }
 
-/* Messages to Recipe card, and the seasonal themes: the phone lobby shrinks so the avatar picker fits */
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .msg { gap: 8px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .msg > .avatar { zoom: .6; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .msg p { font-size: 15px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .avatar-pick { justify-items: center; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
+/* ---------- Music: album sleeves on a dark record-shop wall, a stave across the question and answers on vinyl ----------
+   The theme's variables describe the cards (cream sleeves, dark ink); text lying straight on the wall takes --glow instead.
+   --stave is five thin staff lines for the top of a card; each answer's shape sits on a record in its sleeve colour (--sleeve). */
+[data-theme=music] {
+  --bg: #1d1828; --paper: #fbf3e4; --ink: #241c2e; --muted: #6e6378; --line: #e6d9c2; --glow: #f6eedf;
+  --hot: #e8553d; --gold: #f2b43a;
+  --butter: #f8e3b0; --butter-ink: #6b4a00;
+  --sage:   #d3e8da; --sage-ink:   #1f5a3c;
+  --olive:  #e0dcae;
+  --lilac:  #e3d9f0; --lilac-ink:  #553a85;
+  --peri:   #d3e1f4; --peri-ink:   #24508f;
+  --pink:   #f7d4cc; --pink-ink:   #a3301c;
+  --peach:  #fadcc0; --peach-ink:  #87430f;
+  --mint:   #cfeadf; --mint-ink:   #1d6048;
+  --coral:  #f6c4b8; --coral-ink:  #a3301c;
+  --good: #2f9a6a; --bad: #e0473a;
+  --font-display: var(--font-music-display), system-ui, sans-serif;
+  --font-main: var(--font-music), system-ui, sans-serif;
+  --radius: 10px;
+  --sleeve-shadow: 0 2px 0 rgba(0, 0, 0, .25), 0 18px 34px -14px rgba(0, 0, 0, .75);
+  --stave: repeating-linear-gradient(transparent 0 5px, rgba(36, 28, 46, .35) 5px 6px) 0 12px / 100% 30px no-repeat;
+  font-family: var(--font-main); font-weight: 500; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=music], .phone[data-theme=music][data-mood], [data-theme=music] .countdown-overlay {
+  color: var(--glow);
+  background: radial-gradient(ellipse at 50% -20%, rgba(242, 180, 58, .22), transparent 60%),
+    repeating-radial-gradient(circle at 115% 120%, transparent 0 7px, rgba(255, 255, 255, .025) 7px 8px),
+    linear-gradient(var(--page, #1d1828), var(--page, #1d1828));
+}
+.phone[data-theme=music][data-mood=locked] { --page: #1b2238; }
+.phone[data-theme=music][data-mood=good] { --page: #14302a; }
+.phone[data-theme=music][data-mood=bad] { --page: #351722; }
+.phone[data-theme=music]:is([data-mood=rank], [data-mood=end]) { --page: #2d2112; }
+
+[data-theme=music] :is(h1, h2, h3, .bignum, .logo, .pin, .podium .m) { font-family: var(--font-display); font-weight: 400; letter-spacing: .01em; }
+[data-theme=music] :is(.name, .stat b, .ring span) { font-weight: 700; }
+[data-theme=music] :is(.stage-q, .qtext) { font-family: var(--font-main); font-weight: 700; letter-spacing: -.01em; }
+[data-theme=music] em, [data-theme=music] .it { font: inherit; letter-spacing: inherit; color: var(--hot); }
+:is(.stage, .join-page, .phone)[data-theme=music] :is(h1, h2) em { color: var(--gold); }
+[data-theme=music] :is(.msg, .card, .flash, .stage-q) :is(h1, h2) em { color: var(--hot); }
+[data-theme=music] .logo .dot { background: var(--hot); box-shadow: 0 0 0 3px #111, 0 0 0 4px var(--gold); }
+[data-theme=music] :is(.order-hint, .order-prompt > p, .bar-label, .team-note), :is(.qstage, .stage)[data-theme=music] .muted:not(:is(.flash, .card, .stat, .row, .type-answer, .pinbox) .muted), .join-page[data-theme=music] > :is(p, .muted) { color: #cfc4dc; }
+.join-page[data-theme=music] > :not(form) a { color: var(--glow) !important; }
+
+/* cream album sleeves */
+[data-theme=music] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=music] form.card, .phone[data-theme=music] .msg {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 10px; box-shadow: var(--sleeve-shadow);
+}
+/* the question is a page of sheet music: a stave across the top and a note in the corner */
+[data-theme=music] .stage-q { position: relative; padding: 50px 40px 22px; background: var(--stave), linear-gradient(var(--paper), var(--paper)); }
+[data-theme=music] .stage-q::after { content: '♫'; position: absolute; top: 4px; left: 18px; font: 400 34px/1 var(--font-main); color: var(--ink); }
+[data-theme=music] .pinbox { position: relative; }
+[data-theme=music] .pinbox .label { color: var(--muted); }
+[data-theme=music] .pinbox .pin { color: var(--hot); }
+[data-theme=music] .pinbox > .sticker { display: none; }
+[data-theme=music] .qr { background: #fff; border-radius: 6px; }
+[data-theme=music] .join-quiz-tag { rotate: -2deg; }
+[data-theme=music] :is(.stage-img, .phone-img, .reveal, .q-img) { border-radius: 6px; border: 8px solid var(--paper); box-shadow: var(--sleeve-shadow); }
+
+/* answers: coloured sleeves, each shape on the label of a record */
+[data-theme=music] .c0 { --sleeve: #e8553d; }
+[data-theme=music] .c1 { --sleeve: #2f7fd1; }
+[data-theme=music] .c2 { --sleeve: #e3a21c; }
+[data-theme=music] .c3 { --sleeve: #2f9a6a; }
+[data-theme=music] .tile { background: linear-gradient(160deg, rgba(255, 255, 255, .14), transparent 55%), var(--sleeve, var(--paper)); color: #fff; border: 0; border-radius: 8px; overflow: visible; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, .3); box-shadow: var(--sleeve-shadow); }
+[data-theme=music] .tile .shape { box-sizing: border-box; width: 56px; height: 56px; padding: 19px; flex: none; border-radius: 50%; fill: #fff;
+  background: radial-gradient(circle, rgba(255, 255, 255, .9) 0 2px, transparent 2.5px), radial-gradient(circle, var(--sleeve, #555) 0 36%, #111 37%), repeating-radial-gradient(circle, #141414 0 2px, #2c2c2c 2px 3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .35); }
+.stage[data-theme=music] .answers { gap: 16px 22px; }
+.stage[data-theme=music] .answers .tile { min-height: 100px; }
+.stage[data-theme=music] .answers .tile .shape { width: 68px; height: 68px; padding: 23px; }
+[data-theme=music] .tile.right { box-shadow: 0 0 0 4px var(--glow), 0 0 30px 6px rgba(242, 180, 58, .7); }
+[data-theme=music] .tile .tick { background: var(--good); color: #fff; text-shadow: none; }
+[data-theme=music] .order-items .tile { --sleeve: var(--paper); background: var(--paper); color: var(--ink); text-shadow: none; }
+[data-theme=music] .pans-tile { background: var(--sleeve) !important; color: #fff; border-radius: 6px; }
+[data-theme=music] .pans-tile > :first-child { fill: #fff; }
+[data-theme=music] .order-n, [data-theme=music] .solution-order li b { background: var(--ink); color: var(--gold); text-shadow: none; }
+[data-theme=music] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=music] :where(.solution-order li) { background: var(--paper); color: var(--ink); border-radius: 8px; box-shadow: var(--sleeve-shadow); }
+/* the answer bars are an equaliser */
+[data-theme=music] .bars .col { border-radius: 3px 3px 0 0; color: #fff; background-image: repeating-linear-gradient(transparent 0 7px, rgba(29, 24, 40, .55) 7px 9px) !important; }
+[data-theme=music] .bars > div:nth-child(1) .col { background-color: #e8553d !important; } [data-theme=music] .bars > div:nth-child(2) .col { background-color: #2f7fd1 !important; }
+[data-theme=music] .bars > div:nth-child(3) .col { background-color: #e3a21c !important; } [data-theme=music] .bars > div:nth-child(4) .col { background-color: #2f9a6a !important; }
+[data-theme=music] .bars .shape { fill: var(--glow); }
+[data-theme=music] .reveal-tile span { color: #fff; opacity: .9; }
+[data-theme=music] .ans-edit label { border-radius: 8px; }
+[data-theme=music] .ans-edit input[type=text] { color: var(--ink); background: var(--paper); border-radius: 6px; }
+
+/* players are backstage passes; the podium is a gold, a platinum and a bronze record */
+[data-theme=music] .chip { box-shadow: inset 4px 0 0 var(--hot), var(--sleeve-shadow); }
+[data-theme=music] .chip:nth-child(4n+2) { box-shadow: inset 4px 0 0 #2f7fd1, var(--sleeve-shadow); }
+[data-theme=music] .chip:nth-child(4n+3) { box-shadow: inset 4px 0 0 #e3a21c, var(--sleeve-shadow); }
+[data-theme=music] .chip:nth-child(4n+4) { box-shadow: inset 4px 0 0 #2f9a6a, var(--sleeve-shadow); }
+[data-theme=music] .chip:hover { background: var(--butter) !important; }
+[data-theme=music] .podium .block { color: var(--ink); border-radius: 8px 8px 0 0; box-shadow: var(--sleeve-shadow);
+  background: radial-gradient(circle at 50% 100%, rgba(0, 0, 0, .14) 0 42px, transparent 43px), repeating-radial-gradient(circle at 50% 100%, transparent 0 5px, rgba(0, 0, 0, .07) 5px 6px), linear-gradient(160deg, #f1f3f6, #b8c0cc) !important; }
+[data-theme=music] .podium > .first .block { background: radial-gradient(circle at 50% 100%, rgba(0, 0, 0, .14) 0 42px, transparent 43px), repeating-radial-gradient(circle at 50% 100%, transparent 0 5px, rgba(0, 0, 0, .07) 5px 6px), linear-gradient(160deg, #ffe08a, #e3a21c) !important; }
+[data-theme=music] .podium > :last-child .block { background: radial-gradient(circle at 50% 100%, rgba(0, 0, 0, .14) 0 42px, transparent 43px), repeating-radial-gradient(circle at 50% 100%, transparent 0 5px, rgba(0, 0, 0, .07) 5px 6px), linear-gradient(160deg, #f0b98a, #b8692f) !important; }
+[data-theme=music] .podium .block * { color: var(--ink) !important; }
+
+/* controls */
+[data-theme=music] .pill { background: rgba(246, 238, 223, .1); color: var(--glow); box-shadow: 0 0 0 1.5px rgba(246, 238, 223, .45); border-radius: 999px; }
+[data-theme=music] :is(.card, .flash, .msg, .pinbox, form, .stage-q) .pill { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=music] .pill.dark { background: var(--hot); color: #fff; box-shadow: none; }
+[data-theme=music] .field { color: var(--ink); background: #fff !important; border: 2px solid var(--line) !important; border-radius: 8px; font-weight: 600; }
+[data-theme=music] .field:focus { outline: 3px solid var(--gold); outline-offset: 2px; }
+[data-theme=music] .btn { background: var(--hot); color: #fff; border-radius: 999px; font-weight: 700; box-shadow: 0 8px 18px -8px rgba(232, 85, 61, .8); }
+[data-theme=music] :is(.btn.light, .btn.ghost) { background: transparent; color: var(--glow); box-shadow: inset 0 0 0 2px rgba(246, 238, 223, .6); }
+[data-theme=music] :is(.card, .flash, .msg, form) :is(.btn.light, .btn.ghost) { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+[data-theme=music] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; box-shadow: none; }
+[data-theme=music] .bar { height: 12px; border-radius: 2px; background: rgba(255, 255, 255, .14); }
+[data-theme=music] .bar > div { border-radius: 2px; background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(29, 24, 40, .6) 9px 11px), linear-gradient(90deg, #2f9a6a, #e3a21c 60%, #e8553d); }
+[data-theme=music] .ring { background: var(--paper); color: var(--ink); box-shadow: var(--sleeve-shadow), inset 0 0 0 4px var(--ink); }
+[data-theme=music] .avatar-pick > div { background: #f1e6d2; border-radius: 8px; }
+
+/* Classic's blobs go; a badge is a vinyl record with a coloured label */
+[data-theme=music] .shapebox > svg { display: none; }
+[data-theme=music] .shapebox:has(> div) { border-radius: 50%; box-shadow: 0 16px 28px -10px rgba(0, 0, 0, .7);
+  background: conic-gradient(from 30deg, transparent 0 8%, rgba(255, 255, 255, .12) 12%, transparent 18% 58%, rgba(255, 255, 255, .1) 62%, transparent 68%), radial-gradient(circle, var(--label, #e8553d) 0 33%, #111 34%), repeating-radial-gradient(circle, #141414 0 2px, #2a2a2a 2px 3px); }
+.phone[data-theme=music][data-mood=good] .shapebox:has(> div) { --label: #2f9a6a; }
+.phone[data-theme=music][data-mood=locked] .shapebox:has(> div) { --label: #2f7fd1; }
+.phone[data-theme=music]:is([data-mood=rank], [data-mood=end]) .shapebox:has(> div) { --label: #e3a21c; }
+[data-theme=music] .shapebox:has(> div) :is(.bignum, .result) { color: #fff; }
+
+/* phones: each moment is a sleeve with a stave across the top */
+.phone[data-theme=music] .msg { position: relative; margin: 8px 6px; padding: 46px 16px 22px; background: var(--stave), linear-gradient(var(--paper), var(--paper)); }
+.phone[data-theme=music] .msg::before { content: '♫'; position: absolute; top: 5px; left: 14px; font: 400 28px/1 var(--font-main); color: var(--ink); }
+.phone[data-theme=music] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=music] .msg h1 { font-size: 36px; }
+.phone[data-theme=music] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=music] header { background: none; }
+.phone[data-theme=music] footer { background: var(--paper); color: var(--ink); box-shadow: var(--sleeve-shadow); border-radius: 10px; }
+.phone[data-theme=music][data-mood=end] .msg { gap: 7px; padding-block: 40px 14px; }
+.phone[data-theme=music][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=music] { padding: 26px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=music] .flash-deck::before, [data-theme=music] .flash-deck::after { border: 0; border-radius: 10px; background: #efe3cc; box-shadow: var(--sleeve-shadow); }
+
+/* ---------- Sports: a striped pitch with chalk lines, a scoreboard for the question and team jerseys for answers ----------
+   The theme's variables describe the cards (white, navy ink); text lying straight on the grass takes --chalk instead.
+   --p1/--p2 are the pitch's two mowing stripes; each answer is a jersey in its team colour (--team) with a sash. */
+[data-theme=sports] {
+  --bg: #2f8f46; --paper: #ffffff; --ink: #13213c; --muted: #5b6780; --line: #d9dfe9; --chalk: #ffffff;
+  --navy: #13213c; --led: #ffd23f; --whistle: #ff5a1f;
+  --butter: #fff1b8; --butter-ink: #6b5200;
+  --sage:   #d4efdc; --sage-ink:   #1d6a3a;
+  --olive:  #e1e6b5;
+  --lilac:  #e2ddf6; --lilac-ink:  #4a3a99;
+  --peri:   #d6e2fb; --peri-ink:   #1b4fd8;
+  --pink:   #fbd6da; --pink-ink:   #a8192c;
+  --peach:  #ffe0cc; --peach-ink:  #9a3d0c;
+  --mint:   #cdeede; --mint-ink:   #0f6b44;
+  --coral:  #ffd0c4; --coral-ink:  #a8192c;
+  --good: #13915a; --bad: #d7263d;
+  --font-display: var(--font-sports-display), Impact, sans-serif;
+  --font-main: var(--font-ticket), system-ui, sans-serif;
+  --radius: 10px;
+  --kit: 0 3px 0 rgba(10, 30, 20, .25), 0 16px 30px -14px rgba(5, 25, 10, .7);
+  --rivets: radial-gradient(circle at 12px 12px, #5c6b88 0 3px, transparent 3.5px), radial-gradient(circle at calc(100% - 12px) 12px, #5c6b88 0 3px, transparent 3.5px),
+    radial-gradient(circle at 12px calc(100% - 12px), #5c6b88 0 3px, transparent 3.5px), radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), #5c6b88 0 3px, transparent 3.5px);
+  font-family: var(--font-main); font-weight: 500; font-size: 1.04em; color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=sports], .phone[data-theme=sports][data-mood], [data-theme=sports] .countdown-overlay {
+  color: var(--chalk);
+  background: radial-gradient(circle at 50% 50%, transparent 0 116px, rgba(255, 255, 255, .28) 117px 120px, transparent 121px),
+    linear-gradient(90deg, transparent calc(50% - 1.5px), rgba(255, 255, 255, .28) calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+    radial-gradient(ellipse at 50% -30%, rgba(255, 255, 255, .22), transparent 60%),
+    repeating-linear-gradient(90deg, var(--p1, #2f8f46) 0 90px, var(--p2, #2a8240) 90px 180px);
+}
+.phone[data-theme=sports][data-mood=locked] { --p1: #2b6aa8; --p2: #275f97; }
+.phone[data-theme=sports][data-mood=good] { --p1: #2f9a4a; --p2: #2a8b42; }
+.phone[data-theme=sports][data-mood=bad] { --p1: #b0383a; --p2: #a13234; }
+.phone[data-theme=sports]:is([data-mood=rank], [data-mood=end]) { --p1: #1f5f8f; --p2: #1c5683; }
+
+[data-theme=sports] :is(h1, h2, h3, .bignum, .logo, .pin, .podium .m) { font-family: var(--font-display); font-weight: 400; letter-spacing: .02em; }
+[data-theme=sports] :is(.name, .stat b, .ring span) { font-weight: 700; }
+[data-theme=sports] :is(.stage-q, .qtext) { font-family: var(--font-main); font-weight: 700; letter-spacing: 0; }
+[data-theme=sports] em, [data-theme=sports] .it { font: inherit; letter-spacing: inherit; color: var(--whistle); }
+:is(.stage, .join-page, .phone)[data-theme=sports] :is(h1, h2) em { color: var(--led); }
+[data-theme=sports] :is(.msg, .card, .flash) :is(h1, h2) em { color: var(--whistle); }
+[data-theme=sports] .logo .dot { background: #fff; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--navy); }
+[data-theme=sports] :is(.order-hint, .order-prompt > p, .bar-label, .team-note), :is(.qstage, .stage)[data-theme=sports] .muted:not(:is(.flash, .card, .stat, .row, .type-answer, .pinbox) .muted), .join-page[data-theme=sports] > :is(p, .muted) { color: #e6f4ea; }
+.join-page[data-theme=sports] > :not(form) a { color: var(--chalk) !important; }
+
+/* white kit cards */
+[data-theme=sports] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=sports] form.card, .phone[data-theme=sports] .msg {
+  background-color: var(--paper); color: var(--ink); border: 0; border-radius: 10px; box-shadow: var(--kit);
+}
+/* the question is on the scoreboard: navy panel, LED-yellow text, bolted at the corners */
+[data-theme=sports] .stage-q { background: var(--rivets), linear-gradient(#1a2b4c, #13213c); color: var(--led); padding: 26px 44px; border-radius: 8px;
+  box-shadow: inset 0 0 0 3px #2c3d61, 0 0 0 4px #0b1528, var(--kit); text-shadow: 0 0 14px rgba(255, 210, 63, .45); }
+[data-theme=sports] .pinbox .label { color: var(--muted); }
+[data-theme=sports] .pinbox .pin { color: var(--navy); }
+[data-theme=sports] .pinbox > .sticker { display: none; }
+[data-theme=sports] .qr { background: #fff; border-radius: 6px; }
+[data-theme=sports] .join-quiz-tag { rotate: -2deg; }
+[data-theme=sports] :is(.stage-img, .phone-img, .reveal, .q-img) { border-radius: 8px; border: 6px solid #fff; box-shadow: var(--kit); }
+
+/* answers: team jerseys with a sash, the shape on a white ball */
+[data-theme=sports] .c0 { --team: #d7263d; }
+[data-theme=sports] .c1 { --team: #1b4fd8; }
+[data-theme=sports] .c2 { --team: #c77d00; }
+[data-theme=sports] .c3 { --team: #13915a; }
+[data-theme=sports] .tile { color: #fff; border: 0; border-radius: 10px; overflow: visible; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; text-shadow: 0 1px 2px rgba(0, 0, 0, .3); box-shadow: var(--kit);
+  background: linear-gradient(115deg, transparent 74%, rgba(255, 255, 255, .85) 74% 78%, transparent 78% 81%, rgba(255, 255, 255, .85) 81% 85%, transparent 85%), var(--team, var(--paper)); }
+[data-theme=sports] .tile .shape { box-sizing: border-box; width: 50px; height: 50px; padding: 13px; flex: none; border-radius: 50%; background: #fff; fill: var(--team, var(--ink)); box-shadow: 0 3px 8px rgba(0, 0, 0, .3); }
+.stage[data-theme=sports] .answers { gap: 16px 22px; }
+.stage[data-theme=sports] .answers .tile { min-height: 100px; }
+.stage[data-theme=sports] .answers .tile .shape { width: 62px; height: 62px; padding: 16px; }
+.phone[data-theme=sports] .answers .tile { text-transform: none; letter-spacing: 0; font-size: 1.08em;
+  background: linear-gradient(125deg, transparent 80%, rgba(255, 255, 255, .85) 80% 83%, transparent 83% 86%, rgba(255, 255, 255, .85) 86% 89%, transparent 89%), var(--team, var(--paper)); }
+[data-theme=sports] .tile.right { box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--led), var(--kit); }
+[data-theme=sports] .tile .tick { background: #fff; color: var(--good); text-shadow: none; }
+[data-theme=sports] .order-items .tile { --team: var(--paper); color: var(--ink); text-shadow: none; text-transform: none; background: #fff; }
+[data-theme=sports] .pans-tile { background: var(--team) !important; color: #fff; border-radius: 6px; }
+[data-theme=sports] .pans-tile > :first-child { fill: #fff; }
+[data-theme=sports] .order-n, [data-theme=sports] .solution-order li b { background: var(--navy); color: var(--led); text-shadow: none; }
+[data-theme=sports] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=sports] :where(.solution-order li) { background: var(--paper); color: var(--ink); border-radius: 8px; box-shadow: var(--kit); }
+[data-theme=sports] .bars .col { border-radius: 4px 4px 0 0; color: #fff; box-shadow: 0 0 0 3px #fff; }
+[data-theme=sports] .bars > div:nth-child(1) .col { background: #d7263d !important; } [data-theme=sports] .bars > div:nth-child(2) .col { background: #1b4fd8 !important; }
+[data-theme=sports] .bars > div:nth-child(3) .col { background: #c77d00 !important; } [data-theme=sports] .bars > div:nth-child(4) .col { background: #13915a !important; }
+[data-theme=sports] .bars .shape { fill: var(--chalk); }
+[data-theme=sports] .reveal-tile span { color: #fff; opacity: .9; }
+[data-theme=sports] .ans-edit label { border-radius: 8px; }
+[data-theme=sports] .ans-edit input[type=text] { color: var(--ink); background: #fff; border-radius: 6px; }
+
+/* players wear numbered bibs; the podium is gold, silver and bronze */
+[data-theme=sports] .chip { box-shadow: inset 0 4px 0 var(--whistle), var(--kit); }
+[data-theme=sports] .chip:hover { background: var(--butter) !important; }
+[data-theme=sports] .row { box-shadow: inset 6px 0 0 var(--navy), var(--kit); }
+[data-theme=sports] .podium .block { color: var(--ink); border-radius: 8px 8px 0 0; box-shadow: var(--kit);
+  background: linear-gradient(transparent 10px, rgba(255, 255, 255, .55) 10px 14px, transparent 14px), linear-gradient(160deg, #f4f6f9, #aab4c2) !important; }
+[data-theme=sports] .podium > .first .block { background: linear-gradient(transparent 10px, rgba(255, 255, 255, .55) 10px 14px, transparent 14px), linear-gradient(160deg, #ffe58a, #e0a512) !important; }
+[data-theme=sports] .podium > :last-child .block { background: linear-gradient(transparent 10px, rgba(255, 255, 255, .55) 10px 14px, transparent 14px), linear-gradient(160deg, #f2bf93, #b46a33) !important; }
+[data-theme=sports] .podium .block * { color: var(--ink) !important; }
+
+/* controls */
+[data-theme=sports] .pill { background: rgba(19, 33, 60, .35); color: var(--chalk); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .6); border-radius: 999px; }
+[data-theme=sports] :is(.card, .flash, .msg, .pinbox, form) .pill { background: #fff; color: var(--ink); box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=sports] .stage-q .pill { background: #0b1528; color: var(--led); box-shadow: 0 0 0 1.5px #2c3d61; text-shadow: none; }
+[data-theme=sports] .pill.dark { background: var(--navy); color: var(--led); box-shadow: none; }
+[data-theme=sports] .field { color: var(--ink); background: #fff !important; border: 2px solid var(--line) !important; border-radius: 8px; font-weight: 600; }
+[data-theme=sports] .field:focus { outline: 3px solid var(--led); outline-offset: 2px; }
+[data-theme=sports] .btn { background: var(--whistle); color: #fff; border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; box-shadow: 0 4px 0 #b83a0c; }
+[data-theme=sports] :is(.btn.light, .btn.ghost) { background: rgba(19, 33, 60, .3); color: var(--chalk); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .75); }
+[data-theme=sports] :is(.card, .flash, .msg, form) :is(.btn.light, .btn.ghost) { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+[data-theme=sports] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; box-shadow: none; }
+[data-theme=sports] .bar { height: 12px; border-radius: 2px; background: rgba(255, 255, 255, .22); }
+[data-theme=sports] .bar > div { border-radius: 2px; background: repeating-linear-gradient(115deg, var(--led) 0 10px, #ffbf00 10px 20px); }
+[data-theme=sports] .ring { background: var(--navy); color: var(--led); box-shadow: var(--kit), inset 0 0 0 4px #2c3d61; }
+[data-theme=sports] .avatar-pick > div { background: #eef2f7; border-radius: 8px; }
+
+/* Classic's blobs go; a badge is a stitched match ball, or a gold medal at the end */
+[data-theme=sports] .shapebox > svg { display: none; }
+[data-theme=sports] .shapebox:has(> div) { border-radius: 50%; outline: 3px dashed rgba(255, 255, 255, .7); outline-offset: -14px; box-shadow: 0 14px 26px -8px rgba(0, 0, 0, .5);
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .35), transparent 45%), radial-gradient(circle, #24365d, #13213c 70%); }
+.phone[data-theme=sports][data-mood=good] .shapebox:has(> div) { background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .35), transparent 45%), radial-gradient(circle, #1fb070, #0f6b44 70%); }
+.phone[data-theme=sports][data-mood=bad] .shapebox:has(> div) { background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .35), transparent 45%), radial-gradient(circle, #ec4a5e, #a8192c 70%); }
+.phone[data-theme=sports]:is([data-mood=rank], [data-mood=end]) .shapebox:has(> div) { outline-color: rgba(120, 70, 0, .5); background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .7), transparent 40%), radial-gradient(circle, #ffe58a, #e0a512 65%, #a8740a); }
+[data-theme=sports] .shapebox:has(> div) :is(.bignum, .result) { color: #fff; }
+.phone[data-theme=sports]:is([data-mood=rank], [data-mood=end]) .shapebox:has(> div) :is(.bignum, .result) { color: var(--ink); }
+
+/* phones: each moment is a white card with the four team colours across the top */
+.phone[data-theme=sports] .msg { position: relative; overflow: hidden; margin: 8px 6px; padding: 30px 16px 22px; }
+.phone[data-theme=sports] .msg::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #d7263d 25%, #1b4fd8 25% 50%, #c77d00 50% 75%, #13915a 75%); }
+.phone[data-theme=sports] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=sports] .msg h1 { font-size: 34px; }
+.phone[data-theme=sports] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=sports] header { background: none; }
+.phone[data-theme=sports] footer { background: var(--navy); color: var(--led); box-shadow: inset 0 0 0 2px #2c3d61, var(--kit); border-radius: 8px; }
+.phone[data-theme=sports][data-mood=end] .msg { gap: 7px; padding-block: 22px 14px; }
+.phone[data-theme=sports][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=sports] { padding: 26px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=sports] .flash-deck::before, [data-theme=sports] .flash-deck::after { border: 0; border-radius: 10px; background: #eef2f7; box-shadow: var(--kit); }
+
+/* Messages to Recipe card, the seasonal themes, Music and Sports: the phone lobby shrinks so the avatar picker fits */
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine], [data-theme=music], [data-theme=sports])[data-mood=lobby] .msg { gap: 8px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine], [data-theme=music], [data-theme=sports])[data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine], [data-theme=music], [data-theme=sports])[data-mood=lobby] .msg p { font-size: 15px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine], [data-theme=music], [data-theme=sports])[data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard], [data-theme=chalkboard], [data-theme=typewriter], [data-theme=ticket], [data-theme=recipe], [data-theme=christmas], [data-theme=fall], [data-theme=easter], [data-theme=valentine], [data-theme=music], [data-theme=sports])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
 
 /* ---------- Admin dashboard (/admin) ---------- */
 /* Series colors: validated for colorblind separation on white (dataviz validate_palette). Text never uses them. */

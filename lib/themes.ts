@@ -22,6 +22,8 @@ export const THEMES = [
   { id: 'fall', name: 'Fall', blurb: 'Cosy stitched patches on flannel plaid in pumpkin, mustard and rust, with maple leaves', swatch: ['#efd4a8', '#d0611f', '#9c3220', '#6f7a2e'] },
   { id: 'easter', name: 'Easter', blurb: 'Painted eggs on a pastel polka-dot cloth, with spring grass along every card', swatch: ['#e4f3ea', '#f7a8bf', '#9fc8f2', '#ffd76a'] },
   { id: 'valentine', name: "Valentine's", blurb: 'Lace doilies and pastel candy hearts on a pink cloth scattered with little hearts', swatch: ['#ffe1e9', '#e23d6d', '#ffc2d4', '#fffafb'] },
+  { id: 'music', name: 'Music', blurb: 'Album sleeves on a dark record-shop wall, with a stave across the question and every answer on vinyl', swatch: ['#1d1828', '#fbf3e4', '#e8553d', '#f2b43a'] },
+  { id: 'sports', name: 'Sports', blurb: 'A striped pitch with chalk lines, an LED scoreboard for the question and team jerseys for answers', swatch: ['#2f8f46', '#13213c', '#ffd23f', '#d7263d'] },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -31,7 +33,7 @@ export const DEFAULT_THEME: ThemeId = 'classic';
 export const themeOf = (v: unknown): ThemeId => (THEMES.some(t => t.id === v) ? (v as ThemeId) : DEFAULT_THEME);
 
 /** The ink colour for things drawn outside CSS, such as the lobby QR code. */
-export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'christmas' ? '#2a1a14' : t === 'fall' ? '#3b2416' : t === 'easter' ? '#3c3350' : t === 'valentine' ? '#5a1530' : t === 'typewriter' ? '#26221d' : t === 'ticket' ? '#1d1530' : t === 'recipe' ? '#2b2420' : t === 'chalkboard' ? '#1f3a2c' : t === 'postcard' ? '#24324f' : t === 'messages' ? '#111114' : t === 'comic' ? '#14110f' : t === 'tarot' ? '#2b1c46' : t === 'polaroid' ? '#35291f' : t === 'receipt' ? '#27282b' : t === 'retro' ? '#14161f' : t === 'toybox' ? '#3a3d6b' : '#161616');
+export const themeInk = (t: ThemeId) => (t === 'doodlebug' ? '#1f3fb9' : t === 'inkblot' ? '#111111' : t === 'glass' ? '#2c1d63' : t === 'music' ? '#241c2e' : t === 'sports' ? '#13213c' : t === 'christmas' ? '#2a1a14' : t === 'fall' ? '#3b2416' : t === 'easter' ? '#3c3350' : t === 'valentine' ? '#5a1530' : t === 'typewriter' ? '#26221d' : t === 'ticket' ? '#1d1530' : t === 'recipe' ? '#2b2420' : t === 'chalkboard' ? '#1f3a2c' : t === 'postcard' ? '#24324f' : t === 'messages' ? '#111114' : t === 'comic' ? '#14110f' : t === 'tarot' ? '#2b1c46' : t === 'polaroid' ? '#35291f' : t === 'receipt' ? '#27282b' : t === 'retro' ? '#14161f' : t === 'toybox' ? '#3a3d6b' : '#161616');
 
 /** Themes with their own drawings in lib/doodles.tsx (the others decorate with shapes or colour). */
 export const hasDoodles = (t: ThemeId) => t === 'doodlebug' || t === 'inkblot' || t === 'retro';
