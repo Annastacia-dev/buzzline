@@ -138,6 +138,8 @@ all side by side.
   and a POW!, ZAP! or OOPS! on phones.
 - **Tarot**: gilded cream cards on a midnight cloth full of gold stars, set in Cinzel and Cormorant. Answers are four
   cards numbered I to IV, and each phone moment is a card of the major arcana (The Sun for a right answer).
+- **Postcard**: postcards on a sky-blue desk, written in Kalam with Alfa Slab One headings. The question is the back
+  of a postcard with a stamp and postmark, answers carry perforated stamps, and cards have airmail-striped edges.
 
 ### Seasonal effects
 

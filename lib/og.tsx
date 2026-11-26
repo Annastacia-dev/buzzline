@@ -98,6 +98,11 @@ export const PALETTES: Record<ThemeId, OgPalette> = {
     blobs: ['#4d3488', '#6b2c56'], pills: ['#3a2568', '#4d3488', '#5a2749'], deck: ['#4d3488', '#5a2749'],
     tiles: [['#2b4a94', '#ffffff'], ['#962a4a', '#ffffff'], ['#1f6b55', '#ffffff'], ['#93600f', '#ffffff']],
   },
+  postcard: {
+    bg: '#b9d0dc', paper: '#fffaf0', ink: '#24324f', muted: '#5d6578', accent: '#c23b32',
+    blobs: ['#fffaf0', '#cddcf0'], pills: ['#fffaf0', '#f2cfc8', '#cddcf0'], deck: ['#f3ecdc', '#fffaf0'],
+    tiles: [['#2b5aa8', '#ffffff'], ['#b8352d', '#ffffff'], ['#2f7a3e', '#ffffff'], ['#b97a12', '#ffffff']],
+  },
   inkblot: {
     bg: '#f4f4f2', paper: '#ffffff', ink: '#111111', muted: '#6b6b6b', accent: '#111111',
     blobs: ['#e4e4e2', '#ececea'], pills: ['#ececea', '#e2e2e0', '#ffffff'], deck: ['#ececea', '#e2e2e0'],

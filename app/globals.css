@@ -845,7 +845,7 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=inkblot] .flash-deck::before { background: var(--disc); }
 .qstage[data-theme=inkblot] .flash-deck::after { background: var(--paper); }
 /* themed stages paint their own paper (the page behind is Classic cream) */
-.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot]) { background: var(--bg); }
+.stage[data-theme]:not([data-theme=classic], [data-theme=glass], [data-theme=toybox], [data-theme=retro], [data-theme=receipt], [data-theme=polaroid], [data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard]) { background: var(--bg); }
 /* the tilted deck behind the flashcard pokes out sideways: never scroll for it */
 .qstage { overflow-x: hidden; }
 
@@ -2138,12 +2138,146 @@ em, .it { font-family: var(--font-main); font-style: italic; font-weight: 300; l
 .qstage[data-theme=tarot] { padding: 14px 24px 24px; border-radius: 16px; overflow-x: hidden; }
 [data-theme=tarot] .flash-deck::before, [data-theme=tarot] .flash-deck::after { border: 0; border-radius: 14px; background: #3a2568; box-shadow: inset 0 0 0 5px #3a2568, inset 0 0 0 6.5px var(--gold); }
 
-/* Messages, Comic and Tarot: the phone lobby shrinks so the avatar picker fits */
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .msg { gap: 8px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .msg > .avatar { zoom: .6; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .msg p { font-size: 15px; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .avatar-pick { justify-items: center; }
-.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
+/* ---------- Postcard: postcards on a sky-blue desk. Airmail stripes, perforated stamps, postmarks and handwriting ----------
+   --airmail is the red and blue striped edge; --perf punches a stamp's edge (it bites 5px into the edge; the printed face sits inside a white margin);
+   --postmark is the round cancel with its wavy lines. */
+[data-theme=postcard] {
+  --bg: #b9d0dc; --paper: #fffaf0; --ink: #24324f; --muted: #5d6578; --line: #d9cdb5;
+  --butter: #f4dc94; --butter-ink: #7a5300;
+  --sage:   #cfe0c6; --sage-ink:   #2f6a3b;
+  --olive:  #c9c497;
+  --lilac:  #dcd3ea; --lilac-ink:  #54408a;
+  --peri:   #cddcf0; --peri-ink:   #2a4f8f;
+  --pink:   #f2cfc8; --pink-ink:   #a5312a;
+  --peach:  #f4d8bb; --peach-ink:  #8f4a12;
+  --mint:   #cfe5dc; --mint-ink:   #276150;
+  --coral:  #efb6aa; --coral-ink:  #a5312a;
+  --good: #2f7a3e; --bad: #b8352d; --red: #c23b32; --blue: #2b5aa8;
+  --font-display: var(--font-post-display), Georgia, serif;
+  --font-main: var(--font-post), cursive;
+  --radius: 6px;
+  --card: 0 1px 2px rgba(30, 45, 70, .25), 0 12px 22px -8px rgba(30, 45, 70, .45);
+  --airmail: repeating-linear-gradient(-45deg, #c23b32 0 11px, #fffaf0 11px 18px, #2b5aa8 18px 29px, #fffaf0 29px 36px);
+  --perf: linear-gradient(#000 0 0) center / calc(100% - 10px) calc(100% - 10px) no-repeat, radial-gradient(circle, transparent 3px, #000 3.5px) -5px -5px / 10px 10px round;
+  --postmark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 80'%3E%3Cg fill='none' stroke='%2324324f' stroke-width='2.2' opacity='.5'%3E%3Ccircle cx='40' cy='40' r='31'/%3E%3Ccircle cx='40' cy='40' r='25'/%3E%3Cpath d='M78 24q11-8 22 0t22 0t22 0t22 0M78 36q11-8 22 0t22 0t22 0t22 0M78 48q11-8 22 0t22 0t22 0t22 0M78 60q11-8 22 0t22 0t22 0t22 0'/%3E%3Cpath d='M22 40h36M28 32h24M28 48h24' stroke-width='3'/%3E%3C/g%3E%3C/svg%3E") no-repeat;
+  font-family: var(--font-main); color: var(--ink);
+}
+:is(.stage, .phone, .qstage, .join-page)[data-theme=postcard], .phone[data-theme=postcard][data-mood], [data-theme=postcard] .countdown-overlay {
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .16) 0 1px, transparent 1px 90px), repeating-linear-gradient(90deg, rgba(255, 255, 255, .16) 0 1px, transparent 1px 90px),
+    radial-gradient(ellipse at 30% 10%, rgba(255, 255, 255, .45), transparent 60%), var(--page, #b9d0dc);
+}
+.phone[data-theme=postcard][data-mood=ready], [data-theme=postcard] .countdown-overlay { --page: #c4cde6; }
+.phone[data-theme=postcard][data-mood=locked] { --page: #d3cbe3; }
+.phone[data-theme=postcard][data-mood=good] { --page: #bcd8bd; }
+.phone[data-theme=postcard][data-mood=bad] { --page: #e6c0b6; }
+.phone[data-theme=postcard]:is([data-mood=rank], [data-mood=end]) { --page: #ead39b; }
+
+[data-theme=postcard] :is(h1, h2, h3, .bignum, .logo, .pin, .name, .stat b, .ring span, .podium .m) { font-weight: 400; letter-spacing: .01em; }
+[data-theme=postcard] :is(.stage-q, .qtext) { font-family: var(--font-main); font-weight: 700; letter-spacing: 0; line-height: 1.2; }
+[data-theme=postcard] em, [data-theme=postcard] .it { font: inherit; letter-spacing: inherit; color: var(--red); }
+[data-theme=postcard] .logo .dot { background: var(--red); }
+
+/* the question is the back of a postcard: handwriting, a stamp and a postmark */
+[data-theme=postcard] :is(.stage-q, .pinbox, .stat, .card, .flash, .type-prompt, .type-answer, .locked-text, .join-quiz-tag, .row, .chip, .team-bar, .team-col), .join-page[data-theme=postcard] form.card, .phone[data-theme=postcard] .msg {
+  background-color: var(--paper); color: var(--ink); box-shadow: var(--card); border: 0;
+}
+[data-theme=postcard] .stage-q { position: relative; rotate: -.6deg; margin: 6px 10px 0; padding: 24px 170px 26px 40px; text-align: left; border-radius: 6px; }
+[data-theme=postcard] .stage-q::before { content: ''; position: absolute; top: 18px; right: 22px; width: 78px; height: 92px; rotate: 4deg;
+  background: linear-gradient(160deg, #e8a33b, #c2532d) center / calc(100% - 18px) calc(100% - 18px) no-repeat, linear-gradient(#cbbf9f, #cbbf9f) center / calc(100% - 15px) calc(100% - 15px) no-repeat, #fff; mask: var(--perf); }
+[data-theme=postcard] .stage-q::after { content: ''; position: absolute; top: 48px; right: 70px; width: 150px; height: 70px; background: var(--postmark); background-size: contain; rotate: -8deg; pointer-events: none; }
+
+/* the lobby card is a "greetings from" front */
+[data-theme=postcard] .pinbox { position: relative; border-radius: 6px; rotate: .4deg; border: 12px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box; }
+[data-theme=postcard] .pinbox .label { color: var(--muted); }
+[data-theme=postcard] .pinbox .pin { color: #e8a33b; -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill; letter-spacing: .04em; }
+[data-theme=postcard] .pinbox > .sticker { display: none; }
+[data-theme=postcard] .qr { rotate: -2deg; background: #fff; box-shadow: 0 0 0 1px var(--line); }
+.join-page[data-theme=postcard] form.card { border-radius: 8px; border: 10px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box !important; rotate: -.6deg; }
+[data-theme=postcard] .join-quiz-tag { rotate: 2deg; }
+[data-theme=postcard] :is(.stage-img, .phone-img, .reveal, .q-img) { border: 8px solid #fffaf0; border-radius: 4px; box-shadow: var(--card); }
+
+/* answers: postcards, each with its own stamp */
+[data-theme=postcard] .c0 { --stamp: linear-gradient(160deg, #4f7fc4, #2b5aa8); --deep: #2b5aa8; background: var(--stamp); }
+[data-theme=postcard] .c1 { --stamp: linear-gradient(160deg, #df6555, #b8352d); --deep: #b8352d; background: var(--stamp); }
+[data-theme=postcard] .c2 { --stamp: linear-gradient(160deg, #62a06c, #2f7a3e); --deep: #2f7a3e; background: var(--stamp); }
+[data-theme=postcard] .c3 { --stamp: linear-gradient(160deg, #e7b347, #b97a12); --deep: #8a5a00; background: var(--stamp); }
+[data-theme=postcard] .tile { background: var(--paper); color: var(--ink); box-shadow: var(--card); border-radius: 6px; font-weight: 700; overflow: visible; }
+[data-theme=postcard] .tile .shape { box-sizing: border-box; width: 64px; height: 76px; padding: 20px 16px; border-radius: 0; background: var(--stamp) center / calc(100% - 18px) calc(100% - 18px) no-repeat, linear-gradient(#cbbf9f, #cbbf9f) center / calc(100% - 15px) calc(100% - 15px) no-repeat, #fff; fill: #fff; mask: var(--perf); rotate: -3deg; }
+[data-theme=postcard] .tile:not(:has(> .shape)) { border-left: 12px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box; }
+.stage[data-theme=postcard] { gap: 18px; }
+.stage[data-theme=postcard] .answers { gap: 16px 22px; padding: 0 6px; }
+.stage[data-theme=postcard] .answers .tile { min-height: 100px; }
+.stage[data-theme=postcard] .answers .tile .shape { width: 72px; height: 84px; padding: 22px 18px; }
+[data-theme=postcard] .answers .tile:nth-child(4n+1) { rotate: -.8deg; }
+[data-theme=postcard] .answers .tile:nth-child(4n+2) { rotate: .7deg; }
+[data-theme=postcard] .answers .tile:nth-child(4n+3) { rotate: .5deg; }
+[data-theme=postcard] .answers .tile:nth-child(4n+4) { rotate: -.6deg; }
+.phone[data-theme=postcard] .answers { gap: 14px; padding: 4px 2px; }
+.phone[data-theme=postcard] .tile .shape { width: 58px; height: 68px; padding: 18px 14px; }
+[data-theme=postcard] .tile.right { box-shadow: 0 0 0 4px var(--good), var(--card); }
+[data-theme=postcard] .tile .tick { background: var(--good); color: #fff; }
+[data-theme=postcard] .pans-tile { color: #fff; border-radius: 6px; }
+[data-theme=postcard] .pans-tile > :first-child { fill: #fff; }
+[data-theme=postcard] .pcard.flash .pans-tile { border: 0; box-shadow: 0 2px 0 rgba(30, 45, 70, .25); }
+[data-theme=postcard] .order-n, [data-theme=postcard] .solution-order li b { background: var(--ink); color: var(--paper); }
+[data-theme=postcard] .order-items .tile { border-left: 0; }
+[data-theme=postcard] .order-move button { box-shadow: 0 0 0 1.5px var(--line); }
+[data-theme=postcard] .solution-order li { background: var(--paper); box-shadow: var(--card); border-radius: 6px; }
+[data-theme=postcard] .bars .col { border-radius: 4px 4px 0 0; color: #fff; box-shadow: 0 0 0 4px #fffaf0, var(--card); }
+[data-theme=postcard] .reveal-tile span { color: #fff; opacity: .9; }
+[data-theme=postcard] .ans-edit label { border-radius: 6px; }
+[data-theme=postcard] .ans-edit input[type=text] { color: var(--ink); background: #fffaf0; border-radius: 4px; }
+[data-theme=postcard] .ans-edit .ans-tag { color: #fff; }
+
+/* players are little postcards; the scoreboard is a row of them */
+[data-theme=postcard] .chip { border-radius: 4px; border-top: 5px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box !important; }
+[data-theme=postcard] .chip:hover { background: var(--coral) !important; }
+[data-theme=postcard] .row { border-radius: 6px; border-left: 10px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box; }
+[data-theme=postcard] .row:nth-child(odd) { rotate: -.3deg; } [data-theme=postcard] .row:nth-child(even) { rotate: .3deg; }
+[data-theme=postcard] .podium .block { border-radius: 6px 6px 0 0; background: var(--paper) !important; box-shadow: var(--card); border: 10px solid transparent; border-bottom: 0; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box !important; }
+[data-theme=postcard] .podium > .first .block { background: linear-gradient(#f4dc94, #f4dc94) padding-box, var(--airmail) border-box !important; }
+
+/* labels, fields, buttons */
+[data-theme=postcard] .pill { background: var(--paper); box-shadow: 0 0 0 1.5px var(--ink); border-radius: 4px; font-weight: 700; font-size: 15px; }
+[data-theme=postcard] .pill.dark { background: var(--ink); color: var(--paper); }
+[data-theme=postcard] .field { border: 0 !important; border-bottom: 2px solid #9aa3b5 !important; border-radius: 4px; background: #f6f0e2; font-weight: 700; }
+[data-theme=postcard] .field:focus { outline: 2px solid var(--blue); outline-offset: 2px; }
+[data-theme=postcard] .btn { background: var(--ink); color: var(--paper); border-radius: 8px; font-weight: 700; font-size: 1.08em; }
+[data-theme=postcard] :is(.btn.light, .btn.ghost) { background: var(--paper); color: var(--ink); box-shadow: var(--card); }
+[data-theme=postcard] .btn:is(.danger, .danger-solid) { background: var(--bad); color: #fff; }
+[data-theme=postcard] .bar { height: 12px; border-radius: 0; background: rgba(255, 250, 240, .7); }
+[data-theme=postcard] .bar > div { border-radius: 0; background: var(--airmail); }
+[data-theme=postcard] .ring { background: var(--paper); box-shadow: var(--card); }
+[data-theme=postcard] .avatar-pick > div { background: #f3ecdc; border-radius: 6px; }
+
+/* Classic's blobs go; a badge becomes a big stamp */
+[data-theme=postcard] .shapebox > svg { display: none; }
+[data-theme=postcard] .shapebox:has(> div) { border-radius: 0; background: linear-gradient(160deg, #e8a33b, #c2532d) center / calc(100% - 20px) calc(100% - 20px) no-repeat, linear-gradient(#cbbf9f, #cbbf9f) center / calc(100% - 17px) calc(100% - 17px) no-repeat, #fff; mask: var(--perf); rotate: -3deg !important; filter: drop-shadow(0 6px 10px rgba(30, 45, 70, .35)); }
+[data-theme=postcard] .shapebox:has(> div) :is(.bignum, .result) { color: #fffaf0; }
+
+/* phones: each message is a postcard with a stamp in the corner */
+.phone[data-theme=postcard] .msg { position: relative; margin: 8px 6px 8px; padding: 28px 16px 22px; border-radius: 6px; rotate: -.5deg; border: 9px solid transparent; background: linear-gradient(var(--paper), var(--paper)) padding-box, var(--airmail) border-box; }
+.phone[data-theme=postcard] .msg > * { flex-shrink: 0; max-width: 100%; }
+.phone[data-theme=postcard] .msg h1 { font-size: 34px; }
+.phone[data-theme=postcard] .msg::after { content: ''; position: absolute; top: 10px; right: 12px; width: 44px; height: 52px; rotate: 5deg;
+  background: linear-gradient(160deg, #4f7fc4, #2b5aa8) center / calc(100% - 16px) calc(100% - 16px) no-repeat, linear-gradient(#cbbf9f, #cbbf9f) center / calc(100% - 13px) calc(100% - 13px) no-repeat, #fff; mask: var(--perf); }
+.phone[data-theme=postcard] .msg::before { content: ''; position: absolute; top: 30px; right: 34px; width: 96px; height: 45px; background: var(--postmark); background-size: contain; rotate: -10deg; pointer-events: none; z-index: 1; }
+.phone[data-theme=postcard] .msg .tile { width: 130px; height: 120px; flex: none; padding: 14px !important; justify-content: center; }
+.phone[data-theme=postcard] footer { background: var(--paper); color: var(--ink); box-shadow: var(--card); border-radius: 8px; }
+.phone[data-theme=postcard][data-mood=end] .msg { gap: 7px; padding-block: 22px 14px; }
+.phone[data-theme=postcard][data-mood=end] .msg > .shapebox { zoom: .6; }
+
+/* studio preview */
+.qstage[data-theme=postcard] { padding: 14px 24px 24px; border-radius: 16px; overflow-x: hidden; }
+[data-theme=postcard] .pcard.flash { padding-right: 24px; }
+[data-theme=postcard] .flash-deck::before, [data-theme=postcard] .flash-deck::after { border: 0; border-radius: 6px; background: #f3ecdc; box-shadow: var(--card); }
+
+/* Messages, Comic, Tarot and Postcard: the phone lobby shrinks so the avatar picker fits */
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .msg { gap: 8px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .msg > .avatar { zoom: .6; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .msg p { font-size: 15px; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .avatar-pick { justify-items: center; }
+.phone:is([data-theme=messages], [data-theme=comic], [data-theme=tarot], [data-theme=postcard])[data-mood=lobby] .avatar-pick > div { zoom: .8; width: 340px; }
 
 /* ---------- Admin dashboard (/admin) ---------- */
 /* Series colors: validated for colorblind separation on white (dataviz validate_palette). Text never uses them. */

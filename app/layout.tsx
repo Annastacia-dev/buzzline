@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Bangers, Bricolage_Grotesque, Caveat_Brush, Cinzel, Comic_Neue, Cormorant, DM_Sans, Fredoka, Inter, Patrick_Hand, Silkscreen, Space_Grotesk, Space_Mono, VT323 } from 'next/font/google';
+import { Bangers, Bricolage_Grotesque, Caveat_Brush, Cinzel, Comic_Neue, Alfa_Slab_One, Kalam, Cormorant, DM_Sans, Fredoka, Inter, Patrick_Hand, Silkscreen, Space_Grotesk, Space_Mono, VT323 } from 'next/font/google';
 import { SITE, SITE_URL } from '@/lib/site';
 import { shareImage } from '@/lib/og-cards';
 import './globals.css';
@@ -30,6 +30,9 @@ const comic = Comic_Neue({ variable: '--font-comic', subsets: ['latin'], weight:
 // Tarot: engraved capitals over an old-style serif.
 const tarotDisplay = Cinzel({ variable: '--font-tarot-display', subsets: ['latin'], weight: ['700'], preload: false });
 const tarot = Cormorant({ variable: '--font-tarot', subsets: ['latin'], weight: ['600', '700'], preload: false });
+// Postcard: a chunky slab for headings, handwriting for messages.
+const postDisplay = Alfa_Slab_One({ variable: '--font-post-display', subsets: ['latin'], weight: '400', preload: false });
+const post = Kalam({ variable: '--font-post', subsets: ['latin'], weight: ['400', '700'], preload: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -50,7 +53,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, maxi
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable} ${pixel.variable} ${pixelCaps.variable} ${chat.variable} ${comicDisplay.variable} ${comic.variable} ${tarotDisplay.variable} ${tarot.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${handDisplay.variable} ${hand.variable} ${inkSans.variable} ${inkMono.variable} ${toy.variable} ${pixel.variable} ${pixelCaps.variable} ${chat.variable} ${comicDisplay.variable} ${comic.variable} ${tarotDisplay.variable} ${tarot.variable} ${postDisplay.variable} ${post.variable}`}>
       <body>
         {children}
         <Analytics />
